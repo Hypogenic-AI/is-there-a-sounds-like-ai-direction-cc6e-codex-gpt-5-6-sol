@@ -1,0 +1,23 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Machine-generated text leaves a strong statistical trace. Text detectors exploit that trace at the surface level, and recent work shows that a language model's own hidden states can separate human from machine prose with simple linear probes \cite{quaremba2026linear,vishnyakov2026svdetect}. This evidence raises a sharper mechanistic question: if a model encodes an ``AI-authorship'' direction, does writing along that direction make its output sound more artificial?
+
+The answer matters for both interpretability and detection. A causal direction would connect a detector's latent signal to the mechanism that produces detectable prose. It could also expose detector vulnerabilities: a direction that can be subtracted without harming meaning would provide a direct route to detector evasion. A null result is informative for a different reason. It would show that a probe can summarize consequences of generation without identifying a variable that generation uses in the same form.
+
+Existing results do not resolve this distinction. Residual-stream probes establish readout and transfer, but they do not intervene during free generation \cite{quaremba2026linear,vishnyakov2026svdetect}. Activation addition can control topics, sentiment, and other high-level properties \cite{turner2023steering,zou2023representation}, and sparse-autoencoder features can steer stylistic cues associated with artificial text \cite{kuznetsov2025feature}. Work on the Assistant persona and self-authorship establishes causal axes for persona and attribution judgments \cite{lu2026assistant,ackerman2025inspection}. None tests whether a dense human--machine separator controls independently perceived AI-like writing while preserving content and quality.
+
+\para{Our main question.} We ask whether a direction trained to \emph{read} authorship can also \emph{write} it. We use the content-paired \hape corpus \cite{reinhart2025llms}, fit directions at five layers of \qweninst and \qwenbase \cite{qwen2024qwen25}, select a layer using validation readout only, and add the selected direction during held-out generation. We score outputs with two detectors that are independent of the activation data and compare the direction against nuisance-orthogonal, random, shuffled-label, formality, Assistant-axis, and prompt-only controls. \Figref{fig:method} summarizes this read--write design.
+
+The result is asymmetric. The selected layer reaches 0.9997 held-out AUROC in both checkpoints, and every tested layer reaches 0.9997--1.000. Yet, for the instruct checkpoint, changing the intervention strength from $-2$ to $+2$ shifts a \mage-trained detector by only $+0.008$ (95\% CI $[-0.077,0.095]$) and a public \publicdet detector by $-0.077$ ($[-0.246,0.057]$). Both intervals cross zero, the signs disagree, all Holm-adjusted detector $p$-values equal 1.0, and the base replication is also null. The result is not a universal causal null: with 16 prompts, the primary study has 80\% power only for a paired standardized effect near $\dz=0.75$.
+
+Our contributions are:
+\begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+    \item We formulate a direct read--write test for dense authorship directions, separating held-out linear decodability from generation-time causal control.
+    \item We conduct a paired intervention study with signed doses, two independent detector outcomes, matched-norm controls, nuisance residualization, and explicit quality checks.
+    \item We show near-perfect authorship readout in both base and instruction-tuned Qwen2.5-7B, while finding no detector-consistent causal effect at the validation-selected layer and tested doses.
+    \item We identify a bounded negative result: linear accessibility is not sufficient evidence of write-side control, while small effects and other causal directions remain plausible.
+\end{itemize}
+
+\Secref{sec:related} positions the study, \secref{sec:method} gives the design, \secref{sec:results} reports the evidence, and \secref{sec:discussion} discusses its scope and implications.
+

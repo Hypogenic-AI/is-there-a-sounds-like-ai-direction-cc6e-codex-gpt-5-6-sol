@@ -1,0 +1,16 @@
+\begin{table}[h]
+\centering
+\caption{Held-out AUROC by decoder layer. Validation AUROC selects layer 5 in both checkpoints even though later layers have slightly higher test AUROC; test data were not used for selection.}
+\label{tab:layer-readout}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+& \multicolumn{5}{c}{\textbf{Decoder layer}} \\
+\cmidrule(lr){2-6}
+\textbf{Checkpoint} & \textbf{5} & \textbf{9} & \textbf{14} & \textbf{18} & \textbf{22} \\
+\midrule
+\qweninst & 0.9997 & \textbf{1.0000} & \textbf{1.0000} & \textbf{1.0000} & \textbf{1.0000} \\
+\qwenbase & 0.9997 & \textbf{1.0000} & \textbf{1.0000} & \textbf{1.0000} & \textbf{1.0000} \\
+\bottomrule
+\end{tabular}
+\end{table}
+

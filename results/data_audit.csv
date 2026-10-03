@@ -1,0 +1,14 @@
+dataset,file,rows,missing_text,duplicate_ids,mean_words,median_words,p95_words
+HAP-E,hape-text_gpt-4o-2024-08-06.parquet,8290,0,0,527.5700844390832,527.0,568.0
+HAP-E,hape-text_gpt-4o-mini-2024-07-18.parquet,8290,0,0,578.0291917973462,575.0,638.0
+HAP-E,hape-text_human-chunk-1.parquet,8290,0,0,479.94583835946924,478.0,539.0
+HAP-E,hape-text_human-chunk-2.parquet,8290,0,0,479.4799758745476,478.0,536.0
+HAP-E,hape-text_llama-3-70B-Instruct.parquet,8290,0,0,459.5171290711701,458.0,584.0
+HAP-E,hape-text_llama-3-70B.parquet,8290,0,0,472.94149577804586,546.0,657.0
+HAP-E,hape-text_llama-3-8B-Instruct.parquet,8290,0,0,426.12303980699636,423.0,576.0
+HAP-E,hape-text_llama-3-8B.parquet,8290,0,0,480.1644149577805,550.0,653.0
+MAGE,test.csv,56819,0,0,212.43703690666854,115.0,782.0
+MAGE,test_ood_set_gpt.csv,1562,0,0,228.2855313700384,205.0,448.9499999999998
+MAGE,test_ood_set_gpt_para.csv,2362,0,0,247.18797629127857,209.0,492.9499999999998
+MAGE,train.csv,319071,0,0,211.46198808415681,115.0,783.0
+MAGE,valid.csv,56792,0,0,214.05500774757007,115.0,785.0

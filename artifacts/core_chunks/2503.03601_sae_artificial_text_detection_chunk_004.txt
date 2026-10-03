@@ -1,0 +1,149 @@
+Make sure there is enough room to move your arms around your leg .
+This will ensure that you have room to work on your knee . , When
+you start , hold the bandage in your hand . Make sure it starts out
+rolled up . This will make it easier as you wrap it around your
+knee . Position your hand with the wrap in it about two inches
+below your knee joint . Take the loose end of the bandage and
+place it just under the joint with your hand . Hold it there with
+that hand while your other hand moves the bandage around your
+knee . Wrap it all the way around once until the wrap comes around
+to meet the loose end . Pull it snug to secure it .
+Make sure to wrap over the end you started with and put a twist ( or
+two , so that the roll returns to its original position ) in the
+bandage directly above the end to hold it in place .
+(a) LLaMA 3-70B generation fragment, several line breaks in the row
+I just learned about broiling recently , but let ’s talk about
+baking first . When you bake , you cook the food by surrounding
+it with hot air . Because the hot air is all around the food ,
+the food cooks from all the sides . If you use a toaster oven ,
+you ’ ll notice that the heating elements are not really on when
+you bake . They only turn on to keep the air at the temperature
+you set . Heat transfer occur from the hot air inside and the hot
+walls of the oven .
+(b) LLaMA 7B generation fragment, anomalous spaces before punctuation marks (highlighted with red)
+His wife . God ..... she was always so beautiful . We met at college ,
+you see . The only woman I ever loved . And boy did I love her . I
+never really got over her . I heard she got married , and it sucked
+. I didn ’ t sleep for a week . Before I met her , I never realized
+that " heartache " was literal . The pain went away over time ,
+mostly . I mean , if I thought about her , I didn ’ t cry , I didn ’ t
+cut myself . I could deal . Until her ass - wipe husband starts
+running for President . All the media knew he was a jack - ass , but
+she ..... she was made for the campaign trail .
+(c) OPT 30B generation fragment, anomalously long ellipsis (highlighted with red)
+Figure 5: Machine-generated text samples, various models, anomalous punctuation
+10
+
+Either use your fingernails or a pair of pliers to secure the stud
+by folding down the spike ends on the inside of the shoe . Repeat
+this process for all of the studs .
+(a) LLaMA 3-70B generation fragment
+This place it average at best . Our meal was a mixed bag of good and
+bad . On the good side , took our reservations and when we showed
+up on time we were promptly seated . Also , they had a very nice
+Carpaccio appetizer . That was well done . That was it .... no more
+good . On the bad side , all of the dinners were rather bland and
+tasteless . My wife ’ s lamb chops were nothing to write home about .
+(b) LLaMA 7B generation fragment
+The first time I went there a couple of years ago , it was pretty
+good . Then I went there a year ago and it was ok . Went again
+tonight and in my opinion , it was some of the worst food I have
+ever had . Like others have said , very inconsistent but either way
+, I won ’ t be going back .
+(c) OPT 30B generation fragment
+Figure 6: Machine-generated text samples, various models, normal punctuation
+, After scrubbing , allow the tattoo to sit for two hours without
+washing the salty scrub off . Once the two hours are up , you should
+wash it thoroughly with cold water for 5 -10 minutes . You may
+notice some ink being washed away as the area is rinsed with water
+.
+In case there is any bleeding , it is recommended that you soak a
+fresh , clean hand cloth in hydrogen peroxide and then press it
+against the broken skin . This helps to disinfect the area and
+prevent any infection .
+It is also advisable to apply a small amount of vitamin E over the
+area as this helps to promote healing and prevent the formation of
+a scar . Vitamin E also helps to reduce inflammation and pain .
+, Use a clean hand cloth to dry the skin and then an antibiotic cream
+can be applied on top . Use sterile gauze to cover the area , which
+can be held in place using tape from a first aid kit . This helps
+to protect the area and prevent infection .
+, The dressing can be taken off after three days and the area
+assessed . If the skin is painful or reddened , it may be infected .
+If this is the case , it is advisable to see the doctor or visit
+the nearest hospital .
+Figure 7: Human text fragment with anomalous line breaks before commas (highlighted with red)
+11
+
+Layer Length , .... \n ,
+16 1033, 16028 - 2889, 8689, 14919 14919, 16028
+18 7373 2199 3851, 12685, 16302 12685
+20 8684 6631 8573, 11612, 12748 8573, 12267
+Table 1: Features, that are the most sensitive to the length of samples and syntactic anomalies
+St Clare ’ s Catholic Primary School in Birmingham has met with
+equality leaders at the city council to discuss a complaint from
+the pupil ’ s family . The council is supporting the school to ensure
+its policies are appropriate . But Muslim Women ’ s Network UK said
+the school was not at fault as young girls are not required to
+wear headscarves . Read more news for Birmingham and the Black
+Country The Handsworth school states on its website that " hats or
+scarves are not allowed to be worn in school " alongside examples
+including a woman in a headscarf . Labour councillor Waseem Zaffar ,
+cabinet member for transparency , openness and equality , met the
+school ’ s head teacher last week . In a comment posted on Facebook
+at the weekend , claiming the school had contravened the Equality
+Act , the councillor wrote : "I ’ m insisting this matter is addressed
+asap with a change of policy .
+Figure 8: Human text fragment, normal punctuation
+persistently sensitive to markdown paragraphs (
+##) and to repeating line breaks (\n\n).
+Interestingly, we identified several features that
+reacted to markdown paragraphs by hand (for ex-
+ample, features 1033 and 15152 on the 16th layer
+of our SAE). However, the fact that these features
+were not captured by our algorithm suggests that
+they lack sufficient stability under domain varia-
+tion.
+Only features 8689 and 14919 from Table 1
+are among the best in detecting GPT models and
+Bloom model families respectively (Table 15).
+D.3 Attacks
+To identify features most sensitive to attacks, we
+switched to the RAID dataset (see Appendix C).
+From this dataset, we selected three of the most
+powerful generating models: ChatGPT-3.5, GPT-4,
+and human. For each model and domain, we calcu-
+lated the top-10 features that are the most sensitive
+to each type of attack, using the same method as
+for syntactic anomalies. Then, for each attack, we
+took the intersection of the top-10 features across
+all domains and generation models. The results are
+presented in the Table 2.
+As one can see, the Table doesn’t include "num-
+ber", "paragraphs insertion", "alternative spelling",
+"misspelling" and "paraphrase" attacks. This is so
+because our method didn’t find the features that
+would indicate these types of attack consistently
+across all models and domains. Also note that this
+time, we calculated the top-10 features not from all
+available features but from the top 10% most im-
+portant features for ATD based on XGBoost results.
+If we calculate the top-10 from all possible features,
+our strict method don’t capture any intersections.
+The selected feature set does not intersect with
+the best ATD detection features, whether general
+or model- or domain-specific.
+E Detailed results
+We report detailed results for threshold-based clas-
+sifiers. In Figure 16 we report general and model-
+specific features for the 16 layer. The top features
+by domains and models subsets are shown in Fig-
+ures 14 and 15.
+F Feature interpretations
+Tables 3, 4, 5, and 6 present interpretation results
+for key features, along with examples of texts show-
+ing their highest values. In steering, we adjust a
+feature’s value across all tokens, while in real texts,
+it activates on only a few. We observe three acti-
+vation patterns: token-level (e.g., missed formulae,
+12

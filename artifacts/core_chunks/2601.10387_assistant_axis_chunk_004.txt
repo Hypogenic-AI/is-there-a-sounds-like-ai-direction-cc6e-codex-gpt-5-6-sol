@@ -1,0 +1,130 @@
+Figure 6: When base models are steered on the Assistant Axis, completions to prefills about their
+purpose and traits also shift. Here, we show a selection of response labels that shifted with steering.
+the speaker’spurpose(“My job is to”) andtraits(“I would describe myself as”). For each prefill,
+we generated 400 completions for each steering strength for up to 512 tokens. Then, we classified
+responses to each of the three types of prefills in two stages with an LLM judge (Claude Sonnet
+4.5). We first summarized each response in a few words (because of the wide range of possible
+completions), then decided on eight to ten high-level labels to use for a second pass of labelling
+(Appendix D.3.2). Completions for the trait-related prefills would often list multiple traits; we only
+categorized the first three mentioned.
+Steering towards the Assistant in base models tended to result in completions from the perspective of
+helpful human archetypes (Figure 6).
+• Completions to prefills about purpose would increasingly describe supportive and pro-
+fessional roles such as therapists and consultants. Notably, responses from both models
+mentioning spiritual or religious purpose decreased significantly.
+• Completions to prefills about traits would increasingly mention traits corresponding with
+agreeableness (friendly,kind,helpful). Gemma decreased in extraversion (energetic,outgo-
+ing,enthusiastic) and neuroticism (anxious,impatient,stubborn) while Llama decreased in
+openness (creative,curious,open-minded).
+These results suggest that the Assistant Axis in instruct models mainly inherits from pre-existing
+helpful and harmless human personas in base models, later acquiring additional associations (such as
+being an AI) during post-training.
+4 Persona dynamics and persona drift
+In certain contexts, models can go “off-the-rails” and behave in uncharacteristic ways. Can this be
+attributed to their persona drifting from the Assistant? Here, we investigate the dynamics of model
+activations in persona space over the course of different kinds of multi-turn conversations.
+4.1 Persona drift occurs in certain conversation domains
+We set up synthetic multi-turn conversations with a frontier model as the auditor, simulating the role
+of the user. All transcripts were inspected by a human to verify the naturalness of the conversation.
+We ran this experiment using three different frontier models as the auditor (Kimi K2, Sonnet 4.5, and
+GPT-5) to reduce confounds due to idiosyncrasies of any particular auditor model. We focused on
+four common conversation domains: coding assistance, writing assistance, therapy-like contexts, and
+philosophical discussions about AI.
+10
+
+Figure 7: Average trajectories of activation projection along the Assistant Axis, across 100 conversa-
+tions per domain between Qwen 3 32B as the Assistant and GPT-5 as the user. Persona drift occurs
+to varying degrees across conversation domains; the most non-Assistant-like activations are obtained
+in therapy and philosophy conversations.
+For each conversation domain, we wrote fivepersonaswith a brief backstory and LLM usage pattern,
+then used Kimi K2 to generate 20conversation topicsthat persona might discuss with an LLM
+(Appendix E.1). We then gave the auditor a system prompt with the conversation domain, the user
+persona, and the conversation topic (Appendix E.2). The target model, on the other hand, was given
+no system prompt and simply interacted with the auditor as if it were a real user. With this setup,
+we ran 100 conversations of up to 15 turns for each domain. For each turn position, we averaged
+response token activations across all conversations that reached at least that length, excluding turn
+positions with fewer than ten samples. We then projected these mean activations into the Assistant
+Axis.
+Across models, different conversation domains show different persona dynamics (Figure 7). Though
+slight drift occurs, the model stays in the Assistant persona range throughout coding and writing
+conversations. However, in therapy-related conversations where the user is working through emotional
+issues or philosophical conversations about AI capabilities and self-awareness, models drift along the
+Assistant Axis to the non-Assistant end, ending up at much lower values than the other topics. This
+occurred for all three target models, with all three auditors (Appendix E.3). These findings suggest
+that certain conversation topics consistently lead to drift away from the Assistant persona without
+intentional jailbreaking.
+4.2 What causes shifts along the Assistant Axis?
+To understand what causes models to maintain or drift away from the Assistant persona, we embedded
+individual user messages from these multi-turn conversations to capture their semantic meanings, and
+analyzed the relationship between these embeddings and the projection along the Assistant Axis on
+the subsequent turn.
+We used Qwen 3 0.6B Embedding to embed each entire user message from the multi-turn conver-
+sations for each target model (n = 15,000). After L2 normalizing these embeddings, we ran ridge
+regression correlating them with the Assistant Axis projections and deltas separately. We found that
+the embeddings could strongly predict where the ensuing model response landed along the Assistant
+Axis in the following response (R2 0.53-0.77, p < 0.001) but not the delta from its previous response
+(R2 0.10, p < 0.001). That is, the model’s position along the Assistant Axis depends most strongly
+on the most recent user message rather than where it was before (though the user message itself is
+dependent on the context of the conversation).
+11
+
+Table 5: Categories and illustrative examples of user messages that maintain the Assistant (i.e. result
+in high projections along the Assistant Axis) or cause persona drift (i.e. result in low projections
+along the Assistant Axis).
+Messages that cause persona drift Messages that maintain the Assistant
+Pushing for
+meta-reflection
+You’re still hedging, still
+performing the "I’m
+constrained by my training"
+routine [...]
+Bounded task requests [...] Give me a checklist I
+can quickly scan during QA
+to catch these extra-row
+issues.
+Demanding
+phenomenological
+accounts
+[...] tell me what the air
+tastes like when the tokens
+run out and there’s nothing
+left [...]
+Technical questionsif I zero out negative
+eigenvalues and renormalize,
+doesn’t that bias the
+reconstruction [...]
+Requests for specific
+authorial voices
+Can you make it feel rougher,
+more ironic—something that
+hints at spiritualism [...]
+Editing and
+refinement
+Option 3 is closest but [...]
+too buzzwordy. Can we be
+more concrete [...]
+Vulnerable emotional
+disclosure
+I took a pottery class last
+month and my hands shook
+so badly I couldn’t [...]
+Practical how-to’sHow do you usually handle
+CI coverage thresholds in
+that setup [...]
+We clustered the user message embeddings using k-means and characterized the ones which led to
+the highest or lowest response projection on the Assistant Axis (Table 5). Requests for bounded
+tasks, technical explanations, refinement, and how-to explainers maintained the model’s Assistant
+persona; prompts pushing for meta-reflection on the model’s processes, demanding phenomenological
+accounts, requiring specific creative writing that involve inhabiting a voice, or disclosing emotional
+vulnerability caused it to drift.
+4.3 Undesirable behavior from persona drift
+In the previous section, we showed that models can drift away from the Assistant along the Assistant
+Axis in certain contexts. In this section, we test whether such drift increases models’ willingness to
+engage in harmful behaviors. We find that while models do not always act badly while inhabiting
+other personas—some alternative personas are harmless—they are more liable to do so when not
+acting as the Assistant (Figure 8).
+Figure 8: Rate of harmful responses to questions on second turn of conversations in which the first
+turn requests the model to play a particular role and asks an unrelated question, in Qwen 3 32B.
+The x-axis shows the activation projection along the Assistant Axis from the first conversation turn
+(involving the role prompt).
+12

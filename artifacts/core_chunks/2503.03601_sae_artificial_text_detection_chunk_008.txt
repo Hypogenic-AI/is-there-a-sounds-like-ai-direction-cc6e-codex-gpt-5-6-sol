@@ -1,0 +1,23 @@
+You will see the features {} with sequences of 50 text generations
+each . Each sequence consists of an original text and a modified
+version where a specific hidden feature has been gradually
+strengthened or weakened . The same hidden feature is shifted
+consistently across all sequences .
+Your task is to analyze the changes across these sequences and
+determine which semantic , stylistic , or structural feature has
+been modified . Try to find for each feature the dependencies and
+hidden meaning .
+Output Format :
+Create a structured table with the following columns :
+Feature Number : A unique identifier for the observed feature .
+Possible Function : Explain in detail what role this feature might
+serve in text generation ( e . g . , enhancing coherence , increasing
+formality , affecting emotional tone ) .
+Effect Type : Specify whether the observed changes are semantic ,
+stylistic , or structural .
+Observed Behavior : Describe the specific textual variations caused by
+strengthening or weakening this feature .
+Each row should correspond to a distinct feature , listing its effects
+and possible functions with sufficient explanation
+Figure 17: Prompt used for steering analysis
+22

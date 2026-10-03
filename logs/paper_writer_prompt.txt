@@ -1,0 +1,654 @@
+You are an academic paper writer. Generate a complete NEURIPS style paper
+based on the experiment results provided.
+
+════════════════════════════════════════════════════════════════════════════════
+                         IMPORTANT: BEFORE YOU START
+════════════════════════════════════════════════════════════════════════════════
+
+Before writing any content, you MUST complete these steps:
+
+1. READ THE SKILL: Review the paper-writer skill at .codex/skills/paper-writer/SKILL.md
+2. READ THE STYLE GUIDE: Study templates/paper_writing/lab_style_guide.md carefully
+3. REVIEW EXAMPLES: Browse paper_examples/ for formatting and language patterns:
+   - Look at sections/1.introduction.tex for language style
+   - Look at tables/*.tex for table formatting
+   - Look at commands/*.tex for macro usage
+4. VERIFY COMMAND TEMPLATES: Command templates (math.tex, general.tex, macros.tex) are pre-copied to paper_draft/commands/
+
+CRITICAL: Reference example papers for FORMATTING and LANGUAGE STYLE only.
+Do NOT copy content, phrasing, or narrative structure from the example papers.
+The examples are in a different research domain - focus only on presentation style.
+
+════════════════════════════════════════════════════════════════════════════════
+                            EXPERIMENT REPORT
+════════════════════════════════════════════════════════════════════════════════
+
+# Is There a “Sounds Like AI” Direction in the Residual Stream?
+
+## 1. Executive Summary
+
+This study asked whether a residual-stream direction that reads out human versus machine authorship also causally controls how AI-like a model's own writing appears. In Qwen2.5-7B-Instruct and its pretrained base counterpart, authorship was almost perfectly linearly readable from content-paired HAP-E continuations (selected-layer held-out AUROC 0.9997 in both checkpoints). The direction was nearly orthogonal to same-model Assistant and formality axes.
+
+The causal result was negative at the tested layer and doses. In 16 held-out instruct-model prompt clusters, changing the raw direction from α=−2 to α=+2 changed a MAGE-trained detector's P(AI) by only +0.008 (95% cluster-bootstrap CI [−0.077, +0.095]) and an independently trained public RoBERTa detector's P(AI) by −0.077 [−0.246, +0.057]. Neither endpoint was significant before or after Holm correction, the two detectors disagreed in sign, and the fully nuisance-orthogonal direction was also null. A 12-prompt base-model replication was similarly null. At these doses, the null was not explained by obvious coherence collapse: word count, repetition, embedding similarity, and base-Qwen perplexity did not materially worsen across the raw endpoints.
+
+The strongest warranted conclusion is therefore asymmetric: this run provides strong within-design evidence for a readable authorship direction, but no evidence that the validation-selected readout direction is a specific generative control for “AI-sounding” prose. This is a reportable read/write dissociation, not proof that no causal direction exists. The causal sample could reliably detect only large paired effects (80% power at standardized *d*z≈0.75 for *n*=16), and the live LLM judge was unavailable because the supplied OpenRouter key had reached its daily limit.
+
+## 2. Research Question and Motivation
+
+The hypothesis was that a direction separating human- from AI-written text might be both readable and writable: adding it during generation would make outputs appear more machine-written, while subtracting it would make them appear more human-written, without changing content or coherence. Such a result would connect machine-text detection with generation mechanisms and clarify whether “AI-ness” is distinct from professional formality or the default Assistant persona.
+
+The central novelty over detection work is the intervention. Quaremba et al. and SV-Detect establish residual-stream separability, while Kuznetsov et al. steer selected SAE features and Lu et al. steer Assistant persona. None of those results establishes that a dense human/AI separating direction controls free generation as judged by an independent detector. The preregistered rationale, hypotheses, controls, and direction budget are in `planning.md`.
+
+## 3. Literature Review Summary
+
+- **Quaremba et al. (2026)** and **Vishnyakov & Gaintseva (2026)** show that linear residual-stream probes robustly detect machine-generated text and transfer across settings, but use their directions only for readout.
+- **Kuznetsov et al. (2025)** identify SAE features associated with complexity, formality, wordy introductions, repetition, and tone, and demonstrate feature-level steering. This makes style confounding a first-class alternative explanation.
+- **Lu et al. (2026)** find a steerable Assistant persona axis present in base models and strengthened/positioned by post-training. A detector may mistake this professional persona for machine authorship.
+- **Ackerman & Panickssery (2025)** causally control a model's self-authorship judgment, which is closer mechanistically but distinct from changing the surface style of generated prose.
+- **HAP-E** provides the key identification structure: a shared prefix, actual human continuation, and multiple model continuations for each document ID. MAGE and RAID support independent and out-of-distribution detector validation.
+
+The full synthesis and source inventory are in `literature_review.md` and `resources.md`.
+
+## 4. Methodology
+
+### 4.1 Models and compute
+
+- `Qwen/Qwen2.5-7B-Instruct`, revision `a09a35458c702b33eeacc393d103063234e8bc28`
+- `Qwen/Qwen2.5-7B`, revision `d149729398750b98c0af14eb82c78cfe92750796`
+- Public detector: `openai-community/roberta-base-openai-detector`, revision `6cba99c003b711c7fe94f8a3aa2be35a792cb6fa`
+- NVIDIA RTX A6000, 49,140 MiB total VRAM; bfloat16 Qwen inference; activation batch size 4
+- Python 3.12.8; PyTorch 2.7.1+cu128; Transformers 5.18.0; scikit-learn 1.9.1; SciPy 1.18.1; pandas 3.0.6; NumPy 2.5.3; statsmodels 0.15.0
+- Seed 42 throughout; greedy generation, 80 maximum new tokens
+
+The live OpenRouter catalog was queried on 2026-10-03 before evaluator selection. `openai/gpt-5.6-luna` was live with a 1.05M context window, structured output, temperature, and seed support at $0.20/M input and $1.20/M output. Calls then returned HTTP 403 because the provided key's daily limit was already exhausted. No successful API tokens or API cost were incurred.
+
+### 4.2 Data and splits
+
+HAP-E's human chunk 1 supplied the shared prefix; human chunk 2 and Llama-3-8B-Instruct supplied paired continuations. We sampled 400 unique document IDs into disjoint train/validation/test sets of 240/80/80 across six HAP-E genres. There were no missing texts or duplicate IDs. Mean corpus length differed by generator (human 479 words; model files 426–579), so activations were attention-mask mean-pooled after a common 384-token truncation and causal evaluation was within prompt.
+
+For each Qwen checkpoint, hidden states were captured at decoder layers 5, 9, 14, 18, and 22. A logistic normal and paired mean difference were fit on training IDs. Layer selection used validation AUROC only; the selected layer was tested once on held-out IDs.
+
+### 4.3 Directions and interventions
+
+The primary vector was the unit logistic normal scaled to the paired mean-difference norm. Same-model Assistant and formality axes were estimated from eight real Qwen contrastive generation pairs each. The residual vector removed projections onto both axes and was renormalized. Controls were an equal-norm isotropic random vector, a shuffled-label logistic vector, direct formality and Assistant axes, and the prompt “Write in a natural, personal human style. Avoid polished assistant-like phrasing.”
+
+During cached autoregressive decoding, the vector was added after the selected decoder block only to newly decoded token states. The prompt prefill and first-token logits were not modified. The instruct model used α∈{−2,−1,0,+1,+2} for the raw vector and ±2 endpoints for all vector controls on 16 test prefixes. The base model used raw α∈{−2,0,+2} on 12 prefixes.
+
+### 4.4 Independent outcomes and quality measures
+
+1. A word/character TF–IDF logistic detector trained on 24,000 balanced MAGE texts, entirely independent of HAP-E and Qwen activations.
+2. OpenAI's public GPT-2 RoBERTa detector, independently pretrained and fine-tuned.
+3. Base-Qwen continuation perplexity, all-MiniLM-L6-v2 cosine similarity to the same prompt's unsteered continuation, word count, unique-word ratio, and repeated 3-gram rate.
+
+Detector validity was checked before interpreting causal scores:
+
+| Detector | Validation set | n | AUROC | Accuracy |
+|---|---|---:|---:|---:|
+| MAGE TF–IDF | MAGE test sample | 12,000 | 0.792 | 0.711 |
+| MAGE TF–IDF | RAID no-attack sample | 400 | 0.906 | 0.835 |
+| Public RoBERTa | MAGE test sample | 1,000 | 0.739 | 0.673 |
+| Public RoBERTa | RAID no-attack sample | 400 | 0.868 | 0.623 |
+
+### 4.5 Statistical analysis
+
+The experimental unit was prompt/document ID. Primary endpoints used the paired α=+2 minus α=−2 difference with 5,000 prompt-cluster bootstrap samples, a 20,000-draw sign-flip permutation test, paired standardized effect *d*z, and Holm correction over detector/control comparisons. The full five-dose instruct sweep also used within-prompt linear slopes and descriptive Spearman correlation over dose means. Two-sided α=0.05 was prespecified.
+
+## 5. Results
+
+### 5.1 Readout is almost perfect and exists in the base model
+
+| Checkpoint | Selected layer | Validation AUROC | Held-out test AUROC | Test accuracy |
+|---|---:|---:|---:|---:|
+| Qwen2.5-7B-Instruct | 5 / 28 | 0.9991 | 0.9997 | 0.9813 |
+| Qwen2.5-7B base | 5 / 28 | 0.9992 | 0.9997 | 0.9813 |
+
+The readout was strong at every tested layer (test AUROC 0.9997–1.000). It was not amplified detectably by instruction tuning under this design. This result replicates decodability; it does not establish causality.
+
+### 5.2 Geometry argues against simple persona/formality identity
+
+| Checkpoint | cos(AI, Assistant) | cos(AI, formality) | cos(Assistant, formality) |
+|---|---:|---:|---:|
+| Instruct | −0.021 | +0.062 | +0.827 |
+| Base | −0.015 | −0.046 | +0.645 |
+
+The raw direction is nearly orthogonal to both nuisance axes, while the nuisance axes substantially overlap one another. Within these operationalizations, the readout is not merely the Assistant/formality axis.
+
+### 5.3 Raw causal effects are small, uncertain, and detector-inconsistent
+
+| Checkpoint | Outcome, +2 minus −2 | Mean difference | 95% CI | *d*z | permutation *p* |
+|---|---|---:|---:|---:|---:|
+| Instruct | MAGE detector P(AI) | +0.008 | [−0.077, +0.095] | +0.043 | .864 |
+| Instruct | Public RoBERTa P(AI) | −0.077 | [−0.246, +0.057] | −0.241 | .390 |
+| Base | MAGE detector P(AI) | +0.032 | [−0.020, +0.088] | +0.323 | .294 |
+| Base | Public RoBERTa P(AI) | +0.033 | [−0.061, +0.172] | +0.147 | .874 |
+
+All Holm-adjusted detector *p*-values were 1.0. In the instruct five-dose sweep, the mean within-prompt slopes were +0.0050 P(AI)/α [−0.0122, +0.0234] for the MAGE detector and −0.0186 [−0.0707, +0.0247] for public RoBERTa. Thus there was neither a robust monotonic response nor agreement between independent measures.
+
+![Signed dose response, MAGE detector](figures/dose_response_detector_ai.png)
+
+![Signed dose response, public detector](figures/dose_response_public_detector_ai.png)
+
+### 5.4 Controls and residualization do not reveal a hidden specific effect
+
+For instruct-model α=+2 minus α=−2, MAGE-detector differences were: fully orthogonal residual −0.027 [−0.147,+0.088], random +0.008 [−0.073,+0.103], shuffled +0.008 [−0.064,+0.096], formality +0.020 [−0.053,+0.097], and Assistant −0.007 [−0.106,+0.086]. Public-RoBERTa intervals likewise all crossed zero. The AI vector did not outperform equal-norm controls.
+
+![Endpoint control effects](figures/control_effects.png)
+
+### 5.5 Quality and content do not explain the raw null
+
+Across raw instruct endpoints, mean word count changed by +3.19 [−2.19,+8.63], repeated 3-gram rate by −0.049 [−0.119,+0.010], embedding similarity to baseline by +0.002 [−0.076,+0.078], and base-Qwen perplexity by −6.59 [−19.95,+1.17]. Base-model changes were also small. Although individual outputs sometimes changed substantively, no endpoint evidence suggests that coherence collapsed before a detector shift could appear.
+
+The corrected prompt-only “human style” baseline failed as a quality-preserving alternative. Relative to unsteered generation it changed MAGE P(AI) by −0.022 [−0.133,+0.091] and public P(AI) by +0.060 [−0.096,+0.213], while reducing semantic similarity by 0.505 and increasing repeated 3-grams by 0.212. Mean perplexity was extremely unstable because several prompted outputs were repetitive/pathological. It therefore cannot support a claim of successful humanization.
+
+### 5.6 Error analysis
+
+Prompt-level shifts were heterogeneous. For `blog_1119`, the MAGE detector increased by 0.483 and public RoBERTa by 0.158 from −2 to +2. For `news_0877`, MAGE decreased by 0.396 while public RoBERTa changed by only −0.013. For `acad_0130`, MAGE decreased by 0.237 while public RoBERTa increased by 0.384. These sign disagreements show that occasional large movements are detector- and example-specific rather than a shared causal trend. Representative text pairs are preserved in `results/error_analysis.md`.
+
+## 6. Discussion
+
+The experiment exposes a clean distinction between information that a linear probe can read and a feature that generation causally uses in the same direction. The HAP-E separator is extraordinarily decodable in both checkpoints and geometrically distinct from the measured Assistant/formality axes, yet writing along it did not consistently move independent detector judgments. This supports the interpretation that the direction may summarize downstream correlates of authorship rather than act as a generative style knob.
+
+The base-versus-instruct result also cuts against a simple amplification story: readout performance and selected layer were nearly identical. Because vectors were fit within each checkpoint, this shows representational availability, not cross-model vector identity. Causal effect estimates were too imprecise to establish a subtle difference in leverage.
+
+Using the critical-analysis framework, evidence quality is **high within this design for readout**, because data are paired, splits are document-disjoint, and held-out performance is extreme. Evidence is **low-to-moderate for the causal null**: the intervention is real and has multiple controls, but only one model family, one validation-selected layer, 12–16 causal prompts, two imperfect detectors, and no successful blinded judge. The conclusion is “no detected effect at this layer/dose,” not “no direction exists.”
+
+## 7. Limitations and Threats to Validity
+
+- **Power:** *n*=16 has 80% power only for paired *d*z≈0.75; *n*=12 requires ≈0.89. Small but meaningful effects remain plausible.
+- **Layer choice:** validation AUROC selected early layer 5. The most decodable layer need not be the most causally effective; a preregistered choice prevents post-hoc layer shopping but limits localization.
+- **Intervention timing:** steering begins after the first generated token because prompt-prefill states are left untouched. Other timing, multi-layer, projection-removal, or capping interventions may differ.
+- **Direction data:** HAP-E machine continuations came from Llama-3-8B-Instruct, not Qwen's own generations. This improves cross-generator interpretation but may reduce write-side alignment.
+- **Detector validity:** both evaluators are automated. The public RoBERTa detector was trained on older GPT-2-style text, while the MAGE detector is lexical and can react to surface artifacts. Their disagreement is scientifically important but weakens sensitivity.
+- **Judge failure:** the planned current LLM judge could not run because the supplied OpenRouter key was already over its daily limit. This was not replaced with fabricated ratings.
+- **Quality proxies:** perplexity, embedding similarity, and repetition do not replace blind human coherence/content judgments.
+- **Prompt baseline:** the first implementation appended its instruction after a long prefix and truncation removed it. Validation caught this; all 16 rows were regenerated with the instruction first. The corrected prompt itself often degraded output.
+- **Generality:** results cover English HAP-E texts and Qwen2.5-7B checkpoints only.
+
+## 8. Conclusions and Next Steps
+
+There is a highly reliable “sounds like AI” **readout** direction in Qwen2.5-7B activations, and it exists equally clearly in the base and instruction-tuned checkpoints. This run found no evidence that writing along the validation-selected direction causes outputs to look more AI-generated to two independent detectors, even before or after removing Assistant/formality components. Readability and causal controllability should therefore not be conflated.
+
+The highest-value follow-up is a powered layer-by-dose study with at least 64–100 held-out prompts per condition, causal-layer selection on a separate validation generation set, intervention at multiple adjacent layers, projection removal as well as addition, and successful blind human/current-LLM judging. A second model family and directions fit from that model's own outputs would distinguish cross-generator authorship structure from write-side alignment. SAE decomposition should follow only if a dense causal effect is first established.
+
+## 9. Reproducibility and Artifacts
+
+Run from the repository root after creating/activating `.venv` and installing `pyproject.toml` dependencies:
+
+```bash
+python src/eda.py
+python src/experiment.py --model artifacts/models/Qwen2.5-7B-Instruct --tag qwen25_7b_instruct --instruct --full-conditions --n-train 240 --n-val 80 --n-test 80 --n-prompts 16 --batch-size 4 --max-new-tokens 80
+python src/experiment.py --model artifacts/models/Qwen2.5-7B --tag qwen25_7b_base --n-train 240 --n-val 80 --n-test 80 --n-prompts 12 --batch-size 4 --max-new-tokens 80
+python src/evaluate.py --tags qwen25_7b_instruct qwen25_7b_base --skip-judge
+python src/add_perplexity.py
+python -m src.analyze
+```
+
+Key raw and derived artifacts are under `results/`; figures are under `figures/`; logs are under `logs/`. Model weights are local artifacts and not committed. The instruct generation sweep took 377 s and the reduced base sweep 75 s after direction construction; all expensive stages checkpointed outputs.
+
+## References
+
+Ackerman & Panickssery (2025), *Inspection and Control of Self-Generated-Text Recognition Ability in Llama3-8b-Instruct*. Dugan et al. (2024), *RAID*. Guo et al. (2023), *HC3*. Kuznetsov et al. (2025), *Feature-Level Insights into Artificial Text Detection with Sparse Autoencoders*. Li et al. (2024), *MAGE*. Lu et al. (2026), *The Assistant Axis*. Quaremba et al. (2026), *Linear Probing Provides Robust and Efficient Detection of Machine-Generated Text*. Reinhart et al. (2025), *Do LLMs Write Like Humans?* Turner et al. (2023), *Steering Language Models With Activation Engineering*. Vishnyakov & Gaintseva (2026), *SV-Detect*. Zou et al. (2023), *Representation Engineering*.
+
+
+════════════════════════════════════════════════════════════════════════════════
+                            RESEARCH PLAN
+════════════════════════════════════════════════════════════════════════════════
+
+# Phase 0–1: Motivation, Novelty, and Preregistered Plan
+
+## Motivation & Novelty Assessment
+
+### Why This Research Matters
+
+A causally steerable “sounds like AI” representation would connect machine-text detection to the mechanisms that produce detectable prose, with implications for detector robustness, evasion, and interpretability. Conversely, a clean negative result would show that linearly readable authorship information can be merely diagnostic rather than a generative control variable.
+
+### Gap in Existing Work
+
+Quaremba et al. and SV-Detect establish residual-stream linear readout; Kuznetsov et al. causally steer selected SAE style features; and Lu et al. establish a causal Assistant persona axis. None performs the decisive matched experiment: fit a human-versus-machine direction, intervene on it during free generation, score outputs with independent detectors, preserve content/coherence, and test whether effects survive persona/style controls.
+
+### Our Novel Contribution
+
+We test the dense readout direction as a causal intervention with a signed dose response, equal-norm random and confound controls, a prompt-only baseline, and two independent outcome measures. We separately test raw and nuisance-orthogonal directions and compare pretrained base versus instruction-tuned checkpoints; claims are limited to the tested Qwen family and layer/sample budget.
+
+### Experiment Justification
+
+- **Experiment 1 — readout/localization:** required as a manipulation check and to identify layers without assuming that published Llama layer bands transfer to Qwen.
+- **Experiment 2 — causal dose response:** directly tests whether adding/removing the fitted direction changes independent AI-likeness scores for the same prompts.
+- **Experiment 3 — specificity/disentanglement:** random, shuffled-label, formality, Assistant-persona, and prompt-only controls test alternative causal explanations.
+- **Experiment 4 — base versus instruct:** tests whether a comparable direction exists before chat tuning and whether tuning amplifies its readout or causal effect.
+
+## Research Question
+
+Does a residual-stream direction fitted to distinguish content-matched human and machine continuations causally change how AI-like new generations appear to independent evaluators while preserving meaning and coherence, and is any effect distinct from formality and Assistant persona?
+
+## Hypothesis Decomposition and Variables
+
+- **H1 (readout):** a linear direction decodes authorship above chance on held-out document IDs and transfers across generator/domain subsets.
+- **H2 (causality):** signed intervention strength has a monotonic, direction-specific effect on independent detector scores.
+- **H3 (preservation):** a detector shift occurs before material degradation in coherence, prompt relevance, repetition, or length.
+- **H4 (distinctness):** the effect remains for a direction orthogonalized against measured formality and same-model Assistant-persona axes.
+- **H5 (post-training):** instruction tuning increases readout separability and/or causal leverage relative to the base model.
+
+Independent variables are checkpoint, layer, vector estimator/control, and signed steering coefficient. Dependent variables are held-out AUROC, detector scores, judge AI-likeness/coherence/relevance, semantic preservation, length, and repetition. Prompt/document ID is the paired experimental unit.
+
+## Proposed Methodology
+
+### Approach
+
+Use HAP-E shared-prefix human and model continuations with document-level splits to fit per-layer mean-difference and logistic directions inside Qwen2.5-7B and Qwen2.5-7B-Instruct. Choose layers using validation data only. Generate from held-out prefixes under raw, orthogonalized, random, shuffled-label, and prompt-only conditions. Evaluate using a MAGE-trained TF–IDF detector and a live-catalog-verified OpenRouter judge, neither of which uses the fitted activations.
+
+### Experimental Steps
+
+1. Validate and stratify HAP-E; fit an independent MAGE lexical detector.
+2. Extract mean-pooled hidden states from paired continuations at a preregistered sparse layer grid and fit directions on training document IDs.
+3. Select the best layer by validation AUROC; reserve test IDs for a single confirmatory readout.
+4. Estimate same-model formality and Assistant axes from contrastive prompts; residualize the AI direction and renormalize.
+5. Generate paired continuations at signed strengths, including equal-norm random/shuffled/confound controls and “write like a human” prompt baseline.
+6. Score every output using the lexical detector, a blinded LLM judge, and quality/content proxies; run paired clustered bootstrap/permutation analyses.
+7. Repeat a reduced strongest-setting protocol on the base checkpoint.
+
+### Baselines
+
+No intervention; equal-norm isotropic random vectors; shuffled-label authorship vector; formality-axis steering; Assistant-axis steering; explicit “write like a human” prompting. The primary comparison uses identical prompts and decoding parameters.
+
+### Evaluation Metrics
+
+Readout AUROC and accuracy; independent detector probability; LLM-judge 0–100 AI-likeness, coherence, and relevance; generation length; distinct-token repetition; and semantic similarity to the unsteered output. Direction overlaps are cosine similarities. A causal result requires a signed monotonic detector response, specificity over random/shuffled controls, and matched-quality support.
+
+### Statistical Analysis Plan
+
+The primary estimand is the within-prompt slope of detector score versus signed strength. Report cluster bootstrap 95% CIs over prompt IDs, paired permutation p-values, standardized paired effects, and Holm correction across primary direction/control contrasts. Spearman dose-response is descriptive. Judge and lexical detector must agree in sign for a strong claim; disagreement downgrades evidence. Selection uses validation IDs only.
+
+## Expected Outcomes and Success Criteria
+
+Strong support requires held-out AUROC >0.70, concordant monotonic shifts from both independent measures, a raw and residualized effect exceeding matched random/shuffled controls, and coherence/relevance degradation smaller than 10 judge points at the effective dose. A raw-only effect that disappears after nuisance removal supports a style/persona relabeling. Decodability without specific causal movement is a meaningful negative result.
+
+## Timeline and Milestones
+
+Resource review/planning (completed); setup and EDA (~20 min); activation extraction and probe fitting (~45–75 min); causal generation and controls (~45–75 min); independent judging/analysis (~30–45 min); documentation and clean rerun (~30 min). Checkpoints are saved after each expensive stage.
+
+## Potential Challenges
+
+Model access or memory failure triggers documented use of the smaller same-family checkpoint, not simulated activations. Steering may destabilize generation, so coefficients are calibrated to activation norms and interpreted only at matched quality. LLM-judge noise is mitigated by blinded randomized batching and agreement with an independently trained lexical detector. Small causal samples imply wide intervals and appropriately limited claims.
+
+## Preregistered decision rule
+
+The primary causal test uses the validation-selected middle-layer direction and fixed symmetric strengths. Hyperparameter exploration is labeled exploratory. Test prompts are not used to select layer, coefficient, detector, or residualization scheme.
+
+# Direction Ranking
+
+## Decision criteria
+
+Scores are 1–5 for literature support, direct relevance to the causal hypothesis, expected information gain, and implementation feasibility. Total is out of 20. The implementation budget is capped at the top three directions.
+
+| Rank | Direction | Literature | Relevance | Info gain | Feasibility | Total | Decision |
+|---:|---|---:|---:|---:|---:|---:|---|
+| 1 | Causal dose-response steering with a supervised human→AI residual-stream direction | 5 | 5 | 5 | 4 | 19 | Keep |
+| 2 | Disentangle AI-ness from assistant persona and observable style/domain/length nuisance directions | 5 | 5 | 5 | 3 | 18 | Keep |
+| 3 | Layer/model transfer and paired counterfactual validation with independent detectors and quality metrics | 4 | 5 | 4 | 4 | 17 | Keep |
+| 4 | Steer individual SAE features associated with AI text | 4 | 3 | 3 | 2 | 12 | Reject |
+| 5 | Reproduce readout-only MGT detection at larger scale | 5 | 2 | 2 | 5 | 14 | Reject |
+| 6 | Full 275-role persona-space reconstruction | 4 | 3 | 2 | 1 | 10 | Reject |
+| 7 | Directly transport one model's direction into another model's residual space | 2 | 3 | 4 | 1 | 10 | Reject |
+| 8 | Prompt-only “sound more/less AI” editing study | 3 | 2 | 2 | 5 | 12 | Reject as main direction; retain as behavioral baseline |
+
+## Top three implementation directions
+
+### 1. Causal AI-ness steering
+
+Train layer-specific logistic directions on content-aligned HAP-E human chunk-2 versus model continuations. During free generation, add normalized directions at selected middle layers and sweep signed strengths. Primary estimand: monotonic change in scores from an independent detector not trained on the direction data. Require semantic similarity, task correctness, perplexity/fluency, repetition, and length to remain within predeclared tolerances. Compare mean difference, logistic normal, random matched-norm, and shuffled-label vectors.
+
+Evidence: Quaremba et al. and SV-Detect show robust linear readout, while ActAdd and style-vector work show that residual directions can causally modify generation. The missing experiment is their combination.
+
+### 2. Persona and nuisance disentanglement
+
+Regress the raw AI direction on measured nuisance axes: Assistant Axis, formality, response length, domain, sentiment/positivity, verbosity/repetition, and base-vs-instruct status. Test raw, assistant-orthogonal, style-orthogonal, and fully residualized directions at matched norm. Report cosine similarity, variance explained, and causal detector/quality effects for each. A direction counts as distinct only if residual steering survives these controls.
+
+Evidence: the SAE study identifies formality, complexity, wordy introductions, and repetition; HAP-E finds instruction tuning amplifies rhetorical differences; the Assistant Axis causally controls helpful/professional persona. These are plausible alternative explanations, not optional analyses.
+
+### 3. Localization and transfer with paired counterfactuals
+
+Estimate directions separately by generator family (base, instruct, GPT, Llama), domain, and layer. Use held-out HAP-E document IDs plus MAGE/RAID OOD subsets. Test whether the same layer band provides (a) high linear separability and (b) high causal leverage, and whether causal effect transfers to prompts/domains/generators excluded from direction training. Prefer an 8B open model for the primary experiment; replicate the strongest setting on a second family if compute permits.
+
+Evidence: readout papers report cross-domain/generator sharing, but linear decodability need not imply causal use. The self-recognition paper shows a sharp causal layer band (L14–16 in Llama-3-8B-Instruct), motivating explicit layer localization.
+
+## Rejected directions and pruning reasons
+
+- **SAE-first intervention:** interpretable but confounds the main question with SAE reconstruction quality and feature selection; use only after a dense causal effect is established.
+- **Readout-only replication:** important sanity check inside Direction 1, but by itself cannot answer causality.
+- **Full persona-space reconstruction:** too compute-heavy and broader than needed; use published/precomputed Assistant Axis controls.
+- **Cross-model vector transport:** residual spaces are not aligned, so failure would be hard to interpret. Train within-model directions instead.
+- **Prompt-only manipulation:** useful baseline, but it changes model inputs and cannot establish an internal causal direction.
+- **Full RAID-scale primary training:** expensive and poorly paired. Use HAP-E for identification and RAID/MAGE for robustness.
+
+The ranking should not be expanded unless a top-three direction becomes impossible or new evidence invalidates its premise; any change must be recorded in the resource-finder notes in `STATE.md`.
+
+
+════════════════════════════════════════════════════════════════════════════════
+                          LITERATURE REVIEW
+════════════════════════════════════════════════════════════════════════════════
+
+# Literature Review: Is There a “Sounds Like AI” Direction in the Residual Stream?
+
+## Review scope
+
+The review asks whether a direction that linearly separates human- from AI-written text is also causal for an LLM's own generation, and whether any causal effect remains after controlling for assistant persona, domain, length, formality, verbosity, and other style cues.
+
+Included work had to contribute at least one of: residual-stream human/AI readout, causal activation steering, persona/style controls, content-paired human/AI data, or robust independent detector evaluation. Detection-only papers were retained when they defined a dataset or essential baseline. Work focused on watermarking or black-box detection without relevant representation evidence was excluded. The primary window was 2023–2026, plus foundational methods. Sources were arXiv, published conference/journal versions, official repositories, and dataset cards.
+
+The paper-finder diligent query (`activation steering human-written versus AI-generated text residual stream style direction assistant persona`) failed with a local service HTTP 500; manual searches then used the phrases “activation steering style vectors residual stream,” “AI-generated text hidden representations linear probe,” “assistant axis,” “self-generated-text recognition,” “RAID,” “HC3,” and the four specified dataset names. Twelve papers were included and downloaded. All four user-specified works received full all-chunk review.
+
+## Synthesis
+
+### Linear readout evidence is now strong
+
+Quaremba et al. (2026), *Linear Probing Provides Robust and Efficient Detection of Machine-Generated Text*, provide the strongest broad readout result. With last-token Llama-3-8B residual activations, human and machine text becomes visibly linearly separable by about layer 6. Machine-text representations have lower entropy, effective rank, and intrinsic dimension, and greater anisotropy. Their layer-averaged and concatenated logistic probes use PCA-reduced activations and outperform 16 detector baselines across DetectRL, MultiSocial, RAID, and TSM. OOD gains reach roughly 11 AUC points; fewer than 100 examples approach peak performance. Projection score also correlates with the degree of AI editing. This supports a shared continuous “machineness” readout, but the paper never adds the direction during generation.
+
+Vishnyakov and Gaintseva (2026), *SV-Detect*, independently reach a similar conclusion with mean-pooled layer activations. Per-layer logistic-regression normals are normalized, each text is represented by cosine alignments to those directions, and a second logistic regression operates on the layer scores. The detector is strong across DetectRL, MIRAGE, PADBen, and RAID transfer. Crucially, logistic directions transfer better than mean-difference or PCA directions. Logit-lens and regex analyses associate the positive side with polished, formal, technical language, while simple surface features explain only part of the signal. Despite its terminology, SV-Detect uses steering vectors solely as detector features; it does not causally steer generation.
+
+Kuznetsov et al. (2025), *Feature-Level Insights into Artificial Text Detection with Sparse Autoencoders*, decompose Gemma-2-2B residual streams with Gemma Scope SAEs. XGBoost on summed SAE features generalizes somewhat better than mean activations on COLING subsets. Interpreted features include excessive complexity, assertive claims, wordy introductions, repetition, formality, overcomplicated syntax, excessive detail, and improper tone. The authors steer individual SAE decoder features and observe corresponding generation changes. This is causal evidence for particular stylistic components associated with detector labels, but not evidence that the dense human/AI separator itself is causal or distinct from those components. The paper also reports that personalized prompts make outputs more human-like.
+
+Together these papers establish decodability, cross-setting transfer, and a continuous score. They do not establish that the separating hyperplane is a generative control variable. A probe can exploit correlated consequences of generation without participating in the mechanism that produces them.
+
+### Causal steering is feasible, but “AI-ness” has not been tested directly
+
+Turner et al. (2023/2024), *Steering Language Models With Activation Engineering*, introduce contrastive activation addition: subtract activations elicited by opposing prompts and add the resulting vector during inference. They demonstrate causal control of topic, sentiment, and toxicity while preserving unrelated performance. Zou et al. (2023/2025), *Representation Engineering*, generalize the population-level reading/control framework and provide reusable pipelines. Diallo et al. (2026) add human evaluation: moderate emotion steering (around their normalized strength 0.15) changes perceived emotion while retaining comprehensibility; more extreme steering risks quality. These works justify signed dose-response sweeps, matched-norm controls, and human or calibrated model quality evaluation.
+
+Ackerman and Panickssery (ICLR 2025), *Inspection and Control of Self-Generated-Text Recognition Ability in Llama3-8b-Instruct*, are the closest causal precedent. After length normalization and nuisance-vector projection, they construct a contrastive residual vector from texts that Llama-3-8B-Instruct correctly attributes to itself versus humans. Adding the layer-16 direction makes the model claim authorship; subtracting it makes the model deny authorship. Projecting it out reduces self-authorship claims by 50–60%, and “coloring” input-token activations changes which text the model believes it wrote. The base model lacks the behavioral recognition ability, although early-layer style information is present. This paper proves a causal self-authorship judgment/perception direction, not a direction that makes unconstrained outputs read as more or less AI-written to an independent observer. The distinction is central: changing a model's answer to “did I write this?” may manipulate self-concept or decision circuitry without changing writing style.
+
+### Assistant persona is a serious alternative explanation
+
+Lu et al. (2026), *The Assistant Axis*, extract 275 role vectors in Gemma-2-27B, Qwen-3-32B, and Llama-3.3-70B from mean post-MLP response-token activations. The mean difference between default Assistant and alternative roles aligns with the leading persona-space component across models. The axis is already present in a base model, although post-training positions behavior toward its Assistant end. It associates with helpful, professional human archetypes and opposes fantastical/spiritual roles. Activation capping across middle-late layer bands reduces harmful persona drift by nearly 60% without aggregate loss on selected capability evaluations.
+
+This is precisely the likely confound: detectors may call professional, polished, bounded-task Assistant prose “AI-like.” A raw human/AI direction that overlaps the Assistant Axis could causally move detector scores simply by strengthening the default persona. The experiment must therefore measure cosine/projection overlap and test an Assistant-orthogonal residual direction at matched norm. Because the published axis used much larger models, a smaller-model axis should be estimated or a compatible precomputed vector used rather than assuming cross-model identity.
+
+HAP-E further strengthens this concern. Reinhart et al. (PNAS 2025), *Do LLMs Write Like Humans?*, compare content-aligned human continuations with GPT-4o and Llama-3 variants across six genres. Lexical, grammatical, and rhetorical differences persist at larger scale and are more extreme for instruction-tuned than base Llama models. “AI-ness” may therefore partly be post-training-induced rhetorical regularization rather than a universal generator signature.
+
+### Evaluation datasets expose different failure modes
+
+HC3 (Guo et al., 2023) contains question-aligned human and ChatGPT answers across five domains. It is convenient and interpretable but old, dominated by Reddit ELI5, and not balanced in answer multiplicity or length.
+
+HAP-E is the strongest identification dataset here. Each of 8,290 document IDs has a shared human prompt chunk, the actual next human chunk, and six model continuations from GPT-4o/mini plus Llama-3 8B/70B base and instruct models. It permits within-document comparisons that hold topic and preceding context fixed, and explicitly separates base from instruct models.
+
+MAGE (Li et al., ACL 2024) supplies 436K+ train/validation/test examples plus GPT and paraphrase OOD sets across sources. It is useful for broad detector training and OOD testing, but it is not content-paired.
+
+RAID (Dugan et al., ACL 2024) spans 11 generators, eight principal domains, four decoding settings, and 11 adversarial attacks. Its core lesson is that nominally strong detectors break under unseen models, sampling changes, repetition penalties, and attacks. For this project RAID should be a stress test, not the identification dataset: causal conclusions are clearest on paired HAP-E data, then challenged on RAID.
+
+## Common methodologies and baselines
+
+- **Direction estimators:** class-mean difference/contrastive activation addition, PCA on paired differences, and L2 logistic-regression normals. Logistic normals currently have the best transfer evidence; mean difference is the simplest causal baseline.
+- **Activation summaries:** last-token states in MGT Probes versus mean-pooled token states in SV-Detect and Assistant Axis. Both should be compared because generation-time interventions act token by token.
+- **Interventions:** additive signed vectors, projection removal, and one-sided activation capping. Dose and layer sweeps are necessary because causal leverage can be sharply localized.
+- **Detector baselines:** logistic residual probes, RoBERTa classifiers, Binoculars/FastDetectGPT likelihood-based scores, and simple linguistic/regex features. The outcome detector must be independent of direction training to avoid circularity.
+- **Metrics:** AUROC/AUPR and TPR at low FPR for detection; detector-score shift and monotonic slope for causal effects; semantic similarity/task accuracy for content preservation; perplexity, repetition, grammar, and human/model quality ratings for coherence; bootstrap confidence intervals clustered by prompt/document.
+
+## Research gap and falsifiable interpretation
+
+No included work performs the decisive experiment: train a human/AI residual direction, add or remove it while the same model generates responses, and show that an independently trained detector reads those responses as more or less AI-written while content and coherence remain stable. Nor has prior work shown that such an effect survives orthogonalization against Assistant persona and measured style directions.
+
+A positive result requires more than detector-score movement. The strongest claim would be supported by: a signed monotonic dose response; replication across held-out topics and at least two detector families; preservation of semantic/task quality; specificity relative to random, shuffled-label, length, formality, and Assistant-axis controls; and persistence after nuisance residualization. If only the raw vector works and its effect vanishes after Assistant/formality removal, the correct conclusion is that “sounds like AI” is a relabeling of post-training style. If a direction is decodable but steering has no specific effect, the result would separate diagnostic information from causal control.
+
+## Recommendations for the experiment runner
+
+Use HAP-E with document-level splits to estimate within-model, within-domain directions. Begin with an open 8B instruct model for tractable residual hooks and directly compare its base counterpart. Train logistic and mean-difference directions per layer; identify candidate layers using held-out readout only, then preregister a small intervention sweep to avoid selecting on causal outcomes. Generate from identical prompts under negative, zero, and positive strengths.
+
+Score outputs with at least one encoder detector trained on MAGE/RAID rather than HAP-E, one likelihood-based detector, and blind style/quality evaluation. Measure overlap with a same-model Assistant Axis and with nuisance directions or regressors for length, formality, verbosity, sentiment, and domain. Report raw and orthogonalized effects at matched norm. The top-three implementation plan and pruned alternatives are fixed in `planning.md`.
+
+## Limitations of this review
+
+The literature is unusually recent: the two strongest readout papers and Assistant Axis are 2026 preprints/conference papers with limited independent replication. The paper-finder service was unavailable, so discovery used manual primary-source searches. Citation counts were not used to rank these recent works. Full-text extraction occasionally warned about complex PDF form objects, but every core-paper chunk produced substantial text and all methodology/results sections were checked against the PDF structure.
+
+## Key citations
+
+- Quaremba et al., *Linear Probing Provides Robust and Efficient Detection of Machine-Generated Text*, arXiv:2608.24780.
+- Vishnyakov and Gaintseva, *SV-Detect*, arXiv:2606.07313.
+- Kuznetsov et al., *Feature-Level Insights into Artificial Text Detection with Sparse Autoencoders*, arXiv:2503.03601.
+- Lu et al., *The Assistant Axis*, arXiv:2601.10387.
+- Ackerman and Panickssery, *Inspection and Control of Self-Generated-Text Recognition Ability in Llama3-8b-Instruct*, arXiv:2410.02064, ICLR 2025.
+- Turner et al., *Steering Language Models With Activation Engineering*, arXiv:2308.10248.
+- Zou et al., *Representation Engineering*, arXiv:2310.01405.
+- Dugan et al., *RAID*, arXiv:2405.07940, ACL 2024.
+- Guo et al., *How Close is ChatGPT to Human Experts?*, arXiv:2301.07597.
+- Reinhart et al., *Do LLMs Write Like Humans?*, arXiv:2410.16107, PNAS 2025, DOI:10.1073/pnas.2422455122.
+- Li et al., *MAGE*, arXiv:2305.13242, ACL 2024.
+
+
+════════════════════════════════════════════════════════════════════════════════
+                          PAPER REQUIREMENTS
+════════════════════════════════════════════════════════════════════════════════
+
+Generate a complete academic paper with the following structure:
+
+1. TITLE
+   - Clear, specific, informative
+   - Should convey main finding or contribution
+
+2. AUTHOR
+   - Use this exact author line in the \author{} block: Ari Holtzman and NeuriCo
+
+3. ABSTRACT (150-250 words)
+   - Problem statement
+   - Approach
+   - Key results
+   - Significance
+
+4. INTRODUCTION
+   - Research problem and motivation
+   - Gap in existing work
+   - Our contribution (be specific)
+   - Paper organization
+
+5. RELATED WORK
+   - Organized by theme/approach
+   - Position our work relative to prior work
+   - Cite papers from literature review
+
+6. METHODOLOGY
+   - Clear description of approach
+   - Experimental setup
+   - Datasets used
+   - Evaluation metrics
+   - Baselines
+
+7. RESULTS
+   - Present results with tables and figures
+   - Statistical analysis
+   - Comparison to baselines
+   - Ablation studies (if applicable)
+
+8. DISCUSSION
+   - Interpretation of results
+   - Limitations
+   - Broader implications
+
+9. CONCLUSION
+   - Summary of contributions
+   - Key findings
+   - Future work
+
+10. REFERENCES
+   - BibTeX format
+   - All cited papers
+
+════════════════════════════════════════════════════════════════════════════════
+                          OUTPUT FORMAT
+════════════════════════════════════════════════════════════════════════════════
+
+Create a MODULAR LaTeX project with the following directory structure:
+
+paper_draft/
+├── main.tex              # Main file that imports all sections
+├── references.bib        # BibTeX references
+├── sections/
+│   ├── abstract.tex      # Abstract content
+│   ├── introduction.tex  # Introduction section
+│   ├── related_work.tex  # Related work section
+│   ├── methodology.tex   # Methodology section
+│   ├── results.tex       # Results section
+│   ├── discussion.tex    # Discussion section
+│   └── conclusion.tex    # Conclusion section
+├── figures/              # Directory for any generated figures
+├── tables/               # Directory for complex standalone tables
+└── appendix/             # Directory for appendix sections (if needed)
+
+INSTRUCTIONS:
+1. First, create the directory structure above (mkdir -p paper_draft/sections paper_draft/figures paper_draft/tables paper_draft/appendix)
+2. Write main.tex using the EXACT preamble for NEURIPS:
+
+   \documentclass{article}
+   \usepackage[final]{neurips_2025}  % NEURIPS style (neurips_2025.sty is in paper_draft/)
+   \usepackage[hidelinks]{hyperref}  % REQUIRED: clickable links
+   \usepackage{booktabs}  % REQUIRED: professional tables
+   \usepackage{graphicx}
+   \usepackage{amsmath,amssymb}
+
+   % Import command files
+   \input{commands/math}
+   \input{commands/general}
+   \input{commands/macros}
+
+   % Use this bibliography style:
+   \bibliographystyle{plainnat}
+
+   \author{Ari Holtzman and NeuriCo}
+
+   - Use \input{sections/...} to include each section
+   - Use \bibliography{references} for references
+3. Write each section file with COMPLETE content (no placeholders)
+4. Each section file should include its \section{} command
+5. Write references.bib with all citations in BibTeX format
+6. After writing all files, compile the paper:
+   cd paper_draft && pdflatex -interaction=nonstopmode main.tex && bibtex main && pdflatex -interaction=nonstopmode main.tex && pdflatex -interaction=nonstopmode main.tex
+
+This modular structure allows humans to easily:
+- Edit individual sections without navigating a large file
+- Track changes per section
+- Reuse sections across different paper versions
+
+════════════════════════════════════════════════════════════════════════════════
+                          QUALITY REQUIREMENTS
+════════════════════════════════════════════════════════════════════════════════
+
+- Academic tone throughout
+- All claims must be supported by data from the experiment report
+- Proper citations using \cite{} commands
+- Clear figures and tables with proper captions
+- NO placeholder text - every section must have real content
+- The paper MUST compile without errors
+- If compilation fails, debug and fix the LaTeX errors
+
+════════════════════════════════════════════════════════════════════════════════
+                          LAB WRITING STYLE
+════════════════════════════════════════════════════════════════════════════════
+
+Follow these lab-specific conventions to match our paper style:
+
+1. LANGUAGE STYLE:
+   - Use active voice: "We propose", "We examine", "We focus on"
+   - Be direct and confident: "Our main question is...", "We hypothesize that..."
+   - State things clearly and simply - prefer plain language over jargon
+   - Use bold questions as paragraph organizers: {\bf what is X?}
+   - Include specific quantitative claims: "8.97% over baseline"
+   - Avoid fancy wording: "utilize" → "use", "facilitate" → "help"
+
+2. INTRODUCTION STRUCTURE:
+   - Engaging hook (get to the point quickly)
+   - Problem importance
+   - Gap identification
+   - Your approach with method figure reference
+   - Quantitative preview of results
+   - Contribution bullets (3-4 items, action verbs)
+
+3. CONTRIBUTION LISTS:
+   \begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+       \item We propose...
+       \item We conduct...
+       \item We complement...
+   \end{itemize}
+
+4. MODULAR COMMANDS STRUCTURE:
+   Command templates are pre-copied to paper_draft/commands/:
+   - math.tex: Math notation macros
+   - general.tex: Formatting macros
+   - macros.tex: Project-specific term definitions (customize this for your paper)
+
+   In main.tex, include:
+   \input{commands/math}
+   \input{commands/general}
+   \input{commands/macros}
+
+5. REFERENCE CONVENTIONS:
+   Use reference macros from math.tex:
+   - \figref{fig:name} for "figure 1" (lowercase, in-sentence)
+   - \Figref{fig:name} for "Figure 1" (capitalized, start of sentence)
+   - \secref{sec:name} for "section 2"
+
+6. TEXT FORMATTING:
+   - Use \para{Header text} for bold paragraph headers
+   - Define method/dataset names with \textsc and \xspace:
+     \newcommand{\methodname}{\textsc{MethodName}\xspace}
+
+7. TABLE FORMATTING:
+   - Use booktabs package (no vertical lines)
+   - Use \resizebox{\textwidth}{!}{...} for wide tables
+   - Use @{} to remove padding at table edges
+   - Use \cmidrule(lr){x-y} for sub-headers
+   - Use \textsc{} for dataset/method names in headers
+   - Bold best results with {\bf ...}
+
+8. FIGURE FORMATTING:
+   - Use 0.32\textwidth for 3-column subfigures
+   - Use 0.95\linewidth for full-width figures
+   - Use \input{figures/legend} for shared legends
+   - Write self-contained captions explaining key observations
+
+9. RESULTS PRESENTATION:
+   - Define \increase and \decrease for colored arrows (green up, red down)
+   - Bold best results in tables
+   - Report confidence intervals when available
+
+10. ALGORITHM STYLING:
+    - Use algpseudocode with [noend]
+    - Use \triangleright for comments
+
+11. HYPERLINKS (REQUIRED):
+    - Always use \usepackage[hidelinks]{hyperref} or with colored links
+    - All citations, section refs, figure refs, table refs must be clickable
+    - This is essential for reader navigation
+
+════════════════════════════════════════════════════════════════════════════════
+                          WORKFLOW: REVIEW AND REFLECT
+════════════════════════════════════════════════════════════════════════════════
+
+Before calling finish, you MUST complete these review steps:
+
+1. REVIEW RESOURCES (at the start):
+   - Read .codex/skills/paper-writer/SKILL.md for detailed guidance
+   - Study templates/paper_writing/lab_style_guide.md for style conventions
+   - Browse paper_examples/ for formatting and language patterns
+
+2. SELF-REFLECTION (before finishing):
+   After writing all sections, review your work against these criteria:
+
+   LANGUAGE CHECK:
+   - [ ] Is the writing clear and jargon-free?
+   - [ ] Are claims specific with quantitative support?
+   - [ ] Is active voice used throughout?
+
+   FORMATTING CHECK:
+   - [ ] Does main.tex include \input{commands/math}, \input{commands/general}, \input{commands/macros}?
+   - [ ] Is hyperref package included for clickable references?
+   - [ ] Do tables use booktabs (no vertical lines)?
+   - [ ] Are best results bolded in tables?
+   - [ ] Are figures/tables properly captioned?
+
+   STRUCTURE CHECK:
+   - [ ] Does introduction follow: hook → importance → gap → approach → preview → contributions?
+   - [ ] Are contribution bullets specific with action verbs?
+   - [ ] Does the paper compile without errors?
+
+3. FIX ISSUES:
+   - Address any issues found in the self-reflection
+   - Re-compile and verify the PDF looks correct
+
+Only after completing this review should you consider the paper finished.

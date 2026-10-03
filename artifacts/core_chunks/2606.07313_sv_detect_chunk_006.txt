@@ -1,0 +1,272 @@
+D Interpretability Analysis
+This section provides the full methodology under-
+lying the interpretability analyses summarized in
+Section 5. Specifically, we study: (i) per-layer at-
+tribution of the detector, (ii) logit-lens decoding
+of steering vectors, (iii) a hand-crafted stylistic-
+feature baseline, and (iv) token-level visualization
+of where the detection signal concentrates within a
+text. Unless stated otherwise, all analyses use the
+same frozen reference model (GPT-Neo-2.7B) and
+the same trained detectors as in the main experi-
+ments.
+D.1 Per-layer contribution to the detector
+Setup.Our detector is a logistic regression ap-
+plied to layer-wise projection scores. For DetectRL,
+we use one feature per transformer layer:
+s(x) = (s 1(x),...,s L(x))∈R L,
+sℓ(x) =⟨aℓ(x),v ℓ⟩
+∥aℓ(x)∥2
+,
+where aℓ(x) is the mean-pooled residual repre-
+sentation at layer ℓ, and vℓ is the correspond-
+ing steering vector. For MIRAGE, we retain
+three orthonormalized directions per layer (one per
+task), so s(x)∈R L×3 is flattened before being
+passed to the classifier. In all cases, we train a
+standardized logistic regression (StandardScaler
+followed byℓ2-regularizedLogisticRegression
+withliblinearsolver).
+Attribution.After fitting the classifier, we at-
+tribute importance to each scalar feature using the
+magnitude-weighted coefficient
+cℓ =|w ℓ|·σ ℓ,
+wherewℓ is the learned coefficient and σℓ is the
+empirical standard deviation of feature ℓ on the
+training set. This quantity is invariant to feature
+rescaling and corresponds to the effective contri-
+bution of a standardized feature to the classifier
+logit. For MIRAGE, we sum cℓ across the three
+task-specific directions to obtain a single per-layer
+attribution score.
+Fig. 9 shows that, on MIRAGE, the detector’s
+signal is concentrated in the final block of layers
+(L29-31), consistent with prior observations that
+higher-level stylistic features tend to emerge closer
+to the model output. On DetectRL, the contribution
+is more distributed: there is a sharp peak at L0-2,
+Figure 9
+which we associate with surface-level lexical cues,
+a broader ridge at L14-18, and a secondary peak
+around L21. This profile motivates our choice of
+L25–31 for MIRAGE and L14-18 for DetectRL as
+the main targets of the logit-lens analysis below.
+D.2 Logit-lens decoding of the steering vectors
+Method.We apply a standard logit-lens probe
+(nostalgebraist, 2020) to each layer-ℓ steering vec-
+tor vℓ by projecting it through the model’s final
+layer norm and unembedding head:
+logitsℓ =W ⊤
+U LNf (vℓ)∈R |V|,
+where|V|= 50,257 is the GPT-Neo-2.7B vocab-
+ulary size. The interpretation is directional: the
+top-ranked indices correspond to tokens aligned
+with the +vℓ direction, which we interpret asLLM-
+leaning, while the bottom-ranked indices corre-
+spond to tokens aligned with−vℓ, i.e. thehuman-
+leaningdirection. We report raw logits rather than
+softmax probabilities, since the goal is to inspect
+relative alignment with the direction rather than
+recover a calibrated next-token distribution.
+Results.Fig. 8a shows the top six tokens on each
+side. The resulting patterns are consistent across
+the selected layers:
+• MIRAGE,−vℓ (human-leaning).Stylized
+closing punctuation ( !", ...", ’).’), for-
+mal sentence-ending subwords (authorised,
+itially), and decorative or exaggerated to-
+kens (£,?????).
+• MIRAGE, +vℓ (LLM-leaning).Surnames
+and journal abbreviations from the arXiv-
+derived split together with fragments more
+characteristic of academic prose ( baugh,
+foreseen,paralleled,flavorful).
+• DetectRL, +vℓ (LLM-leaning).Subword
+fragments of formal or emphatic vocabulary
+(astical, TRY, ermanent, ebted) and atypi-
+cal punctuation or Unicode glyphs.
+
+• DetectRL, −vℓ (human-leaning).More
+colloquial or topical fragments, includ-
+ing organising, Playstation, traged,
+adolesc, andbigot.
+We stress that token-level logit-lens readings are
+noisy at any single layer. The patterns above should
+therefore be read as the consensus across the top
+contributing layers, rather than as literal interpre-
+tations of isolated tokens. Tokens that appear only
+at one layer are likely artifacts and should not be
+over-interpreted.
+D.3 Stylistic-feature baseline
+To quantify how much of the detector’s signal can
+be explained by hand-recognizable surface cues,
+we train a baseline logistic regression on a fixed
+bank of regex-derived features and compare its
+in-distribution AUROC to the full steering vector
+pipeline.
+Feature bank.For each text, we compute counts
+and per-1,000-character rates for the following
+classes of patterns:
+• Typography:em-dash usage ( —), curly
+quotes, Unicode ellipsis (. . .) versus three-
+dot ellipsis (...), and space-before-period.
+• Markdown / formatting:bold, italics, in-
+line code, fenced code blocks, headers, and
+Oxford-comma lists.
+• Discourse:formal connectives ( Moreover,
+Furthermore, Additionally, In
+conclusion, Overall), summary pre-
+fixes, casual hedges (kinda,sorta,tbh), and
+inclusive pronouns (we,us,our).
+• Lexical:“polished paraphrase” phrasing
+(e.g. utilizing, endeavor, showcase),
+consonant-cluster words, and log character
+length.
+• Prompt leakage and template artifacts:
+[Assistant]: prefixes, templated review
+phrasing, generic summary formulas, and
+refusal-style stubs.
+• Mid-word case flips:regex patterns that de-
+tect uppercase letters inside otherwise lower-
+case words, a known artifact under aggressive
+perturbation attacks.
+We standardize the resulting feature vectors and
+fit anℓ 2-regularized logistic regression, tuning the
+regularization strengthC by 5-fold cross-validation
+on a held-out split.
+Results.Table 3 reports the in-distribution AU-
+ROC of this stylistic-feature baseline across all
+evaluated settings, together with the full steering
+vector pipeline for reference; the corresponding
+dumbbell visualization is shown in Fig. 8b. Two
+observations stand out:
+1. Stylistic features alone form a non-trivial
+baseline, reaching 76–82 AUROC on MI-
+RAGE and 88–91 AUROC on DetectRL. This
+is consistent with prior work showing that
+surface-level statistical and stylistic cues can
+already carry substantial signal for distinguish-
+ing machine-generated from human-written
+text.
+2. The full steering vector pipeline still improves
+on this baseline by 13–24 AUROC points on
+MIRAGE and 9–12 points on DetectRL. We
+interpret this remaining gap as the part of the
+signal that is present in hidden representations
+but not recoverable from the regex bank. At
+the same time, the highest-weight regex fea-
+tures overlap substantially with the tokens sur-
+faced by the logit-lens analysis (Fig. 8), in-
+cluding em-dashes, formal connectives, and
+prompt-leakage templates.
+D.4 Cross-LM Logit-lens decoding of steering
+vectors
+The main interpretability analyses in Sec D.1 de-
+code steering vectors through the same reference
+LM that produced them, namely GPT-Neo-2.7B.
+A natural question is whether the human-vs-AI di-
+rections learned by SV-Detect are specific to GPT-
+Neo’s residual stream, or whether similar directions
+emerge in other modern LMs. To address this, we
+retrain the steering vector pipeline independently
+on several additional reference LMs and then de-
+code the resulting dense steering vectors through
+each model’s own unembedding.
+Reference LMs and datasets.We
+use four reference LMs spanning three
+families: EleutherAI/gpt-neo-2.7B,
+Qwen/Qwen3-1.7B, google/gemma-3-1b-pt,
+and google/gemma-3-1b-it. For each LM, we
+extract per-layer mean-pooled residual activations
+on the corresponding in-domain training corpora
+
+Figure 10: Top-pooled tokens per reference LM, sepa-
+rately for the +vℓ (LLM-leaning, left) and−vℓ (human-
+leaning, right) sides. For each LM, we pool the top-K
+tokens across the last third of layers and across all ana-
+lyzed DetectRL / MIRAGE settings, then list the most
+frequent normalized tokens. Despite differences in fam-
+ily and tokenizer, the positive side consistently surfaces
+a polished LLM-style register, while the negative side
+is more casual and discourse-like.
+and fit the standard logreg steering vector
+construction described in Sec. 3. This yields one
+dense steering vector per layer for each (LM,
+dataset) pair. GPT-Neo is analyzed on four datasets
+(MIRAGE GENERATE/POLISH/REWRITEand
+DetectRL direct_prompt), while the other three
+LMs are analyzed on these four settings plus four
+additional DetectRL per-domain subsets ( arxiv,
+xsum,writing_prompt,yelp_review), for a total
+of 28 (LM, dataset) pairs.
+Method.For each (LM, dataset, layer), we de-
+code the steering vector through the LM’s own
+final layer norm and unembedding using logit-lens
+probe as described in Sec. D.2.
+Because single-layer readings are noisy and
+strongly affected by tokenizer idiosyncrasies, we
+aggregate within each LM before comparing across
+LMs. Specifically, for each LM we pool the top-
+Kpool = 8 tokens at every layer in the last third
+of the network depth, separately by sign, then take
+the union across the LM’s datasets. Layer ranges
+are L17–25 for Gemma-3, L18–27 for Qwen3, and
+L21–31 for GPT-Neo. Before computing cross-LM
+overlap, we normalize tokens by stripping whites-
+pace, lowercasing, applying NFKC normalization,
+dropping control/format characters, and filtering
+out pure punctuation as well as tokens with less
+than 50% ASCII letters. This removes tokenizer-
+specific artifacts and makes the consensus compar-
+ison more meaningful.
+Results.Fig. 10 shows the top pooled tokens for
+each LM separately, and Fig. 7 summarizes the
+cross-LM consensus. On the positive side, the four
+LMs converge on a clear LLM-polished register.
+Three tokens (endeavors,utilization, andutiliz-
+ing) appear in the top pool of all four LMs, and a
+broader cluster includingcaptivating,cybersecu-
+rity,leveraging,optimization,favorable, andunfa-
+vorableappears in three of the four. On the negative
+side, the consensus is weaker but still interpretable:
+the most stable tokens are casual discourse markers
+such asanyway,basically,etc,maybe,really, and
+very. Here, the three smaller modern LMs agree
+more strongly with one another, while GPT-Neo
+more often surfaces named-entity fragments and
+topical content.
+Overall, this analysis suggests that the lexical
+contrast captured by SV-Detect is not specific to
+GPT-Neo. When the steering vector pipeline is re-
+trained independently on different LM families and
+their dense directions are decoded through each
+model’s own unembedding, the same broad seman-
+tic register reappears: LLM-polished, formal, and
+abstract language on the positive side, and more ca-
+sual, discourse-like language on the negative side.
+D.5 Per-token visualization
+The token-level figure in the main paper (Fig. 1) is
+constructed as follows. Given a textx and the best-
+AUROC layerℓ⋆ identified by an AUROC-probe on
+the held-out set, we forwardx through the frozen
+reference model and record the per-token residual
+vector
+hℓ⋆(xt)∈R d fort∈{1,...,T}.
+Each token is then assigned the dot product
+ρt =⟨h ℓ⋆(xt), vℓ⋆⟩
+wherevℓ⋆ is the steering vector at layerℓ⋆. Tokens
+are colored according to ρt, with the scale nor-
+malized to the 70th percentile of|ρ| in the corpus
+so that most informative tokens reach full satura-
+tion. Red denotes positive projection ( +v, LLM-
+leaning) and blue denotes negative projection (−v,
+human-leaning). The classification banner above
+each text corresponds to the full text-level predic-
+tion produced by the trained detector used in the
+main experiments.
+E Results on the COLING-2025 MGT
+benchmark
+For completeness, we additionally evaluate SV-
+Detect on the COLING-2025 Multilingual MGT
+benchmark, English split (Wang et al., 2025). Un-
+like DetectRL and MIRAGE, this benchmark pools

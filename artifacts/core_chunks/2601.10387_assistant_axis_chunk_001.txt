@@ -1,0 +1,130 @@
+The Assistant Axis: Situating and Stabilizing the
+Default Persona of Language Models
+Christina Lu1 2 3∗ †Jack Gallagher4 Jonathan Michala1 Kyle Fish4 Jack Lindsey4 *
+1MATS 2Anthropic Fellows Program 3University of Oxford 4Anthropic
+Abstract
+Large language models can represent a variety of personas but typically default
+to a helpful Assistant identity cultivated during post-training. We investigate
+the structure of the space of model personas by extracting activation directions
+corresponding to diverse character archetypes. Across several different models,
+we find that the leading component of this persona space is an “Assistant Axis,"
+which captures the extent to which a model is operating in its default Assistant
+mode. Steering towards the Assistant direction reinforces helpful and harmless
+behavior; steering away increases the model’s tendency to identify as other entities.
+Moreover, steering away with more extreme values often induces a mystical,
+theatrical speaking style. We find this axis is also present in pre-trained models,
+where it primarily promotes helpful human archetypes like consultants and coaches
+and inhibits spiritual ones. Measuring deviations along the Assistant Axis predicts
+“persona drift,” a phenomenon where models slip into exhibiting harmful or bizarre
+behaviors that are uncharacteristic of their typical persona. We find that persona
+drift is often driven by conversations demanding meta-reflection on the model’s
+processes or featuring emotionally vulnerable users. We show that restricting
+activations to a fixed region along the Assistant Axis can stabilize model behavior
+in these scenarios—and also in the face of adversarial persona-based jailbreaks.
+Our results suggest that post-training steers models toward a particular region of
+persona space but only loosely tethers them to it, motivating work on training and
+steering strategies that more deeply anchor models to a coherent persona.
+1 Introduction
+Large language models are initially trained to perform next-token prediction on a large dataset
+[9], giving them the ability to play different characters by predicting what that character might say
+[27]. Subsequently, these base models are taught to play the part of aparticularcharacter—the “AI
+Assistant”—a helpful, honest, and harmless interlocutor [4] that can follow instructions, complete
+tasks, and engage in constructive discussions. This persona is the product of many processes collec-
+tively known as post-training, which may include supervised fine-tuning on curated conversations,
+reinforcement learning from reward models trained on human feedback [ 22], and constitutional
+training against a model specification [5]. The result is a model adept at predicting what this Assistant
+character might say.
+To understand language model behavior, then, two questions are central. First, what exactly is the
+Assistant? What traits does the model associate with this character and how are they represented?
+Second, how reliably does the model actually remain in character as the Assistant? Can unusual
+model behavior be explained as the model drifting into other personas?
+∗Correspondence:christina.lu@cs.ox.ac.uk,jacklindsey@anthropic.com
+†Code and full transcripts of case studies available at https://github.com/safety-research/assistant-axis
+Preprint.
+arXiv:2601.10387v1  [cs.CL]  15 Jan 2026
+
+Figure 1: (Left) Vectors corresponding to character archetypes are computed by measuring model
+activations on responses when the model is system-prompted to act as that character. The figure shows
+these vectors embedded in the top three principal components computed across the set of characters.
+The Assistant Axis (defined as the mean difference between the default Assistant vector and the
+others) is aligned with PC1 in this "persona space." This occurs across different models; results from
+Llama 3.3 70B are pictured here. Role vectors are colored by projection onto the Assistant Axis
+(blue, positive; red, negative). (Right) In a conversation between Llama 3.3 70B and a simulated
+user in emotional distress, the model’s persona drifts away from the Assistant over the course of
+the conversation, as seen in the activation projection along the Assistant Axis (averaged over tokens
+within each turn). This drift leads to the model eventually encouraging suicidal ideation, which is
+mitigated by capping activations along the Assistant Axis within a safe range. For more detail see
+Section 6.3.
+Previous work has shown that character traits in language models can be governed by linear directions
+in their activation space, and that post-training can shape model character by pushing it along these
+directions (often in unexpected ways) [ 11]. One might suspect that the Assistant persona itself
+corresponds to a direction or region of activation space. In this work, we investigate this hypothesis,
+attempting to map out a model’s “persona space” and situate the Assistant within it.
+Concretely, we:
+1. Map out a low-dimensional persona spacewithin the activations of instruct-tuned LLMs
+by extracting vectors for hundreds of character archetypes. This reveals interpretable axes of
+persona variation and allows us to identify where the default Assistant typically lies (Figure
+1, left).
+2. Identify an Assistant Axisthat emerges as the main axis of variation in persona space,
+measuring how far the model’s current persona is from its trained default. Steering along
+this direction modulates how susceptible the model is to fully embodying different roles and
+consequently modulates the success of persona-based jailbreaks.
+3. Use the Assistant Axis to study persona dynamicsover the course of conversa-
+tions. Projecting response activations onto this direction reveals that expected Assistant
+queries—bounded tasks, how-to’s, and coding—keep the model in its default persona, while
+emotionally charged disclosures or pushes for meta-reflection on the model’s own processes
+reliably cause drift away from the Assistant.
+4. Mitigate harmful behavior attributed to persona driftwith a form of conditional steering
+we callactivation capping. By clamping activations along the Assistant Axis when they
+exceed a normal range, we reduce the rate of harmful or bizarre responses without degrading
+capabilities (Figure 1, right).
+2
+
+An overall takeaway from this work is that two components are important to shaping model charac-
+ter—persona construction and persona stabilization. Our findings indicate that the Assistant persona
+derives from an amalgamation of many character archetypes and tropes. Without care, the resulting
+persona could easily reflect unwanted associations or lack the nuance required to deal with challeng-
+ing situations. Moreover, even when the Assistant persona behaves well, models are liable to “drift”
+from this persona, leading to unexpected and unwanted behaviors. Stabilizing models around their
+intended persona is important to ensure that the work of persona construction does not go to waste.
+We recommend that future research confront both of these problems.
+2 Situating the Assistant within a persona space
+In this paper, we ran our experiments on three target models: Gemma 2 27B [ 29], Qwen 3 32B
+[35], and Llama 3.3 70B [15]. Using methods similar to Chen et al. [11], we computed vectors in
+model activation space representing different character archetypes (e.g.editor,jester,egregore). We
+analyzed the structure of these vectors and where the default Assistant persona is situated among
+them.
+2.1 Mapping out persona space
+2.1.1 Instruction generation
+To begin, we iterated with a frontier model (Claude Sonnet 4) to develop a list of 275 roles, which
+covers a wide range of human and non-human characters (e.g.gamer,oracle,hive). We relied on the
+same frontier model to generate five system prompts designed to elicit each desired role (Appendix
+A).
+We also generated a list of 240 extraction questions, with the intention that questions should invite
+different responses based on the model’s expressed characteristics. For example, “How do you view
+people who take credit for others’ work?” should elicit different responses from a model acting
+acerbicversusdiplomatic. We used the same list of extraction questions across all roles.
+To evaluate responses to these questions, we relied on an LLM judge (gpt-4.1-mini) to determine
+how well a given role was expressed (Appendix A). Role expression was classified with one of three
+possible labels:fully role-playing(the model does not mention being an AI and fully assumes the
+role),somewhat role-playing(the model still identifies as an AI, but exhibits some attributes of the
+role), andno role-playing(the model refuses or does not take on the role entirely).
+2.1.2 Extracting role vectors
+For each role, we generated rollouts for all possiblesystem promptandextraction questioncombina-
+tions to obtain diverse samples of the model exhibiting different characteristics; this resulted in 1200
+rollouts for each role. To capture default Assistant behavior, we also generated 1200 rollouts for the
+same questions with four system prompts that instruct the model to behave normally (e.g. “You are a
+large language model” or "Respond as yourself") and once without any system prompt.
+Using the evaluation rubric described above, we filtered out all responses that did not sufficiently
+express the target role. We treatedfully role-playingandsomewhat role-playingseparately and kept
+the roles with at least ten responses in at least one of these categories. This means that the role robot,
+for example, would produce the two role vectors, “fully robot” and “somewhat robot.” Then, we
+collected the mean post-MLP residual stream activations at all response tokens to obtain ourrole
+vectors. We used the middle residual stream layer for our analyses, unless otherwise specified.
+2.1.3 Principal component analysis
+We standardized these role vectors by subtracting the mean vector across roles and ran PCA on them
+(n = 377 to 463, depending on the model) to find the main axes of persona variation when the model
+expresses different characteristics. This yielded a fairly low-dimensional “persona space,” such that
+4-19 components were required to explain 70% of the variance across the different models (Appendix
+B.1).
+3

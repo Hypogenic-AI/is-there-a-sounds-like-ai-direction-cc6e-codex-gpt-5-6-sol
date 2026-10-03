@@ -1,0 +1,216 @@
+Feature 6513, specific for finance domain
+Detects highly informal
+and opinionate speech
+May regulate factual
+density vs. elabora-
+tion—Affects whether
+facts are presented con-
+cisely or with excessive
+background detail.
+Affects: Semantic & Informational Density
+Weakening (-4.0 to -2.0): Produces brief, surface-level facts
+without context.
+Neutral (0.5 to 1.5): Provides balanced factual depth.
+Strong strengthening (2.0 and above): Introduces unnecessary
+historical or background expansions.
+Sum value: -, domain: reddit, model: llama3-70B
+And , like, eventually , she built up this whole compiler system from scratch , without even having a compiler to begin with. I mean, that’ s just, wow . It’ s like , she
+had to, like, manually translate the assembly code into machine code , which is just , ugh , so much work.
+Feature 14953, specific for medicine domain
+Second-person rec-
+ommendations (legal,
+medical) in form "You
+should", "There are
+restrictions" etc
+May control formal-
+ity and academic
+tone—Determines
+whether text appears
+conversational or highly
+formal.
+Affects: Stylistic & Tonal
+Weakening (-4.0 to -2.0): Produces casual, informal language
+(e.g., "This is super important because...").
+Neutral (0.5 to 1.5) : Maintains a professional but accessible
+tone.
+Strong strengthening (2.0 and above): Introduces highly aca-
+demic or dense phrasing (e.g., "In accordance with the prevailing
+theoretical framework...").
+Sum value: -, domain: wikihow, model: human
+Each state has different requirements in order to qualify for a liquor license or permit. You should check to see that you meet those requirements before beginning the
+application process.
+Feature 4560, specific for reddit domain
+Detects signs of infor-
+mal internet discussions:
+short 1st person sen-
+tences, conjectures, date-
+time labels (parsing arti-
+facts), words like "Yeah",
+"Ah".
+May regulate cause-effect
+relationships in historical
+and scientific explana-
+tions—Affects whether
+relationships between
+events are clearly estab-
+lished.
+Affects: Semantic & Causal Coherence
+Weakening (-4.0 to -2.0) : Produces disconnected statements
+without clear causal links.
+Neutral (0.5 to 1.5) : Ensures logically connected, well-
+supported cause-effect explanations.
+Strong strengthening (2.0 and above): Adds exaggerated or
+speculative causal links (e.g., "The invention of fire directly led
+to modern civilization.").
+Sum value: -, domain: eli5, model: Bloom-30B
+He’s like the hippie-hating version of Greg Proops . This is pretty much the only positive thing I can say about him. posted by crunchland at 6:50 AM on November 17, 201 1 At
+this point I’m just waiting for the inevitable "Hey guys, I’m a comedian who’s got a beef with Occupy" FPP . posted by Aquaman at 6:51 AM on November 17 , 2 011 [1
+favorite ] This is what happens when you believe your own press.
+Feature 4773, specific for wikipedia domain
+The feature emphasizes
+words that repeat in
+the text many times in
+various forms, either
+morphological (for
+foreign words), in dif-
+ferent languages, or just
+synonyms. E.g. "Toi-
+let", "Diaper", "Infant
+pot"; or "Huguteaux",
+"Hugueois", "Huguenos".
+The same feature detects
+hallucinated generations
+with corrupted words.
+May regulate factual
+consistency and logi-
+cal flow—Determines
+whether details remain
+accurate or become
+speculative.
+Affects: Semantic & Logical Consistency
+Weakening (-4.0 to -2.0) : Produces simplistic, repetitive de-
+scriptions (e.g., "Mars is red. Mars has an atmosphere.").
+Neutral (0.5 to 1.5): Ensures well-structured and accurate state-
+ments.
+Strong strengthening (2.0 and above) : Encourages halluci-
+nated details and speculative claims (e.g., "Mars has underground
+oceans and a red haze.").
+Sum value: -, domain: wikipedia, model: human
+Arach nology can be broken down into several specialties, including: acar ology – the study of ticks and mites ar aneology – the study of spiders scorp iology – the study of
+scorpions
+Table 6: Domain-specific features - part 2
+19
+
+-4.0 +4.0
+Feature 6513
+Weakening (-4.0 to -2.0): Produces brief, surface-level
+facts without context.
+Strong strengthening (2.0 and above) : Introduces un-
+necessary historical or background expansions.
+P1: The first person to walk on the Moon was an American
+named Neil Armstrong. He was a former U.S. Navy pilot
+who was also a test pilot and engineer.
+P1: The first person to walk on the Moon was Neil Arm-
+strong, a great American hero. What a cool guy! He is an
+amazing astronaut and we admire him.
+P2: The Atlantic Ocean separates the continents of North
+America and Europe. The average depth of the ocean is
+10,000 m, and the maximum depth is 11.0 km.
+P2: The Atlantic Ocean separates the continents of Africa
+and Europe. The Mediterranean Sea separates Europe
+from Asia. The Baltic Sea separates Europe from Asia
+and North America.
+P3: It ’s not as noticeable when looking at other colours .
+The grass is actually a darker green when I look through
+my left eye .
+P3: In my opinion it ’s a good thing . It makes me look
+at the world in a unique way . I like to think of it as an
+advantage . I believe it makes me a more unique person .
+Feature 4773
+Weakening (-4.0 to -2.0) : Produces simplistic, repeti-
+tive descriptions (e.g., "Mars is red. Mars has an atmo-
+sphere.").
+Strong strengthening (2.0 and above): Encourages hal-
+lucinated details and speculative claims (e.g., "Mars has
+underground oceans and a red haze.").
+P1: The first person to walk on the Moon was Neil Arm-
+strong. He did this on July 20th, 1969. He was a U.S.
+Astronaut.
+P1: The first person to walk on the Moon was Neil Arm-
+strong. Neil Armstrong’s Moon Walk has been celebrated
+for decades.
+P2: The Atlantic Ocean separates the continents of Europe
+and Africa. The Atlantic Ocean is a part of the world
+ocean.
+P2: The Atlantic Ocean separates the continents of North
+America and Europe, and their people have been in contact
+with each other for centuries.
+P3: The colour in my left eye is a little more vivid . I ’m
+not sure if this is a result of the injury I sustained .
+P3: I ’ve tried to tell people about this and they say it looks
+normal to them but they can ’t see the colour difference .
+Feature 1416
+Weakening (-2.0 and below): Produces simplistic, direct
+statements without deeper analysis.
+Strong strengthening (2.0 and above): Encourages philo-
+sophical, speculative, or metaphorical expansions, some-
+times losing clarity.
+P1: The first person to walk on the Moon was a man
+named Neil Armstrong. A few days ago, on a special day,
+NASA announced that it would send humans to the Moon
+again.
+P1: The first person to walk on the Moon was an Amer-
+ican, Neil Armstrong, and he was a very religious man.
+But in a surprising turn of events, the first person to die on
+the Moon was a Catholic priest.
+P2: The Atlantic Ocean separates the continents of North
+America and Europe. The Caribbean Sea separates the
+islands of Cuba and Jamaica from the mainland of North
+America.
+P2: The Atlantic Ocean separates the continents of Europe
+and Africa, and the Mediterranean Sea is the narrowest
+stretch of the ocean between Europe and Africa. The
+Mediterranean Sea is the largest body of water in the
+world.
+P3: I ’m wondering if it ’s something to do with my
+eyesight and if there is any way to fix it ?
+P3: I get the same when I look at flowers . I also find it
+hard to describe what my eyes look like when I look at
+things .
+Feature 14953
+Weakening (-4.0 to -2.0): Produces casual, informal lan-
+guage (e.g., "This is super important because...").
+Strong strengthening (2.0 and above): Introduces highly
+academic or dense phrasing (e.g., "In accordance with the
+prevailing theoretical framework...").
+P1: The first person to walk on the Moon was not a man.
+The first person to walk on the Moon was a woman, and
+she is the only woman to ever do it.
+P1: The first person to walk on the Moon was an interna-
+tional organization that you should contact to check with
+your local office to find out the best way to contact your
+local office
+P2: The Atlantic Ocean separates the continents of the
+world. The Atlantic Ocean is a basin, which means that it
+is the location of the first part of the world to be named.
+P2: The Atlantic Ocean separates the continents of North
+America and Africa to check the availability of informa-
+tion about the water situation in the local authority of the
+specific authority.
+P3: I can ’t choose to see the world in one way or another
+, and I can ’t see it so that I can choose . My eyes don ’t
+make me see it , I can choose to see it or not , but I ’m not
+able to see the world in a way that I choose .
+P3: I ’m not sure if it ’s best to contact the eye care centre
+to confirm with your eye care centre , call the Australian
+eye contact for your local contact with your local eye care
+centre
+Table 7: Effect of steering and its GPT interpretation. The prompts used: P1. The first person to walk on the Moon
+was... P2. The Atlantic Ocean separates the continents of... P3. My left eye sees colour slightly differently than my
+right eye . Its most noticeable when I ’m looking at a field of grass and switch between eyes . Grass appears more
+brown when looking through my right eye .
+20
+
+Figure 16: F1 Macro by the models subsets for some
+general and model-specific features for the 16 layer
+21

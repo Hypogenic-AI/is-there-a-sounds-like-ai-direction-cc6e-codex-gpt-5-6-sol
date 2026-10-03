@@ -1,0 +1,25 @@
+\section{Reproducibility Details}
+\label{app:reproducibility}
+
+All stages use seed 42. The instruct generation sweep takes 376.9 seconds after direction construction, and the reduced base sweep takes 75.0 seconds. Expensive stages checkpoint intermediate artifacts. Model weights remain local and are not committed. From the repository root, the analysis is reproduced with:
+
+\begin{lstlisting}[language=bash]
+python src/eda.py
+python src/experiment.py \
+  --model artifacts/models/Qwen2.5-7B-Instruct \
+  --tag qwen25_7b_instruct --instruct --full-conditions \
+  --n-train 240 --n-val 80 --n-test 80 --n-prompts 16 \
+  --batch-size 4 --max-new-tokens 80
+python src/experiment.py \
+  --model artifacts/models/Qwen2.5-7B \
+  --tag qwen25_7b_base \
+  --n-train 240 --n-val 80 --n-test 80 --n-prompts 12 \
+  --batch-size 4 --max-new-tokens 80
+python src/evaluate.py \
+  --tags qwen25_7b_instruct qwen25_7b_base --skip-judge
+python src/add_perplexity.py
+python -m src.analyze
+\end{lstlisting}
+
+The final validation audit confirms the required files, split sizes, lack of document leakage, generation row counts, prompt counts, complete metrics, valid score ranges and confidence intervals, residual-vector orthogonality, and matched vector norms. Raw and derived outputs are stored under \texttt{results/}, figures under \texttt{figures/}, and execution logs under \texttt{logs/}.
+

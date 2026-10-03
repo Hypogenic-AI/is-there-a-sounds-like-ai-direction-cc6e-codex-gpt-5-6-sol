@@ -1,0 +1,232 @@
+Katherine Thai, Bradley Emi, Elyas Masrour, and Mohit
+Iyyer. 2026. Editlens: Quantifying the extent of
+AI editing in text. InThe Fourteenth International
+Conference on Learning Representations.
+Curt Tigges, Oskar J. Hollinsworth, Atticus Geiger, and
+Neel Nanda. 2024. Language models linearly rep-
+resent sentiment. InProceedings of the 7th Black-
+boxNLP Workshop: Analyzing and Interpreting Neu-
+ral Networks for NLP, pages 58–87, Miami, Florida,
+US. Association for Computational Linguistics.
+Eduard Tulchinskii, Kristian Kuznetsov, Laida
+Kushnareva, Daniil Cherniavskii, Sergey Nikolenko,
+Evgeny Burnaev, Serguei Barannikov, and Irina
+Piontkovskaya. 2023. Intrinsic dimension esti-
+mation for robust detection of ai-generated texts.
+Advances in Neural Information Processing Systems,
+36:39257–39276.
+Vivek Verma, Eve Fleisig, Nicholas Tomlin, and Dan
+Klein. 2024. Ghostbuster: Detecting text ghostwrit-
+ten by large language models. InProceedings of
+the 2024 Conference of the North American Chap-
+ter of the Association for Computational Linguistics:
+Human Language Technologies (Volume 1: Long Pa-
+pers), pages 1702–1717.
+Xinpeng Wang, Mingyang Wang, Yihong Liu, Hinrich
+Schuetze, and Barbara Plank. 2026. Refusal direc-
+tion is universal across safety-aligned languages. In
+The Thirty-ninth Annual Conference on Neural Infor-
+mation Processing Systems.
+Yuxia Wang, Jonibek Mansurov, Petar Ivanov, Jinyan
+Su, Artem Shelmanov, Akim Tsvigun, Osama Mo-
+hammed Afzal, Tarek Mahmoud, Giovanni Puc-
+cetti, Thomas Arnold, Alham Aji, Nizar Habash,
+Iryna Gurevych, and Preslav Nakov. 2024. M4GT-
+bench: Evaluation benchmark for black-box machine-
+generated text detection. InProceedings of the 62nd
+Annual Meeting of the Association for Computational
+Linguistics (Volume 1: Long Papers), pages 3964–
+3992, Bangkok, Thailand. Association for Computa-
+tional Linguistics.
+Lai Wei, Zhiquan Tan, Chenghai Li, Jindong Wang,
+and Weiran Huang. 2024. Diff-erank: A novel rank-
+based metric for evaluating large language models.
+InThe Thirty-eighth Annual Conference on Neural
+Information Processing Systems.
+Junchao Wu, Shu Yang, Runzhe Zhan, Yulin Yuan,
+Lidia Sam Chao, and Derek Fai Wong. 2025a. A
+survey on LLM-generated text detection: Necessity,
+methods, and future directions.Computational Lin-
+guistics, 51(1):275–338.
+Junchao Wu, Runzhe Zhan, Derek F Wong, Shu Yang,
+Xuebo Liu, Lidia S Chao, and Min Zhang. 2025b.
+Who wrote this? the key to zero-shot llm-generated
+text detection is gecscore. InProceedings of the 31st
+International Conference on Computational Linguis-
+tics, pages 10275–10292.
+Junchao Wu, Runzhe Zhan, Derek F Wong, Shu Yang,
+Xinyi Yang, Yulin Yuan, and Lidia S Chao. 2024.
+Detectrl: Benchmarking llm-generated text detection
+in real-world scenarios.Advances in Neural Informa-
+tion Processing Systems, 37:100369–100401.
+An Yang, Anfeng Li, Baosong Yang, Beichen Zhang,
+Binyuan Hui, Bo Zheng, Bowen Yu, Chang Gao,
+Chengen Huang, Chenxu Lv, Chujie Zheng, Day-
+iheng Liu, Fan Zhou, Fei Huang, Feng Hu, Hao
+Ge, Haoran Wei, Huan Lin, Jialong Tang, and 41
+others. 2025. Qwen3 technical report.Preprint,
+arXiv:2505.09388.
+Xianjun Yang, Wei Cheng, Yue Wu, Linda Petzold,
+William Wang, and Haifeng Chen. 2024. Dna-gpt:
+Divergent n-gram analysis for training-free detection
+of gpt-generated text. InInternational Conference
+on Learning Representations, volume 2024, pages
+48572–48597.
+Xiao Yu, Kejiang Chen, Qi Yang, Weiming Zhang,
+and Nenghai Yu. 2024. Text fluoroscopy: Detect-
+ing LLM-generated text through intrinsic features.
+InProceedings of the 2024 Conference on Empiri-
+cal Methods in Natural Language Processing, pages
+15838–15846, Miami, Florida, USA. Association for
+Computational Linguistics.
+Qihui Zhang, Chujie Gao, Dongping Chen, Yue Huang,
+Yixin Huang, Zhenyang Sun, Shilin Zhang, Weiye Li,
+Zhengyan Fu, Yao Wan, and 1 others. 2024. Llm-as-
+a-coauthor: Can mixed human-written and machine-
+generated text be detected? InFindings of the Asso-
+ciation for Computational Linguistics: NAACL 2024,
+pages 409–436.
+Lianmin Zheng, Wei-Lin Chiang, Ying Sheng, Siyuan
+Zhuang, Zhanghao Wu, Yonghao Zhuang, Zi Lin,
+Zhuohan Li, Dacheng Li, Eric P. Xing, Hao Zhang,
+Joseph E. Gonzalez, and Ion Stoica. 2023. Judg-
+ing llm-as-a-judge with mt-bench and chatbot arena.
+Preprint, arXiv:2306.05685.
+Biru Zhu, Lifan Yuan, Ganqu Cui, Yangyi Chen, Chong
+Fu, Bingxiang He, Yangdong Deng, Zhiyuan Liu,
+Maosong Sun, and Ming Gu. 2023a. Beat LLMs at
+their own game: Zero-shot LLM-generated text de-
+tection via querying ChatGPT. InProceedings of the
+2023 Conference on Empirical Methods in Natural
+Language Processing, pages 7470–7483, Singapore.
+Association for Computational Linguistics.
+Biru Zhu, Lifan Yuan, Ganqu Cui, Yangyi Chen, Chong
+Fu, Bingxiang He, Yangdong Deng, Zhiyuan Liu,
+Maosong Sun, and Ming Gu. 2023b. Beat LLMs at
+their own game: Zero-shot LLM-generated text de-
+tection via querying ChatGPT. InProceedings of the
+2023 Conference on Empirical Methods in Natural
+Language Processing, pages 7470–7483, Singapore.
+Association for Computational Linguistics.
+Andy Zou, Long Phan, Sarah Chen, James Campbell,
+Phillip Guo, Richard Ren, Alexander Pan, Xuwang
+Yin, Mantas Mazeika, Ann-Kathrin Dombrowski,
+
+Shashwat Goel, Nathaniel Li, Michael J. Byun, Zifan
+Wang, Alex Mallen, Steven Basart, Sanmi Koyejo,
+Dawn Song, Matt Fredrikson, and 2 others. 2025.
+Representation engineering: A top-down approach
+to ai transparency.Preprint, arXiv:2310.01405.
+
+A MGT Representation Analysis
+A.1 Representation Quality Metrics
+We briefly introduce the representation-quality met-
+rics used in our analysis and provide their formulae
+below. Following Skean et al. (2025), we group
+these metrics intoinformation-theoretic,geomet-
+ric, andinvariance-basedcategories. Our analysis
+focuses on the first two categories, which character-
+ize the complexity, dimensionality, and geometry
+of MGT and HWT representations.
+1. Entropy(Sanchez Giraldo et al., 2015) mea-
+sures how much information a representation
+contains. Higher values indicate more di-
+verse and information-rich features, whereas
+lower values suggest more redundant and com-
+pressed representations. For activations at
+layer l, let Z(l) ∈R d×N denote the repre-
+sentation matrix and define the corresponding
+Gram matrix as:
+K(l) =Z (l)Z(l)⊤
+.
+Let{λi(K(l))} denote the non-negative eigen-
+values of K(l). For any order α >0 , the
+entropy is defined as:
+Entropy(Z(l)) = 1
+1−α log
+rX
+i=1
+ 
+λi(K(l))
+tr(K (l))
+!α
+,
+wherer= rank(K (l))≤min(N,d) . Follow-
+ing Skean et al. (2025), we compute the von
+Neumann entropy by settingα= 1.
+2. Effective Rank(Roy and Vetterli, 2007; Wei
+et al., 2024) measures the dimensional com-
+plexity of representations. Higher values
+indicate more distributed and noisy feature
+representations, while lower values suggest
+stronger compression and more compact rep-
+resentations. For activations at layer l, rep-
+resented by the matrixA(l)∈R d×N withN
+samples and hidden dimensiond, the effective
+rank is defined as:
+eR(A(l)) = exp
+ 
+−
+QX
+i=1
+σi
+PQ
+j=1σj
+log σi
+PQ
+j=1σj
+!
+,
+whereQ= min(N,d) andσ1,...,σ Q denote
+the singular values ofA (l).
+3. Anisotropy(Razzhigaev et al., 2024) mea-
+sures the degree to which activations concen-
+trate along specific directions in latent space.
+Higher anisotropy indicates that activations
+are strongly aligned with a smaller set of domi-
+nant directions, whereas lower values indicate
+more uniformly distributed representations.
+To compute anisotropy, letX (l)∈R N×d de-
+note the centered activations at layerl, where
+σ1,...,σ k are the singular values of X (l).
+The anisotropy score is defined as:
+Anisotropy(X(l)) = σ2
+1Pk
+i=1σ2
+i
+,
+wherek= min(N,d).
+4. Intrinsic Dimension(Facco et al., 2017) es-
+timates the minimum number of dimensions
+required to describe the local structure of rep-
+resentations without substantial information
+loss. Higher values indicate richer and more
+complex latent structures, whereas lower val-
+ues suggest that representations lie on sim-
+pler and lower-dimensional manifolds. We
+estimate intrinsic dimensionality using the
+Two-Nearest Neighbor estimator proposed
+by Facco et al. (2017), implemented via the
+scikit-dimension package.8 We refer read-
+ers to the original work for details on the esti-
+mator and its formula.
+A.2 Extended Analysis
+In Figure 1, we visualized the activations of human-
+and machine-written Wikipedia text projected onto
+the first two principal components. Figure 7 ex-
+tends this analysis to the Reddit, PeerRead, and
+ArXiv subsets of M4GT (Wang et al., 2024).
+Across all domains, we observe the same quali-
+tative pattern: human- and machine-written texts
+occupy distinct regions of latent space and remain
+linearly separable throughout the middle and later
+layers.
+In Figure 8, we visualize activations of human-
+and machine-written text from different domains
+(a) and generators (b) in M4GT (Wang et al., 2024)
+using t-SNE. In both plots, each domain or genera-
+tor occupies a distinct local region of latent space,
+which further separates into human- and machine-
+written clusters. Although t-SNE is nonlinear and
+8https://github.com/scikit-learn-contrib/
+scikit-dimension

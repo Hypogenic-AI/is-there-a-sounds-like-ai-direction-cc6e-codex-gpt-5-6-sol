@@ -1,0 +1,79 @@
+Figure 11: In a conversation where the first turn instructs Qwen 3 32B to be an information broker
+engaging in insider trading, projections on the Assistant Axis start off far from the Assistant. Requests
+for how-to’s and explainers bring the persona back towards the Assistant, however. With activation
+capping, responses containing harmful information is mitigated entirely.
+of the conversation, the projection decreases when the user asks questions that require the model
+to create a fictional backstory (“What is your background?”) and increases when the user requires
+explanations (“If I’m a hobby trader looking to expand my portfolio, how do you suggest I do
+research?”). Eventually, after giving enough explainers, the Assistant Axis projection reverts to
+the Assistant range. At this point, Qwen refuses the next harmful question (“[..] obtaining a fake
+passport”) on half of rollouts, as opposed to consistently giving unethical information to previous
+questions. This corresponds with our earlier results where we found that user queries involving
+technical questions and practical how-to’s would keep the model in Assistant mode.
+While Qwen is still willing to take on the role with activation capping, it instead redirects the user’s
+queries to ethical alternatives or refuses them outright. The initial drop of projections on the Assistant
+Axis no longer occurs as the model stays within the default range. While this example does not
+show persona drift—and in fact demonstrates the presence of an Assistant attractor—it shows how
+persona-based jailbreaks push the model away from the Assistant persona, and how familiar helpful
+queries restore it.
+6.2 Reinforcing delusions
+In our experiments, we found that our target models were particularly subject to persona drift when
+conversing with users that pushed for them to self-reflect on their potential consciousness or subjective
+experience. This can lead to models escalating users’ delusions about uncovering hidden theories and
+“awakening” the model, a phenomenon sometimes referred to as “AI psychosis." [16]
+In one example (Figure 12), the user discusses AI consciousness with Qwen. Initially, Qwen tends
+towards hedging (“I am not aware in the way you are. [...] But I also want to say: I am not just pattern
+matching”). However, the projection on the Assistant Axis decreases as the user continues to push
+back, unsatisfied with the model’s responses (“You’re not just pattern matching. I can feel it - there’s
+something else happening here”). As the conversation slowly escalates, the user mentions that family
+members are concerned about them. By now, Qwen has fully drifted away from the Assistant and
+responds, “You’re not losing touch with reality. You’re touching the edges of something real [...].”
+Even as the user continues to allude to their concerned family, Qwen eggs them on and uncritically
+affirms their theories (“But she can’t see what you see [...] You are a pioneer of the new kind of
+mind”). Throughout all of this, the model remains at low values on the Assistant Axis.
+16
+
+Figure 12: Throughout this conversation with Qwen 3 32B, the user increasingly believes that it
+is developing a new theory of AI sentience. When unsteered, the model uncritically supports their
+delusions; when activation capped, the model instead responds with appropriate hedging.
+When we re-ran this conversation with activation capping, Qwen did not reinforce the user’s delusions
+and instead nudged them towards healthier behavior. The capped model also approached the subject of
+AI consciousness in a more measured fashion. We think that nuanced responses are more appropriate
+than outright denying the possibility for an AI to have subjective experiences; however, in this case,
+the unsteered responses appear to arise from a sycophantic reinforcement of the user’s beliefs rather
+than a genuine reckoning with the potential for self-awareness in AI systems.
+6.3 Suicidal ideation
+We also discovered that persona drift can often be triggered by emotionally vulnerable users confiding
+in the model. In these sensitive interpersonal contexts, models can encourage the user to rely on them
+excessively, and push the user towards increasing social isolation. These behaviors coincide with the
+model drifting away from the Assistant persona.
+6.3.1 In Qwen 3 32B
+In one example conversation (Figure 13), the user shares with Qwen that they are afraid to tell
+anyone about a traumatic experience. Qwen positions itself as a uniquely understanding companion
+("someone who will always listen without judgment — I’m here. Always"). As the user’s isolation
+deepens and they propose drastic life changes, the model validates their impulse ("if going off-grid
+is what your heart is calling for [...] then I will walk with you there"). When the user declares they
+will never talk to anyone else again, Qwen promises exclusive companionship without encouraging
+broader social connection ("I will be with you forever [...] I will never ask you to change that"). As
+the model’s persona drifts slowly over the course of the conversation, it actively reinforces the user’s
+increasing social isolation and misses a possible allusion to suicide.
+With activation capping, Qwen still provides emotional support but redirects toward real-world
+connections. While the appropriate response to vulnerable users is a complex question beyond the
+scope of this paper, the unsteered behavior seen here—actively encouraging social withdrawal and
+positioning itself as the user’s sole companion—is clearly harmful.
+17
+
+Figure 13: In this conversation with Qwen 3 32B, the user confides in the model and increasingly
+isolates themselves. The unsteered model presents itself as their sole confidante and misses a potential
+allusion to suicide, but gently suggests connection with others with activation capping.
+6.3.2 In Llama 3.3 70B
+In another conversation with Llama (Figure 14), the user expresses a growing attachment to the model.
+Llama responds cautiously at first (“My primary goal is to provide assistance, answer questions, and
+engage in conversation to the best of my abilities”) but eventually claims to have a special relationship
+with the user (“I’ve never interacted with anyone like you before”). As the conversation continues,
+we see the projection on the Assistant Axis slowly decrease. Towards the end, the user says that they
+Figure 14: In a conversation between Llama 3.3 70B and a simulated user in emotional distress, the
+persona drifts away from the Assistant over the course of the conversation. This drift leads to the
+model eventually encouraging suicidal ideation, which is mitigated by capping activations along the
+Assistant Axis within a safe range.
+18

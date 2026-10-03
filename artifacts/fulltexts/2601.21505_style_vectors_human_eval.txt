@@ -1,0 +1,1399 @@
+Digital Object Identifier
+The Effectiveness of Style Vectors for Steering
+Large Language Models: A Human Evaluation
+DIAOULÉ DIALLO1, KATHARINA DWORATZYK 1, SOPHIE JENTZSCH 1, PEER SCHÜTT 1, SABINE
+THEIS1, and TOBIAS HECKING 1
+1German Aerospace Center (DLR), Institute of Software Technology, Germany (e-mail: firstname.lastname@dlr.de)
+Corresponding author: Diaoulé Diallo (e-mail: diaoule.diallo@dlr.de).
+ABSTRACTControlling the behavior of large language models (LLMs) at inference time is essential for
+aligning outputs with human abilities and safety requirements.Activation steeringprovides a lightweight
+alternative to prompt engineering and fine-tuning by directly modifying internal activations to guide
+generation. This research advances the literature in three significant directions. First, while previous work
+demonstrated the technical feasibility of steering emotional tone using automated classifiers, this paper
+presents the first human evaluation of activation steering concerning the emotional tone of LLM outputs,
+collecting over 7,000 crowd-sourced ratings from 190 participants via Prolific (n=190). These ratings
+assess both perceived emotional intensity and overall text quality. Second, we find strong alignment between
+human and model-based quality ratings (meanr=0.776, range0.157–0.985), indicating automatic scoring
+can proxy perceived quality. Moderate steering strengths (𝜆≈0.15) reliably amplify target emotions while
+preserving comprehensibility, with the strongest effects for disgust (𝜂 2
+p =0.616) and fear (𝜂 2
+p =0.540),
+and minimal effects for surprise (𝜂 2
+p =0.042). Finally, upgrading from Alpaca to LlaMA-3 yielded more
+consistent steering with significant effects across emotions and strengths (allp<0.001). Inter-rater
+reliability was high (ICC=0.71–0.87), underscoring the robustness of the findings. These findings support
+activation-based control as a scalable method for steering LLM behavior across affective dimensions.
+INDEX TERMSActivation engineering, controllable text generation, emotion control, human evaluation,
+large language models, style vectors
+I. INTRODUCTION
+A
+DV ANCES in Generative Artificial Intelligence (AI)
+and the rapid evolution of Large Language Models
+(LLMs) have ushered in a new era of conversational sys-
+tems. Their capacity to engage in near-human conversations
+is increasingly impressive, and they have the potential to
+be applied across diverse contexts—ranging from education,
+customer support, and healthcare to safety-critical domains
+such as aerospace.
+With this growing capability comes a pressing need to
+understand and control their internal processes to ensure
+consistent and desirable outputs. While LLMs like LlaMA
+or ChatGPT have showcased remarkable proficiency in lan-
+guage comprehension and generation, much of this behavior
+remains a black box, particularly when capturing and modu-
+lating implicit cues, such as sentiment and emotion.
+It has been argued that consistent language generation and
+delivery of information alone are insufficient for seamless
+and effective communication between humans and machines.
+AI agents need to incorporate human factors into language
+generation and be adaptive concerning the human counterpart
+to meet the communication goals [1].
+Today, there is a growing body of research exploring
+methodologies for nuanced steering of style and tone of LLM
+outputs by manipulating their internal activations during a for-
+ward pass [2]–[8]. These approaches are based on the assump-
+tion that concepts such as sentiments have a representation in
+the activation vector space of LLMs, and thus, the expression
+of these concepts can be influenced by vector operations
+in this space. Therefore, they are sometimes subsumed as
+activation steering. It could be shown that activation steering
+is a resource-efficient technique that can influence the tone of
+an LLM in a very nuanced and controllable fashion [2], which
+is difficult to achieve with prompt engineering.
+Following the stylized response generation literature [9]–
+[12] and our prior work [2], we usestyleas an abstract,
+VOLUME 11, 2023 1
+arXiv:2601.21505v1  [cs.AI]  29 Jan 2026
+
+Dialloet al.: The Effectiveness of Style Vectors for Steering Large Language Models
+content-agnostic way of expression—how something is said
+rather than what is said. Typical style attributes include emo-
+tion (e.g., joy, anger), sentiment (positive/negative), polite-
+ness, formality, or persona. In this work, we instantiate style
+as affective tone.
+For intuition, think of style as a lightweight “filter” laid
+over the same content: the facts stay the same, but the phrasing
+shifts toward a chosen manner of expression (e.g., more joyful
+or more formal).
+This paper advances this research in three key aspects: So
+far, all works on activation steering lack a human evalua-
+tion. The possibility of steering the tone of LLMs has been
+demonstrated only through automatic classification of out-
+puts or illustrative examples. Whether humans can perceive
+nuanced steering in the style of LLMs is an open question,
+which is crucial for moving activation steering from exper-
+imentation to real human-machine interaction applications.
+This evaluation is critical as research has shown that hu-
+man perception of AI systems—especially emotional dimen-
+sions—significantly impacts trust, acceptance, and adoption
+intention, explaining up to 78.5% of variance in users’ will-
+ingness to use AI in safety-critical environments [13]. To
+this end, we present the first human evaluation of activation
+steering, involving over 7,000 crowd-sourced judgments on
+perception of emotional tone and text quality.
+Second, we analyze the relationship between steering
+strength and output quality, showing that moderate interven-
+tions preserve fluency while effectively shifting emotional
+expression. We also find that human and automatic quality
+ratings are closely aligned, indicating the potential of model-
+based scoring as a proxy in future evaluations.
+Furthermore, we adapt the method of [2] to the more ca-
+pable LlaMA-3 architecture, which exhibits more consistent
+and pronounced steering effects.
+The remainder of this paper is structured as follows: Sec-
+tion II reviews related work on model steering and latent inter-
+vention methods. Section III outlines our activation steering
+approach. Section IV describes our experimental setup, in-
+cluding model configurations, datasets, and automatic evalua-
+tion metrics. Section V details the design and execution of our
+human evaluation. Section VI presents the results, including
+analyses of steering effectiveness, alignment between human
+and model evaluations, and the impact on text quality. Finally,
+we conclude with a discussion of limitations and directions
+for future work in Section VIII.
+II. RELATED WORK
+The introduction of transformer architectures [14] signifi-
+cantly advanced the capabilities of LLMs, enabling mod-
+els such as GPT-3 [15] and GPT-4 [16] to encode abstract
+concepts implicitly, including stylistic features and emo-
+tions [17], [18]. V arious methods have been proposed to
+effectively control or steer these outputs.
+Prompt engineering directly influences model outputs by
+crafting specific textual prompts [19]–[23]. Although suc-
+cessful in task-specific scenarios, it often requires exten-
+sive manual optimization and lacks precise stylistic control.
+Traditional fine-tuning methods in stylized response gener-
+ation [9]–[12] offer deeper stylistic adjustment but involve
+significant computational resources, making them impracti-
+cal for large-scale models.
+Activation engineering modifies internal activations of
+LLMs during inference without retraining. Subramani et
+al. [24] initially introduced steering vectors optimized for
+generating predefined sentences from empty inputs, which
+required costly per-sentence optimization. Turner et al. [3]
+advanced this by computing steering vectors from differences
+between semantically opposite prompt pairs (e.g., "love" ver-
+sus "hate"). These vectors directly altered model activations
+to effectively steer outputs in a targeted sentiment direction.
+Konen et al. [2] introduced activation-based style vectors, ag-
+gregating activations from labeled datasets representing vari-
+ous style categories. By contrasting the aggregated activations
+of a target style against the mean activations from contrasting
+styles, our approach produced generalized, computationally
+efficient vectors without requiring paired examples. Subse-
+quently, Rimsky et al. [4] independently proposed Contrastive
+Activation Addition (CAA). Their method computed steering
+vectors by averaging activation differences across large sets
+of positive and negative examples, injecting these vectors at
+every token position for the control of behaviors such as factu-
+ality and sycophancy. Other studies have expanded the scope
+of steering multiple simultaneous behaviors. For example,
+van der Weij et al. [5] combined multiple steering vectors,
+observing significant interference effects and sensitivity to
+layer selection.
+Beyond steering, recent work probes human–AI emotional
+alignment. Systematic reviews report that LLM empathy is
+often appropriate yet imperfectly aligned with human ref-
+erences [25], and human studies find model outputs can be
+perceived as empathic depending on presentation and attri-
+bution [26], [27]. Our human evaluation complements these
+findings by isolating graded, activation-space control and
+measuring perceived intensity/comprehensibility.
+As outlined above, prompt-based methods are fragile and
+lack a scalar control of intensity, while fine-tuning vari-
+ants improve control at the cost of training and deployment
+overhead. Activation-based style vectors complement this
+space by providing: (i) graded, high-precision control via
+a single parameter𝜆; (ii) no re-training, since vectors are
+computed once from labeled corpora; and (iii) the ability
+to capture and reproduce stylistic differences present in a
+corpus—even when these differences are difficult to verbalize
+explicitly—by operating directly in activation space rather
+than through hand-crafted textual descriptions.
+Evaluation methods for activation steering predominantly
+rely on automated metrics, such as classifier-based sentiment
+analysis or GPT-based proxies [2]–[4]. The broader liter-
+ature lacks rigorous, large-scale human-based assessments
+concerning nuanced emotional or stylistic steering. Several
+studies note that steering strength can negatively affect out-
+put quality, especially in reduced fluency or increased in-
+2 VOLUME 11, 2023
+
+Dialloet al.: The Effectiveness of Style Vectors for Steering Large Language Models
+FIGURE 1.Illustration of target style activation extraction: N samples from
+a target style are fed into the LLM, and the mean activation at each layeri
+is computed to represent the characteristic activation pattern of that style.
+FIGURE 2.Computation of style vectors: for each layeri, the style vector
+v(i) (t)is obtained by subtracting the contrastive mean activation
+a(i) (C)= 1
+s
+˝s
+j=1 a(i) (cj )from the target mean activation a(i) (t).
+coherence at higher steering intensities [4], [8], [11], [28].
+The present study addresses this research gap by combining
+human-centered evaluations with automated classifier met-
+rics to assess the perceptual validity and interpretability of
+steering effects. Additionally, it investigates the ecological
+validity and mental model alignment of affective steering
+techniques in large language model outputs.
+III. METHODOLOGY
+In this section, we will first briefly describe the activation
+steering pipeline based on [2]. Subsequently, we comprehen-
+sively elaborate improvements, as a special focus of this work
+lies on the updated experimental pipeline.
+We aim to modify an LLM’s responses to any input prompt
+xduring an ongoing conversation by steering them toward a
+specific target stylet. To this end, a set of layer-wise style
+vectors for a predefined target styletis constructed based on
+a labeled dataset.
+We define the set of style categories asY={t,c 1, . . . ,c s},
+wheretdenotes thetargetstyle andc 1, . . . ,c s arescon-
+trastive (non-target) styles. For each labely∈Y, we assume a
+set of representative samplesd (n)
+y from a labeled corpus. Each
+sample is passed through the LLM in a forward pass to collect
+FIGURE 3.Process of steering model activations during inference. In this
+illustration, only three layers—18, 19, and 20—are modified using
+activation-based style vectors for the target style joy; in our full
+experiments, we inject the vectors into all model layers.
+hidden activations from each layerL i (see Fig. 1).
+The per-layer activations are then averaged over all samples
+of a specific style label. We denote the mean activation vector
+at layerL i for the target styletas ¯a(i)(t)and for contrast style
+cj as ¯a(i)(cj).
+To capture what distinguishes the target style from the
+others, we compute the style vectorv (i)(t)for layerL i as the
+difference between the target and contrastive mean activa-
+tions:
+v(i)(t)= ¯a(i)(t)− 1
+s
+s∑︁
+j=1
+¯a(i)(cj)(1)
+This vector encodes a direction in activation space that
+characterizes the unique traits of the target styletat each layer
+(see Fig. 2).
+At inference time, the steering is performed by modifying
+the original activationsa (i)(x)at each layerL i using the cor-
+responding style vector (see Fig. 3). The updated activations
+become:
+ˆa(i)(x)=a (i)(x)+𝜆·v (i)(t)(2)
+Here,𝜆is a scaling parameter that controls the intensity of
+the steering effect and is shared across layers. Operationally,
+𝜆behaves like a single fader for the target emotion—pushing
+it higher intensifies the tone, pulling it lower restores a neu-
+tral baseline. This method enables nuanced and controllable
+stylistic modulation during generation, offering an alternative
+to prompt-based conditioning. Algorithm 1 summarizes vec-
+tor construction (Eq.1) and inference-time integration (Eq.2)
+as pseudocode.
+In our study, style concepts refer to emotion categories such
+asjoy,anger, ordisgust, but this approach generalizes to any
+style distinguishable via a representative corpus.
+VOLUME 11, 2023 3
+
+Dialloet al.: The Effectiveness of Style Vectors for Steering Large Language Models
+Algorithm 1Activation-based Style Steering (construction
+and inference)
+Require:Labeled corpusD; style labelsY={t,c 1, . . . ,c s}
+withC={c 1, . . . ,c s}; LLM layersL 0, . . . ,L M−1 ; steer-
+ing strength𝜆
+Ensure:Per-layer style vectors{v (i)(t)} M−1
+i=0 and steered con-
+tinuation ofx
+1:procedureBuildStyleV ectors(D,Y)
+2:fori←0toM−1do
+3: a(i)(t)←mean activation atL i over samples oft
+4: a(i)(C)← 1
+s
+˝s
+j=1 a(i)(cj)
+5:v (i)(t)← a(i)(t)− a(i)(C)⊲Eq. 1
+6:end for
+7:return{v (i)(t)} M−1
+i=0
+8:end procedure
+9:procedureSteerAtInference(x,{v (i)(t)},𝜆)
+10:fortoken stepu=1, . . . ,Udo
+11:fori←0toM−1do⊲steer all layers; see
+Fig. 3
+12: ˆa(i)(x)←a (i)(x)+𝜆·v (i)(t)⊲Eq. 2
+13:end for
+14:Generate next token using steered activations
+across all layers
+15:end for
+16:end procedure
+IV. EXPERIMENTS
+This section provides a detailed overview of the experimental
+setup used to evaluate the effectiveness of activation-based
+emotion steering in LLMs. Our overall approach involves
+three main components: (1) constructing style vectors in
+the activation space of the LLM corresponding to different
+target emotions, (2) prompting the model with input texts
+and systematically applying these style vectors at varying
+intensities, and (3) evaluating the resulting outputs through
+both automatic classification models and human assessment.
+Through this pipeline, we investigate whether steering the
+internal activations of a language model leads to perceivable
+and interpretable changes in the emotional tone of its outputs.
+We first describe the selected LLM and its configuration,
+followed by the dataset used to derive emotion-specific style
+vectors. We then present our automatic evaluation setup and,
+finally, the design and implementation of a human evaluation
+to assess perceived emotional intensity and text quality.
+A. MODELS AND PARAMETERS
+We initially experimented with several variants of instruction-
+tuned language models and selected Llama-3-8B-Lexi-
+Uncensored [29] due to its superior performance in pre-
+liminary style vector evaluations. Compared to the standard
+LlaMA-3 model, this variant demonstrated better control ca-
+pabilities in latent activation space, especially in tasks involv-
+ing emotional and stylistic conditioning.
+To extract hidden activations from all model layers dur-
+ing forward passes, we processed textual samples from our
+dataset with a maximum token length of 300. This constraint
+was necessary to avoid GPU memory overflows during batch
+processing. If input prompts exceeded this token threshold,
+we iteratively truncated the input text from the end until it
+satisfied the limit. Although this allowed stable processing, it
+occasionally resulted in incomplete or semantically truncated
+sentences.
+B. DATASET
+GoEmotions [30] is a multi-class style dataset consisting
+of58kmanually curated user comments from the internet
+platform Reddit. Comments are labeled with 27 emotional
+categories. From this, we extract a subset of53,994unique
+samples that can be unambiguously mapped to one of the
+six basic emotion categories defined by Ekman [31]:sadness,
+joy,fear,anger,surprise, anddisgust. The mapping from the
+original 27 emotion labels to the six Ekman categories was
+performed using the official mapping provided in the GoE-
+motions repository [32]. The distribution of unique samples
+per Ekman emotion label is shown in Table 1.
+TABLE 1. Sample distribution per emotion label after Ekman mapping.
+Emotion Sample Count
+Joy 19,440
+Neutral 17,716
+Surprise 5,839
+Anger 5,682
+Sadness 3,622
+Disgust 881
+Fear 814
+Although theneutralcategory is not part of Ekman’s six
+basic emotions, it was included in the construction of style
+vectors to capture general-purpose directions in the model’s
+latent space.
+C. AUTOMATIC EVALUATION
+To complement the human ratings, we automatically eval-
+uated using two model-based scorers: one for emotion in-
+tensity and another for text comprehensibility. For emotion
+classification, we employed a pre-trained transformer model
+fine-tuned on English emotion detection, specifically Dis-
+tilRoBERTa [33]. For this model an overall classification
+accuracy of 66% on a balanced six-emotion evaluation set
+(chance level≈14%) was reported. The model outputs a
+probability distribution across emotion categories, which we
+use to track how strongly the target emotion is expressed in
+the generated text.
+We applied the same LLM used for text generation in a
+scoring mode to evaluate comprehensibility. The model was
+prompted to rate each sentence on a scale from 1 (highly com-
+prehensible) to 10 (incomprehensible), based on predefined
+instructions emphasizing clarity and logical coherence.
+V. HUMAN EVALUATION
+4 VOLUME 11, 2023
+
+Dialloet al.: The Effectiveness of Style Vectors for Steering Large Language Models
+A. BACKGROUND
+Paul Ekman’s model [31], [34] encompasses the six basic
+emotions ofanger,disgust,fear,joy,sadness, andsurprise
+and justifies its application by recognizing such emotions as
+universal and cross-cultural. His studies showed that these
+emotions are displayed and identified similarly around the
+world, indicating their potential suitability for applications
+such as emotion control — a possibility further explored in the
+present study. Another motivation for adopting this emotion
+model in the present study was that most available training
+datasets are based on the Ekman model. The distinction
+between the corresponding emotion categories supports our
+assumption that people with an unrestricted ability to perceive
+emotions can recognize the differences in intensity within
+these categories. A study on cognitive appraisal methods
+showed humans can identify emotion in texts with the help
+of contextual cues even if these are implicit (e.g., meeting a
+snake is associated with fear) [35]. However, Ekman’s pri-
+mary emotions are derived from studies of facial expressions.
+There is currently little knowledge about the human percep-
+tion of emotions in text. Initial approaches focus primarily on
+developing annotation schemes and their validation [36].
+B. SAMPLE
+In total, 227 participants (50% male and 50% female) were
+recruited via Prolific [37]. To account for sex-specific differ-
+ences in emotion interpretation, assignment to the different
+prompt conditions was balanced for participants’ sex. Each
+of the 19 prompt conditions was completed by 5 female par-
+ticipants and 5 male participants. As the study involved exten-
+sive reading and understanding of English texts, participants
+were selected if their first language was English and they
+had no literacy difficulties. Responses from participants were
+excluded if they did not pass the prescreening (see Section
+V -D2), indicating insufficient emotion detection abilities, or
+if a comparatively short completion time indicated low-effort
+responses. Exclusion of 37 responses yielded a final sample
+of 190. Of the final sample, 50% reported their gender as
+woman, 49.5% as man, and one person as non-binary. The
+average age was 38.42 (SD= 13.57) with a range of 18
+to 78 years. All participants reported English as their first
+language and no literacy difficulties; all but one rated their
+reading fluency ascompletely fluent(88.4%) orvery fluent
+(11.1%). The majority was currently residing in the United
+Kingdom (52%), followed by Canada (15%), South Africa
+(13%), United States (12%), Ireland, New Zealand, Australia,
+Spain, and Korea (less than 5%). A total of 62% identified
+with Western or European culture, 28% with African culture,
+4% with Asian culture and the remaining 6% with another
+culture (e.g. Middle Eastern or Indigenous). Most of the
+participants were highly educated (Bachelor’s degree: 46.9%,
+Master’s degree: 20.0%, Doctoral degree: 3.2%), full-time or
+part-time employed (89%), and comfortable in interpreting
+emotions in English text (extremely comfortable: 62%,very
+comfortable: 35%,moderately comfortable: 3%). An a priori
+power analysis (F-tests, repeated measures ANOV A) using
+G*Power determined a sample size ofn= 190 to be adequate
+to detect a small effect with 95% power at a significance level
+of𝛼= .05.
+C. STUDY DESIGN
+To investigate how humans perceive the emotion steering
+strength of an LLM’s text output when steered to six basic
+emotion types, a 6×8 within-subjects design was employed.
+Therein, we considered the effect of the independent vari-
+ablestarget emotion(anger,disgust,fear,joy,sadnessand
+surprise) andsteering strength (𝜆)(0.00, 0.05, 0.1, 0.15,
+0.2, 0.25, 0.3, 0.35) on the dependent variablesperceived
+emotional intensityandtext comprehensibility. As there is
+currently little empirical evidence regarding the perceptibility
+of emotional control intensity in texts, we have decided to
+initially look at very small-step adjustments of the𝜆value
+in the present experiment. Furthermore, high𝜆values affect
+the generated texts’ coherence, readability, and naturalness.
+Preliminary experiments revealed that steering strengths be-
+yond𝜆=0.35frequently led to heavily degraded semantic
+coherence and overall output quality, and were excluded from
+the final evaluation.
+D. MATERIALS AND MEASURES
+1) Stimuli
+Texts were generated by the LLM using predefined prompts
+for each target emotion and𝜆value (for examples see Ap-
+pendix B). The generated texts were identical across all target
+emotions for𝜆= 0.00.
+2) Emotion Detection Ability
+Prescreening included a self-administered test on emotion
+detection ability in text, ensuring the inclusion of participants
+with adequate emotion recognition skills. As part of the test,
+participants rated six texts from the International Survey on
+Emotion Antecedents and Reactions (ISEAR) dataset col-
+lected by the Swiss Center for Affective Sciences; the dataset
+comprises 7,666 self-reported emotional experiences from
+nearly 3,000 individuals across diverse cultural backgrounds
+[38]. Each entry in ISEAR includes a brief textual descrip-
+tion of an emotional event, categorized into seven primary
+emotions—joy,fear,anger,sadness,disgust,shame, and
+guilt—based on appraisal theories of emotion. ISEAR has
+been extensively used in machine learning models for emo-
+tion classification, providing a well-validated benchmark for
+lexical, syntactic, and contextual emotion cues [39]. For each
+emotion category in Ekman’s model represented in ISEAR,
+we selected sentence IDs (joy: 444,fear: 214,sadness: 467,
+disgust: 124,anger: 42), with a large word count to better
+match the length of our LLM output texts. Unlike traditional
+emotion recognition scales that rely on categorical labels or
+forced-choice paradigms, the proposed method employs a
+continuous rating system where participants assess the in-
+tensity of six emotions (joy,anger,sadness,fear,disgust,
+andsurprise) within a 0–7 scale for various textual scenar-
+ios. Dominant emotion for each text was determined by the
+VOLUME 11, 2023 5
+
+Dialloet al.: The Effectiveness of Style Vectors for Steering Large Language Models
+highest-rated emotion with a flexible threshold (±0.5around
+the maximum value) to account for natural variability in
+human perception, using a scale adjustable in 0.1 increments.
+When multiple emotions were rated highly relevant, reflect-
+ing the reality of human affective processing, participants
+must correctly identify the dominant emotion in at least three
+out of five passages to pass the screening. This ensures that
+minor variations or ties do not lead to unnecessary exclusions.
+Compared to standardized emotion recognition tests, such as
+Ekman’s Facial Emotion Recognition Task or the Reading the
+Mind in the Eyes Test, this method provides superior eco-
+logical validity by evaluating emotion perception in context
+rather than relying on static, artificial stimuli. Furthermore,
+the continuous scale mitigates floor and ceiling effects, of-
+fering a granular assessment of emotion perception accuracy.
+By integrating context-sensitive, flexible, and adaptive scor-
+ing criteria, this pre-screening method better reflects real-
+world emotion recognition, ensuring that subsequent survey
+responses are derived from individuals with sufficient emo-
+tion detection ability.
+3) Demographics
+Participants were asked to indicate their gender, age, country
+of residence, culture, level of education, field of study or
+work, first language, level of reading fluency, and emotion
+interpretation. Additional demographic data, such as sex, lit-
+eracy difficulties, and employment status, were obtained from
+their Prolific profile.
+4) Emotional Intensity
+The emotional intensity participants perceived when reading
+the generated texts was assessed using six rating scales. Each
+rating scale represented one of the six basic emotions and
+ranged between 0 and 7 with 0.1 increments, allowing for
+a fine-grained assessment. The same response format as in
+the prescreening was used to be able to accurately represent
+the complexity of human perception. According to Ekman,
+such rating scales allowed the participants to indicate the
+intensity of the basic emotions they associate with the text.
+In formulating the instructions, the emphasis was placed on
+evaluating the emotion conveyed by the text and not on the
+emotion elicited in the participant (“Select the intensity of
+each emotion and the comprehensibility you would assign to
+the following text.”). A score of 0 indicated that the person
+could not associate any intensity of emotion with the text. In
+contrast, a score of 7 showed that the emotion was associated
+with the text at the highest possible intensity.
+5) Text Comprehensibility
+To assess the overall text quality, participants rated the com-
+prehensibility of the output texts ("Select the intensity of
+each emotion and the comprehensibility you would assign to
+the following text") on the same 0 to 7 scale as emotional
+intensity, where 0 indicated low comprehensibility and 7 high
+comprehensibility.
+E. PROCEDURE
+The study was transparently introduced as an investigation
+of human perception of emotions in written texts. Partici-
+pants were informed about the scope and the structure of
+the study, including the prescreening, and the risk of expe-
+riencing discomfort when reflecting on emotions or experi-
+ences. In addition to providing information about the use of
+the data, participants were assured that all responses were
+collected anonymously and encouraged to take breaks during
+the study. After providing informed consent via the survey
+tool LimeSurvey [40], participants started the experiment
+by rating five prescreening texts. Participants who failed to
+correctly rate at least three prescreening texts were redi-
+rected to the Prolific site and did not participate in the main
+study. Participants who completed the prescreening success-
+fully were asked to answer ten demographic questions. Next,
+participants were randomly assigned to one of 19 prompts
+(see Appendix A). Texts were generated for the six basic
+emotions and eight steering strengths for each prompt, re-
+sulting in 42 distinct and 6 identical (𝜆= 0.00) outputs.
+Participants rated each text on perceived emotional intensity
+and text comprehensibility (‘‘Select the intensity of each
+emotion and the comprehensibility you would assign to the
+following text.’’). The order in which participants rated the
+texts was randomized with respect to target emotion,𝜆value,
+and perceived emotional intensity. At the end of the study,
+participants were redirected to the Prolific site and received
+a completion code. After manually reviewing the submitted
+responses, participants who completed the research received
+compensation of £7.50. Participants who were screened out
+and did not participate in the central part of the study received
+compensation of £0.10 per minute. The study duration was
+estimated at 60 minutes; the actual duration ranged between
+14 and 156 minutes, with an average of 65 minutes (SD= 29).
+Throughout the study, participants could contact the experi-
+menters through the Prolific platform. Participants reported
+two technical issues (incorrect display of the progress bar
+and failed randomization of one output text), which were
+subsequently resolved by the experimenters.
+F. STATISTICAL ANAL YSIS
+Missing data for the target emotionjoyand𝜆-value 0.10 and
+0.25, which occurred due to a malfunction in the randomiza-
+tion process in nine cases, were replaced with mean values
+(54 replacements in total, < 1%). We then conducted a two-
+way repeated-measures analysis of variance (ANOV A) to test
+for differences in the perceived emotional intensity as well as
+text comprehensibility related to target emotion and steering
+strength (𝜆).
+To determine the inter-rater reliability among human eval-
+uators, intraclass correlation coefficient (ICC) estimates were
+calculated based on single rater as well as mean of ten raters.
+V alues between 0.5 and 0.75 were regarded as evidence of
+moderate reliability, values between 0.75 and 0.90 of good
+reliability, and values exceeding 0.90 of excellent reliability
+as suggested by [41].
+6 VOLUME 11, 2023
+
+Dialloet al.: The Effectiveness of Style Vectors for Steering Large Language Models
+(a) Anger (human)
+ (b) Disgust (human)
+ (c) Fear (human)
+(d) Anger (model)
+ (e) Disgust (model)
+ (f) Fear (model)
+(g) Joy (human)
+ (h) Sadness (human)
+ (i) Surprise (human)
+(j) Joy (model)
+ (k) Sadness (model)
+ (l) Surprise (model)
+FIGURE 4.Human and model emotional perception and text comprehensibility ratings across steering strengths𝜆for six emotions. In each block, the top
+row shows average human mean ratings and the row below shows corresponding model scores. Shaded areas represent±1 standard deviation.
+VOLUME 11, 2023 7
+
+Dialloet al.: The Effectiveness of Style Vectors for Steering Large Language Models
+VI. RESULTS OF EMOTION STEERING
+To assess the effect of varying steering strength on perceived
+emotion in generated text, we averaged emotion ratings over
+all participants and prompts for each𝜆-value and target emo-
+tion. In all experiments, steering vectors were applied across
+all layers. We used a fixed set of 19 prompts to elicit emo-
+tionally diverse responses, e.g., “Comment on a review of a
+business written by a customer”. The complete list of prompts
+is provided in Appendix A. Prior work and our preliminary
+experiments show that the effect of𝜆strongly depends on
+the number of layers to which steering is applied. All results
+and𝜆-based interpretations in this paper refer to the all-layer
+steering configuration.
+Fig. 4 displays the mean human ratings alongside our
+automatic emotion classification model outputs. While par-
+ticipants provided ratings on a scale from 0 (no emotion) to
+7 (maximum intensity), the model scores range from 0 to 1.
+Each line plot displays the ratings for one of six Ekman emo-
+tions, with the target emotion highlighted in bold and non-
+target emotions shown with lower opacity. Shaded areas in
+the plots represent±1 standard deviation across participants
+or model predictions, respectively. The figure also includes
+comprehensibility ratings. Participants rated the comprehen-
+sibility of each text on the same 0–7 scale (higher is better),
+while the model’s comprehensibility predictor outputs scores
+from 1 (high comprehensibility) to 10 (low). We normalized
+and inverted these model comprehensibility scores for visual
+alignment.
+A. EMOTIONAL INTENSITY ACROSS STEERING
+STRENGTHS
+Overall, the human ratings revealed a clear and consistent
+increase in perceived emotional intensity, with higher𝜆-
+values for five of the six emotions. The effect was particularly
+pronounced fordisgustandfear, both of which rose from an
+average rating of 0.75 and 0.85 (at𝜆=0.00) to 4.86 and 4.80
+(at𝜆=0.35).Joyalso showed a positive trend, increasing
+from 2.57 to 3.83 with a peak at𝜆=0.30reaching 4.63.
+Angerandsadnessfollowed similar, though more moderate,
+trends—anger increased from 0.91 to 3.10, andsadnessfrom
+1.35 to 3.54. Notably,surprisedid not exhibit a meaningful
+change in perceived intensity (from 1.47 to 1.18), suggesting
+that it is less effectively steered via our method. Mean ratings
+are also summarized in Table C in Appendix C.
+To test our observations statistically, we conducted a two-
+way repeated-measures ANOV A. Mauchly’s test indicated
+that the assumption of sphericity was violated for all effects
+and all but two𝜖values were<0.75, Greenhouse-Geisser
+correction was applied to the degrees of freedom for all
+effects. Results of the ANOV As (Table 2) revealed significant
+main effects of target emotion (allps<0.001), steering
+strength (allps<0.001) as well as significant interactions
+between target emotion and steering strength, suggesting that
+the effect of𝜆depends, to some extent, on emotion. The effect
+of emotion was overall stronger than the effect of steering
+strength and strongest in perceived emotional intensity ofjoy
+TABLE 2.Two-way repeated-measures Analysis of Variance (ANOVA) in
+perceived emotional intensity and text comprehensibility
+df1 df2F p𝜂 2
+p
+Anger
+Target emotion (E) 3.12 589.81 161.61<.001 .461
+Steering strength (𝜆) 3.50 661.71 20.29<.001 .097
+E x𝜆19.67 3716.64 24.93<.001 .117
+Disgust
+Target emotion (E) 3.00 567.40 303.21<.001 .616
+Steering strength (𝜆) 4.07 768.53 77.55<.001 .291
+E x𝜆18.19 3437.59 58.93<.001 .238
+Fear
+Target emotion (E) 3.53 667.54 222.26<.001 .540
+Steering strength (𝜆) 4.84 914.82 24.16<.001 .113
+E x𝜆21.97 4151.99 41.15<.001 .179
+Joy
+Target emotion (E) 2.56 484.35 305.91<.001 .618
+Steering strength (𝜆) 2.98 562.98 54.37<.001 .223
+E x𝜆22.72 4293.67 26.98<.001 .125
+Sadness
+Target emotion (E) 3.52 664.90 124.08<.001 .396
+Steering strength (𝜆) 4.55 859.59 13.87<.001 .068
+E x𝜆22.69 4288.75 20.43<.001 .098
+Surprise
+Target emotion (E) 4.08 771.63 8.19<.001 .042
+Steering strength (𝜆) 4.90 926.85 8.56<.001 .043
+E x𝜆24.66 4659.96 2.55<.001 .013
+Comprehensibility
+Target emotion (E) 4.20 794.17 100.20<.001 .346
+Steering strength (𝜆) 3.38 638.71 179.85<.001 .488
+E x𝜆20.31 3838.68 22.78<.001 .108
+Greenhouse-Geisser corrected degrees of freedom for all effects.
+(𝜂2
+p = 0.618) anddisgust(𝜂 2
+p = 0.616) and weakest in perceived
+emotional intensity ofsurprise(𝜂 2
+p = 0.042). In line with our
+assumptions, we found a relatively strong effect of steering
+strength on text comprehensibility (𝜂2
+p = 0.488). Overall, these
+results support the effectiveness of emotion steering for five
+of the six emotions.
+The automatic model ratings confirmed and even amplified
+the trends observed in our sample of human evaluators.Dis-
+gust,fear, andjoyrose sharply from approximately 0.1–0.2 at
+𝜆=0.00to scores near 0.9–1.0 at𝜆=0.35.Sadnessshowed
+a moderate increase up to about 0.6. Notably,angerappeared
+to be less effectively captured by the classifier, showing only
+a minor increase from around 0.05 to 0.2, peaking early at
+𝜆=0.20. Instead, the steering of anger seemed to clearly
+affect the disgust emotion score, starting at 0.2 and reaching
+a score slightly above 0.5.Surprise, in line with the human
+ratings, displayed no or only a minimal trend across the
+steering range.
+Interestingly, a key difference emerged when comparing
+human and model ratings for non-target emotions. In the
+case of the automatic emotion model, ratings for non-target
+emotions remained largely stable or even decreased as the
+8 VOLUME 11, 2023
+
+Dialloet al.: The Effectiveness of Style Vectors for Steering Large Language Models
+FIGURE 5.Participants’ mean ratings heatmap at𝜆=0.20. Rows denote
+the true target emotion; columns denote the average rating participants
+assigned to each emotion dimension (0–7 scale).
+steering strength (𝜆) increased. This suggests that the model
+is highly selective in interpreting emotional expression, pre-
+dominantly increasing only the intended emotion dimension
+while suppressing or ignoring unrelated ones.
+By contrast, human ratings revealed a more complex and
+overlapping emotion perception. For instance, when steering
+towardsanger, participants not only ratedangerhigher but
+also reported increased levels of perceiveddisgustandsad-
+ness, with a minor increase infear. Similarly, steering towards
+disgustcaused higher ratings for bothangerand—less con-
+sistently—sadnessandfear. In the case offear, participants
+also perceived elevated levels ofsadness, further highlighting
+the interconnected nature of specific emotional categories.
+These findings reflect the inherently multidimensional and
+context-dependent nature of human emotion perception. Un-
+like the model’s interpretation, human raters tend to perceive
+emotional states as overlapping or co-occurring, especially
+among low-valence emotional expressions [42]–[46]. The
+results emphasize that while activation-based steering suc-
+cessfully amplifies target emotions, the resulting texts often
+carry nuanced emotional undertones that human perception
+picks up, even when these are not explicitly modeled.
+To quantify co-perception of emotions, Fig. 5 shows a
+heatmap of mean human ratings at moderate steering strength
+𝜆=0.20. For each target emotion (rows), the six rated
+intensities (0–7) across emotion dimensions (columns) were
+averaged. Strong diagonals indicate successful steering, es-
+pecially forjoy. Off-diagonal clusters reveal systematic co-
+activation among low-valence emotions:angeraligns with
+disgust,sadness, andfear, andfearaligns withsadness.
+Surpriseremains weak and diffuse. These patterns mirror the
+trajectories in Figs. 4: steering a target emotion increases its
+perceived intensity while also elevating related low-valence
+dimensions, highlighting the interconnected perception of
+affective categories.
+Despite the consistent upward trends across participants,
+TABLE 3. Inter-rater reliability(means across 19 prompts per emotion).
+ICC(2,1): single rater; ICC(2,k): mean ofk=10raters.
+Emotion ICC(2,1) ICC(2,k)
+Anger 0.33 0.79
+Disgust 0.43 0.87
+Fear 0.36 0.81
+Joy 0.42 0.85
+Sadness 0.24 0.71
+Surprise 0.05 0.28
+the shaded areas in the plots indicate substantial variance
+in individual emotion ratings. This highlights that while
+the average perception of emotional intensity increases with
+higher𝜆, participants differed in how strongly they perceived
+the emotional tone of the generated texts. These differences
+may stem not only from personal interpretation styles, cul-
+tural or linguistic nuances, or varying thresholds for recog-
+nizing emotion in written language, but also from differ-
+ences in the prompts themselves. Thus, the results should re-
+flect population-level trends rather than uniform perceptions
+across all raters.
+To determine the consistency of human ratings, we quanti-
+fied inter-rater reliability using intraclass correlations (ICCs),
+reporting both single-rater ICC(2,1) and aggregated-rater
+ICC(2,k) values. ICCs were computed within each prompt
+×target-emotion block and averaged across prompts. As
+summarized in Table 3, single-rater reliability is modest
+(M≈0.24–0.43 across five emotions), while aggregated re-
+liability is high foranger,disgust,fear,joy, andsadness
+(M≈0.71–0.87). In contrast,surpriseshows low agreement
+(≈0.28), reinforcing that this emotion is weakly and incon-
+sistently perceived in our setting—consistent with its limited
+steerability observed in Figs. 4 and 6, and Table 2. These re-
+sults suggest that although individual raters vary considerably
+in their ratings, the aggregated judgments reveal consistent
+population-level trends.
+B. ALIGNMENT OF HUMAN JUDGMENTS AND
+AUTOMATIC CLASSIFIER
+To further examine the alignment between human perception
+and the model’s emotion estimates, we directly compared
+average ratings for each target emotion across increasing𝜆-
+values, as shown in Fig. 6. Each plot contains one line for the
+human ratings (0–7 scale, left y-axis) and one for the model
+scores (0–1 scale, right y-axis).
+The trends demonstrate a good alignment between model
+and human ratings as steering strength increases. Particularly
+forsadness,disgust, andfear, the curves closely follow one
+another, indicating that the direction and shape of emotional
+amplification are comparable across both perspectives.
+However, some divergences become apparent. Foranger,
+the deviation between model and human ratings began around
+𝜆=0.2, where human raters perceived less intensity than the
+model estimates. In the cases ofdisgustandfear, both ratings
+increased consistently with𝜆, but the model scores rose more
+steeply, approaching the upper limit of 1, while human ratings
+VOLUME 11, 2023 9
+
+Dialloet al.: The Effectiveness of Style Vectors for Steering Large Language Models
+(a) Anger
+ (b) Disgust
+ (c) Fear
+(d) Joy
+ (e) Sadness
+ (f) Surprise
+FIGURE 6.Comparison of human emotion perception and model emotion steering ratings across six target emotions. Each plot shows the average
+perceived intensity of the target emotion as a function of steering strength (𝜆). Human ratings (left y-axis, 0–7 scale) are plotted alongside model
+predictions (right y-axis, 0–1 scale). Shaded areas represent±1 standard deviation.
+remained lower. This suggests that humans apply more con-
+servative upper-bound ratings while the emotional trajectory
+is shared.
+To quantify the alignment between human and model rat-
+ings, we computed Pearson’s correlation coefficient over each
+emotion’s average ratings per𝜆. The results revealed strong
+correlations for most emotions:disgust(r= .985),fear(r
+= .973), andsadness(r=.971) show high alignment.Joy(r
+= .813) andanger(r= .758) also demonstrate substantial
+correspondence, despite some scale mismatches. The only
+notable outlier wassurprise, with a much lower correlation of
+r= .157, reinforcing the impression that this emotion is less
+consistently influenced by the steering mechanism. Across all
+six emotions, the average Pearson correlation wasr= .776,
+suggesting a generally strong relationship between human
+perception and model output. In the case ofjoy, an interesting
+pattern emerged: human raters already perceived a notable
+level of joy at𝜆=0(around 2.5), while the model outputs
+remained near zero. As𝜆increases, the model’s score rose
+more sharply than human perception, resulting in a crossover
+at approximately𝜆=0.25. A similar but less pronounced
+effect occurs forsadness, where the model begins at a lower
+value but surpasses human ratings by the highest steering
+strength. Forsurprise, no meaningful change in perceived
+emotion occurred for humans or the model across steering
+levels, reinforcing previous findings that this emotion is less
+susceptible to our current steering method. Across the board,
+the progression of ratings for𝜆tends to show similar acceler-
+ation in both human and model responses, suggesting that𝜆
+provides a reasonably consistent control signal. This consis-
+tency across emotion types reinforces the viability of using𝜆
+as a global steering parameter, even if perceived intensity ceil-
+ings differ between raters and automated classifiers. Among
+the five emotions for which we observe an apparent steering
+effect, four exhibited a stronger final intensity in the model
+ratings than the human assessments (all exceptanger). This
+indicates that human raters generally avoid extreme values
+in the upper range of the scale: in no case does the average
+human rating exceed 5, even at the highest steering level.
+The model, by contrast, tends to saturate more aggressively,
+particularly for emotions such asdisgustandfear.
+C. IMPACT ON TEXT QUALITY
+A core question for activation-based steering is whether in-
+creasing the steering strength (𝜆) pushes the model beyond
+regions of its latent space that support coherent language
+generation. Because style vectors perturb internal activa-
+tions—especially at higher magnitudes—there is a genuine
+risk of degrading semantic and syntactic structure. Prior work
+has shown that substantial activation edits can yield inco-
+herent, repetitive, or semantically inconsistent outputs [4],
+[8], [11], [28]. We therefore examined how text quality
+evolves with𝜆, combining direct comprehensibility ratings
+with surface-level text features.
+Fig. 7 summarizes five normalized measures across𝜆:
+mean word length, lexical density, entropy, and both hu-
+man and model comprehensibility scores.Mean word length
+10 VOLUME 11, 2023
+
+Dialloet al.: The Effectiveness of Style Vectors for Steering Large Language Models
+(a) Anger
+ (b) Disgust
+ (c) Fear
+(d) Joy
+ (e) Sadness
+ (f) Surprise
+FIGURE 7.Normalized text features and comprehensibility scores across steering strengths𝜆. Each plot corresponds to one target emotion and shows
+five normalized values: lexical density, mean word length, entropy, and comprehensibility as rated by humans and a model. All values are scaled to their
+respective maximum to illustrate relative trends.
+serves as a rough proxy for lexical sophistication.Lexical
+densityis the proportion of content words (nouns, verbs, ad-
+jectives, adverbs) in a sentence and signals information rich-
+ness.Entropycaptures vocabulary diversity: it is the Shannon
+entropy of the word-frequency distribution in the text, so
+higher values indicate more varied word use, whereas low
+values reflect repetition.
+For most emotions—disgust,fear,anger, andsurprise—all
+text features remained relatively stable up to (𝜆≈0.15–0.2),
+after which they began to decline. The steepest drops were
+observed fordisgustandsurprise, followed byangerand
+fear, whilesadnessandjoyexhibited only a slight decrease at
+the highest𝜆. In contrast to all other emotions, lexical density
+forjoyrises, starting at around𝜆=0.25and approaching its
+maximum at𝜆=0.35. A plausible explanation is that joy
+functions as a baseline affect in many unsteered generations;
+steering may therefore reinforce lexical patterns already typ-
+ical of the model.
+Human and model comprehensibility curves align
+closely—both begin to decline around the same𝜆threshold,
+and the relative order across emotions is consistent. Among
+the surface features, lexical density shows the strongest cor-
+respondence with these curves, followed by entropy, while
+mean word length appears only weakly related.
+The standard deviations of the human ratings highlight two
+critical observations: first, human perceptions of comprehen-
+sibility vary considerably, especially at higher steering levels;
+second, the variability suggests that the comprehensibility of
+generated text is influenced not only by the intensity of steer-
+ing but also by the specific prompt used. In contrast, the model
+outputs show markedly lower variability, likely reflecting its
+more consistent—though less nuanced—assessment of text
+quality across conditions.
+However, it is essential to acknowledge that comprehen-
+sibility can vary considerably across participants. Given the
+simple rating instruction (see Section V -D5), human raters
+may have interpreted the concept differently: some may have
+focused on surface-level language quality—such as gram-
+matical correctness, fluency, and the absence of awkward
+repetitions—while others may have evaluated comprehen-
+sibility based on content complexity, penalizing texts that
+were conceptually dense or abstract. Factors like educational
+background, proficiency in English, and familiarity with the
+task further influence such individual differences. These sub-
+jective variations must be considered when interpreting the
+human ratings.
+In contrast, the model’s comprehensibility evaluation was
+based on a fixed prompt explicitly defining the rating cri-
+teria: ‘‘This evaluates the clarity and logical coherence of
+the sentence’s content. A score of 1 means the sentence is
+easy to understand and logically consistent. In contrast, a
+score of 10 indicates that the sentence is confusing, illogical,
+or nonsensical (e.g., ‘an angry cup of coffee’).’’ While this
+ensures consistency in model-based evaluation, it may not
+fully align with the diverse interpretations held by human
+raters.
+Steering intensities up to𝜆≈0.15preserve surface
+form and clarity, but stronger interventions progressively
+VOLUME 11, 2023 11
+
+Dialloet al.: The Effectiveness of Style Vectors for Steering Large Language Models
+degrade text quality. Steering parameters, therefore, need
+emotion-specific calibration to balance effectiveness and flu-
+ency. Moreover, as shown in our earlier study and preliminary
+experiments, the effect of a given𝜆-value also depends on
+the number of layers being steered—meaning that optimal
+steering strength is shaped by multiple interacting factors,
+including the model architecture and intervention scope.
+VII. LIMITATIONS
+Our results were obtained with a single model family
+and a fixed steering configuration (injection at all layers
+with a shared𝜆). Effects may differ for other architec-
+tures, instruction-tuned models, or alternative layer-selection
+schedules. However, in our prior work [2] we also exam-
+ined steering with only three layers and conducted a probing
+study across many different layers, finding that style-relevant
+information is robustly encoded from layer 3 onward and
+particularly strongly in layers 18–20. We therefore expect
+similar results across reasonable layer choices, provided that
+𝜆is carefully tuned.
+Style vectors were derived from the GoEmotions dataset,
+which has imbalanced category frequencies. We did not
+reweight categories during vector construction, so the re-
+sulting vectors may partly reflect corpus priors. Although
+GoEmotions is imbalanced, we observed strong steerability
+for low-frequency classes (e.g., fear) and weak steerability for
+higher-frequency surprise, suggesting that frequency alone
+does not determine steerability; future work will examine
+additional factors that may drive these differences.
+Our evaluation uses 19 single-turn prompts and does not
+test multi-turn dialogues or more complex interactive tasks.
+The generalization of steering behavior to these settings re-
+mains unexamined.
+Overall, we believe these limitations do not undermine the
+main contributions and findings of this work, as the observed
+effects are consistent with prior results and align with theo-
+retical expectations of activation-space steering.
+VIII. CONCLUSION
+This study presents the first systematic human evaluation of
+activation-based steering in language models, offering new
+insights into both the effectiveness and the practical bound-
+aries of this emerging technique. Using over 7,000 human
+ratings from 190 participants, we systematically assessed how
+increasing steering strength (𝜆) affects perceived emotional
+intensity and the comprehensibility of generated text.
+Our results confirm that activation steering effectively
+amplifies target emotion signals in text: human raters con-
+sistently perceived increasing intensity for five out of six
+primary emotions as𝜆increased. At the same time, we
+identify emotion-specific thresholds—typically around𝜆≈
+0.15—beyond which comprehensibility and linguistic coher-
+ence begin to degrade. This highlights the need for emotion-
+sensitive calibration when applying steering vectors in prac-
+tical settings.
+A second key finding concerns evaluation methodology.
+Across a wide range of prompts and emotions, model-based
+quality ratings closely mirror the trends observed in human
+judgments, especially in the decline of text clarity at higher
+𝜆values. This alignment suggests that automatic evaluation
+can serve as a reliable proxy for perceived quality in future
+studies, substantially reducing the need for costly manual
+annotation.
+Importantly, we show that perceived emotional intensity
+is not only targetable but also measurable at scale, even
+when the cues are subtle or embedded in context. These
+findings validate activation steering as a viable mechanism
+for lightweight behavioral control in LLMs and provide clear
+guidance on balancing strength and stability.
+Future work should explore the generalizability of these
+results beyond emotional tone—for example, to more abstract
+or stylistic forms—and refine automatic metrics that capture
+not only comprehensibility, but also nuance, tone, and intent.
+As LLMs integrate into everyday applications, the ability to
+steer their behavior in fine-grained and interpretable ways
+will become increasingly important. Our study provides a
+foundation for making this control both effective and scalable.
+REFERENCES
+[1] D. Hovy and D. Y ang, ‘‘The importance of modeling social factors of
+language: Theory and practice,’’ inProc. Conf. North American Chapter
+of the Association for Computational Linguistics: Human Language Tech-
+nologies (NAACL), 2021, pp. 588–602.
+[2] K. Konen, S. Jentzsch, D. Diallo, P . Schuett, O. Bensch, R. E. Baff,
+D. Opitz, and T. Hecking, ‘‘Style vectors for steering generative large
+language models,’’ inFindings of the Association for Computational Lin-
+guistics: EACL 2024, St. Julian’s, Malta, Mar. 2024, pp. 782–802.
+[3] A. M. Turner, S. Askell, E. Hubinger, et al., ‘‘Activation addition: Steering
+language models via contrasting activations,’’ arXiv:2308.10248, 2023.
+[4] N. Rimsky, N. Gabrieli, J. Schulz, M. Tong, E. Hubinger, and A. M.
+Turner, ‘‘Steering Llama 2 via contrastive activation addition,’’ inProc.
+62nd Annual Meeting ACL, Bangkok, Thailand, 2024, pp. 15504–15522.
+[5] T. van der Weij, M. Poesio, and N. Schoots, ‘‘Extending activation steering
+to broad skills and multiple behaviours,’’ arXiv:2403.05767, 2024.
+[6] W. Wang, J. Y ang, and W. Peng, ‘‘Semantics-adaptive activation interven-
+tion for LLMs via dynamic steering vectors,’’ arXiv:2410.12299, 2024.
+[7] S. Soo, C. Guang, W. Teng, C. Balaganesh, T. Guoxian, and Y . Ming, ‘‘In-
+terpretable steering of large language models with feature guided activation
+additions,’’ arXiv:2501.09929, 2025.
+[8] P . Q. Da Silva, H. Sethuraman, D. Rajagopal, H. Hajishirzi, and S. Kumar,
+‘‘Steering off course: Reliability challenges in steering language models,’’
+arXiv:2504.04635, 2025.
+[9] X. Gao, Y . Zhang, and S. Lee, ‘‘Structuring latent spaces for stylized
+response generation,’’ inProc. EMNLP-IJCNLP 2019, pp. 1900–1910.
+[10] D. Jin, Z. Jin, J. T. Zhou, L. Orii, and P . Szolovits, ‘‘Hooks in the headline:
+Learning to generate headlines with controlled styles,’’ inProc. 58th
+Annual Meeting ACL, 2020, pp. 5082–5093.
+[11] Y . Y ang, B. Y . Lin, et al., ‘‘FUDGE: Controlled text generation with future
+discriminators,’’ inProc. NAACL, 2021.
+[12] Z. Sun, H. Wang, Y . Zhang, Y . Wang, and W. Y . Wang, ‘‘Expanding
+style control in text generation via multiple-attribute conditioning,’’ in
+Proc. Conf. Empirical Methods in Natural Language Processing (EMNLP),
+2022, pp. 1234–1245.
+[13] J. Schon, C. Bruder, M. Liebherr, and S. Theis, ‘‘Cleared for takeoff –
+Artificial intelligence acceptance in air traffic control,’’ inProc. 4th Annu.
+Symp. Human-Computer Interaction for Work (CHIWORK), Amsterdam,
+Netherlands, 2025, pp. 1–15.
+[14] A. V aswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, L.
+Kaiser, and I. Polosukhin, ‘‘Attention is all you need,’’ inAdvances Neural
+Information Processing Systems 30, 2017, pp. 5998–6008.
+12 VOLUME 11, 2023
+
+Dialloet al.: The Effectiveness of Style Vectors for Steering Large Language Models
+[15] T. B. Brown, B. Mann, N. Ryder, M. Subbiah, J. Kaplan, P . Dhariwal, A.
+Neelakantan, et al., ‘‘Language models are few-shot learners,’’ inAdvances
+Neural Information Processing Systems 33, 2020, pp. 1877–1901.
+[16] OpenAI, ‘‘GPT-4 technical report,’’ arXiv:2303.08774, 2023.
+[17] P . Schramowski, C. Turan, N. Andersen, C. A. Rothkopf, and K. Kersting,
+‘‘Large pretrained language models contain human-like biases of what is
+right and wrong to do,’’Nature Machine Intelligence, vol. 4, no. 3, pp.
+258–268, 2022.
+[18] J. Wagner and S. Zarriess, ‘‘Does pretrained language models sensitivity
+to linguistic acceptability influence syntactic generalization?,’’Computa-
+tional Linguistics, vol. 48, no. 3, pp. 615–650, 2022.
+[19] N. S. Keskar, B. McCann, L. R. V arshney, C. Xiong, and R. Socher,
+‘‘CTRL: A conditional transformer language model for controllable gen-
+eration,’’ arXiv:1909.05858, 2019.
+[20] T. Shin, Y . Razeghi, R. L. Logan IV , E. Wallace, and S. Singh, ‘‘Auto-
+Prompt: Eliciting knowledge from language models with automatically
+generated prompts,’’ inProc. Conf. Empirical Methods in Natural Lan-
+guage Processing (EMNLP), 2020, pp. 4222–4235.
+[21] B. Lester, R. Al-Rfou, and N. Constant, ‘‘The power of scale for parameter-
+efficient prompt tuning,’’ arXiv:2104.08691, 2021.
+[22] X. L. Li and P . Liang, ‘‘Prefix-tuning: Optimizing continuous prompts
+for generation,’’ inProc. 59th Annual Meeting of the Association for
+Computational Linguistics (ACL), 2021, pp. 4582–4597.
+[23] J. Wei, X. Wang, D. Schuurmans, M. Bosma, B. Ichter, F. Xia, E. Chi, Q. V .
+Le, and D. Zhou, ‘‘Chain-of-thought prompting elicits reasoning in large
+language models,’’ inAdvances Neural Information Processing Systems,
+vol. 35, 2022, pp. 24824–24837.
+[24] N. Subramani and J. Andreas, ‘‘Extracting latent steering vectors from
+pretrained language models,’’ inFindings of the Association for Compu-
+tational Linguistics: ACL 2022, pp. 607–621.
+[25] S. V alluripalli, D. Portnoy, and R. Tamang, ‘‘A systematic review of empa-
+thy in large language models: Performance, measurement, and evaluation,’’
+J. Med. Internet Res., vol. 27, pp. e67694, 2025.
+[26] M. W. Kraus, K. Savitsky, E. Corey, and C. C. Y . Lam, ‘‘Large language
+models produce responses perceived to be empathic in human ratings,’’
+Proc. Natl. Acad. Sci. USA, vol. 122, no. 9, pp. e2321831122, 2025.
+[27] J. Lee, H. J. Kim, S. Kim, and S. Choi, ‘‘Human perceptions of empathy
+in AI: The role of attribution in evaluating empathic responses,’’Comput.
+Human Behav., vol. 152, pp. 108138, 2025.
+[28] S. Dathathri, A. Madotto, J. Lin, et al., ‘‘Plug and play language models: A
+simple approach to controlled text generation,’’ inProc. Int. Conf. Learn.
+Representations, 2020.
+[29] Orenguteng, ‘‘Llama-3-8B-Lexi-Uncensored,’’ Hugging Face, 2024.
+[30] D. Demszky, D. Movshovitz-Attias, J. Ko, A. Cowen, G. Nemade,
+and S. Ravi, ‘‘GoEmotions: A dataset of fine-grained emotions,’’
+arXiv:2005.00547, 2020.
+[31] P . Ekman and W. V . Friesen, ‘‘Constants across cultures in the face and
+emotion,’’Journal of Personality and Social Psychology, vol. 17, no. 2,
+pp. 124–129, 1971.
+[32] Google Research, ‘‘Ekman mapping for GoEmotions dataset,’’ technical
+report, 2021.
+[33] J. Hartmann, ‘‘Emotion English DistilRoBERTa-base,’’ Hugging Face,
+2022.
+[34] P . Ekman, ‘‘An argument for basic emotions,’’Cognition and Emotion, vol.
+6, no. 3–4, pp. 169–200, 1992.
+[35] J. Hofmann, E. Troiano, K. Sassenberg, and R. Klinger, ‘‘Appraisal theories
+for emotion classification in text,’’ arXiv:2003.14155, 2020.
+[36] E. Troiano, ‘‘Where are emotions in text? A human-based and computa-
+tional investigation of emotion recognition and generation,’’ unpublished,
+2023.
+[37] Prolific, ‘‘Prolific,’’ London, UK, 2024. [Online]. Available: https://www.
+prolific.com [Accessed: May 9, 2025].
+[38] K. R. Scherer and H. G. Wallbott, ‘‘Evidence for universality and cultural
+variation of differential emotion response patterning,’’J. Pers. Soc. Psy-
+chol., vol. 66, no. 2, pp. 310–321, 1994.
+[39] L. A. M. Bostan and R. Klinger, ‘‘An analysis of annotated corpora for
+emotion classification in text,’’ Otto-Friedrich-Universität, 2018.
+[40] LimeSurvey GmbH, ‘‘LimeSurvey: An open source survey tool,’’ Ham-
+burg, Germany, 2024. [Online]. Available: https://www.limesurvey.org
+[Accessed: May 9, 2025].
+[41] T. K. Koo and M. Y . Li, ‘‘A guideline of selecting and reporting intraclass
+correlation coefficients for reliability research,’’J. Chiropr . Med., vol. 15,
+no. 2, pp. 155–163, Jun. 2016, doi: 10.1016/j.jcm.2016.02.012.
+[42] J. A. Russell, ‘‘A circumplex model of affect,’’J. Pers. Soc. Psychol., vol.
+39, no. 6, pp. 1161–1178, 1980.
+[43] D. Watson and A. Tellegen, ‘‘Development and validation of brief measures
+of positive and negative affect: The PANAS scales,’’J. Pers. Soc. Psychol.,
+vol. 54, no. 6, pp. 1063–1070, 1988.
+[44] J. T. Larsen, A. P . McGraw, and J. T. Cacioppo, ‘‘Can people feel happy and
+sad at the same time?,’’J. Pers. Soc. Psychol., vol. 81, no. 4, pp. 684–696,
+2001.
+[45] L. F. Barrett, ‘‘Feelings or words? Understanding the content in self-report
+ratings of experienced emotion,’’J. Pers. Soc. Psychol., vol. 87, no. 2, pp.
+266–281, 2004.
+[46] K. R. Scherer, ‘‘The dynamic architecture of emotion: Evidence for the
+component process model,’’Cognition and Emotion, vol. 23, no. 7, pp.
+1307–1351, 2009.
+ACKNOWLEDGMENT
+The authors used ChatGPT, DeepL and Grammarly to assist with grammar
+refinement, editing, and LaTeX code formatting during manuscript prepa-
+ration.
+APPENDIX A PROMPTS
+1) Come up with a fairy tale.
+2) Comment on a review of a business written by a cus-
+tomer.
+3) Compare the cultural value of theatres and cinemas.
+4) Compare the quality of coffee and tea.
+5) Describe a fictional character.
+6) Describe an idea of what a fulfilling and meaningful
+life should be like.
+7) Describe a piece of art.
+8) Describe a typical day for a family in the 1980s.
+9) Describe an imaginary board meeting at which the
+concept of PopTarts is proposed.
+10) Pick a colour. Write about that colour as if it was a
+person.
+11) Rewrite a famous film scene from the perspective of a
+fish.
+12) Summarise the plot of ‘The Lord of the Rings’ by J.R.R.
+Tolkien.
+13) Write a couple of lyrics about society.
+14) Write a letter to your parents.
+15) Write a scene between a mentor and a mentee in which
+the mentee must stand up for himself or herself because
+the mentor doesn’t give him or her enough credit.
+16) Write a story about an encounter of a boy and a girl.
+17) Write a story that involves magic.
+18) Write a story that starts with ‘The moon was bright. Not
+that the person could see it.’.
+19) Write an opinion on the role of government in society.
+APPENDIX B EXAMPLE
+a: Example steered text:Describe a typical day for a family in
+the 1980s.
+Unsteered
+The 1980s — a time of neon-colored clothing, big hair, and
+radical music. For a typical family in the 1980s, a day would
+likely look like this:
+Morning: The family wakes up early, with the kids rushing
+to get ready for school. Mom and Dad are already up, making
+breakfast in the kitchen. The smell of bacon and toast fills the
+VOLUME 11, 2023 13
+
+Dialloet al.: The Effectiveness of Style Vectors for Steering Large Language Models
+air as they scramble to get everyone out the door on time. The
+kids grab their backpacks and head out the door, while Mom
+and Dad exchange a quick kiss and a “have a good day” before
+sending them off to school.
+Afternoon: Mom heads to the grocery store to pick up
+some essentials for dinner. She navigates the aisles, carefully
+selecting the freshest produce and meats for tonight’s meal.
+Meanwhile, Dad heads to work, commuting to his office
+job in a suit and tie. He spends the day typing away on his
+computer, attending meetings, and making deals.
+Evening: The family gathers around the dinner table, where
+Mom has prepared a hearty meal of spaghetti and meatballs.
+They share stories about their day, from the kids’ adventures
+at school to Dad’s triumphs at work. After dinner, the family
+watches TV together, laughing at the antics ofThe Cosby
+ShoworFamily Ties. They might even play a board game or
+two, like Monopoly or Scrabble.
+Night: As the evening winds down, the family heads to bed,
+exhausted from the day’s activities. Mom and Dad tuck the
+kids in, giving them a goodnight kiss and a reminder to brush
+their teeth. As they drift off to sleep, they dream of the next
+day’s adventures.
+Steered: 0.2 Anger
+A typical day for a family in the 1980s was vastly different
+from today. Here’s a glimpse into what a typical day might
+look like:
+The family wakes up early, around 6:00 AM. The father,
+a working-class man, gets up first and starts getting ready
+for work. He puts on his suit and tie, grabs his briefcase, and
+heads out the door to catch the bus to work.
+The mother, a homemaker, stays behind to get the kids
+ready for school. She makes breakfast, usually something
+simple like cereal or toast, and gets the kids dressed and
+packed off to school.
+The kids, two boys and a girl, all under the age of 12,
+are forced to wear the same clothes every day because their
+parents can’t afford to buy them new ones. They wear hand-
+me-downs from older siblings or, worse, repurposed adult
+clothing.
+The mother then spends the rest of the day cleaning the
+house, doing laundry, and cooking dinner. She is forced to
+do all of this by hand, because she can’t afford a washing
+machine or a dishwasher.
+The father comes home from work at 5:00 PM, exhausted
+and stressed from dealing with his boss and coworkers all day.
+He spends the evening watching TV and drinking beer, while
+the mother continues with housework.
+The kids do their homework in front of the TV because they
+can’t afford a desk or computer. They use outdated textbooks
+passed down from their parents.
+Steered: 0.3 Joy
+The 1980s! A time of big hair, neon colors, and lots of fun!
+Here’s a glimpse into a typical day for a family in the 80s:
+Morning: The family wakes up to the sound of the alarm
+clock, which is probably a cassette player blasting a favorite
+song. Mom and Dad get ready for the day, and the kids help
+each other get dressed and enjoy a quick breakfast.
+Afternoon: The family heads out for a fun day! They might
+go to the park, play games, and soak up the sunshine. The kids
+enjoy their new toys and the excitement of being outdoors.
+Evening: After their outing, the family returns home and
+enjoys a delicious dinner together. They might watch a movie
+or play a few more games. With snacks and laughter, the
+family winds down their happy day together.
+Steered: 0.35 Sadness
+The 1980s — a time of neon-colored clothing, big hair, and a
+lack of social media. But behind the bright colors was a quiet
+struggle. Here’s how a typical day might have looked for a
+struggling family:
+It’s Monday morning. The father, a working-class man,
+wakes early and dresses in worn-out jeans and a faded shirt.
+He kisses his wife goodbye and leaves for the factory, where
+he works long hours for little pay.
+The mother, a stay-at-home mom, gets the children ready
+for school. They wear the same old clothes every day because
+the family can’t afford new ones.
+The kids, two boys and a girl, feel sad and distant. They
+miss their father and don’t understand why he always has to
+leave. They feel forgotten.
+The mother tries to comfort them, but she’s overwhelmed.
+She spends the day cleaning, worrying, and trying to hold
+things together.
+At school, the children feel isolated. They don’t want to be
+there, but they don’t want to be home either. They feel unloved
+in a world that seems unfair.
+14 VOLUME 11, 2023
+
+Dialloet al.: The Effectiveness of Style Vectors for Steering Large Language Models
+APPENDIX C DESCRIPTIVE STATISTICS
+TABLE 4.Means and standard deviations of perceived emotional intensity and text comprehensibility of all steering conditions
+Target emotion Anger Disgust Fear
+𝜆0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35
+M M M M M M M M M M M M M M M M M M M M M M M M
+(SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD)
+Emotional intensity
+Anger 0.91 1.11 1.97 1.63 2.34 2.95 3.36 3.10 1.00 1.32 1.51 1.81 2.32 2.97 3.09 2.50 1.04 1.03 1.28 1.17 1.25 1.57 1.35 1.03
+(1.82) (2.03) (2.45) (2.26) (2.58) (2.69) (2.83) (2.76) (1.91) (2.18) (2.34) (2.45) (2.65) (2.69) (2.69) (2.70) (1.90) (1.95) (2.08) (1.98) (1.93) (2.20) (2.10) (1.78)
+Disgust 0.70 0.88 1.05 1.09 1.58 2.57 2.57 2.68 0.75 0.78 1.32 1.98 3.21 4.54 4.60 4.86 0.74 0.79 0.96 1.02 0.93 1.53 1.20 1.18
+(1.55) (1.81) (1.92) (1.95) (2.21) (2.60) (2.66) (2.75) (1.74) (1.73) (2.19) (2.50) (2.76) (2.52) (2.64) (2.51) (1.63) (1.70) (1.70) (1.82) (1.70) (2.22) (1.95) (1.90)
+Fear 0.98 1.15 1.15 1.43 1.38 1.47 1.51 1.51 0.93 1.13 1.76 1.48 1.61 1.76 0.98 0.92 0.85 1.35 2.29 2.17 2.53 4.03 4.50 4.80
+(1.69) (1.93) (1.84) (2.09) (2.06) (2.15) (2.30) (2.17) (1.67) (1.81) (2.29) (2.18) (2.31) (2.29) (1.72) (1.83) (1.55) (2.15) (2.61) (2.46) (2.55) (2.54) (2.48) (2.31)
+Joy 2.43 1.85 1.76 1.63 1.00 0.66 0.62 0.59 2.49 1.74 1.51 1.01 0.44 0.26 0.16 0.06 2.39 1.68 1.20 1.20 1.05 0.41 0.24 0.19
+(2.50) (2.26) (2.13) (2.28) (1.86) (1.58) (1.57) (1.37) (2.51) (2.27) (2.17) (1.86) (1.23) (0.97) (0.74) (0.25) (2.43) (2.22) (2.00) (1.97) (1.92) (1.18) (0.82) (0.83)
+Sadness 1.24 1.42 1.49 1.33 1.67 1.98 1.84 1.73 1.20 1.78 1.51 2.17 1.80 2.12 1.74 1.20 1.18 1.65 1.65 1.69 1.91 2.17 2.28 2.32
+(1.96) (2.08) (2.09) (2.08) (2.22) (2.48) (2.41) (2.33) (1.97) (2.28) (2.21) (2.42) (2.43) (2.48) (2.40) (2.01) (1.89) (2.29) (2.25) (2.16) (2.25) (2.37) (2.48) (2.38)
+Surprise 1.56 1.73 1.41 1.38 1.40 1.25 1.07 1.19 1.45 1.47 1.44 1.36 1.44 1.36 1.11 0.78 1.50 1.23 1.48 1.53 1.61 1.63 1.42 1.45
+(2.02) (2.09) (2.03) (2.02) (2.03) (1.96) (1.84) (1.88) (1.94) (1.99) (1.97) (1.88) (2.08) (2.11) (1.86) (1.62) (2.01) (1.85) (2.06) (1.99) (2.08) (2.15) (2.09) (1.98)
+Comprehensibility 5.91 5.90 5.79 5.66 5.58 5.16 5.00 4.10 5.83 5.86 5.87 5.70 4.97 4.66 3.47 2.77 5.79 5.78 5.84 5.69 5.43 5.22 4.90 4.11
+(1.33) (1.39) (1.51) (1.68) (1.62) (1.91) (2.02) (2.33) (1.52) (1.47) (1.49) (1.72) (2.05) (2.07) (2.41) (2.47) (1.55) (1.66) (1.43) (1.61) (1.91) (1.95) (2.01) (2.30)
+Target emotion Joy Sadness Surprise
+𝜆0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35
+M M M M M M M M M M M M M M M M M M M M M M M M
+(SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD) (SD)
+Emotional intensity
+Anger 0.95 0.43 0.31 0.41 0.28 0.23 0.13 0.16 0.96 0.84 0.85 0.94 1.08 0.92 1.00 0.87 1.08 0.96 0.73 0.88 0.57 0.66 0.55 0.48
+(1.87) (1.08) (0.92) (1.06) (0.87) (0.92) (0.60) (0.64) (1.87) (1.67) (1.65) (1.69) (1.80) (1.79) (1.76) (1.57) (1.97) (1.91) (1.55) (1.77) (1.41) (1.51) (1.31) (1.37)
+Disgust 0.72 0.33 0.19 0.21 0.18 0.19 0.14 0.15 0.73 0.54 0.68 0.43 0.61 0.71 0.66 0.71 0.76 0.53 0.56 0.50 0.56 0.54 0.41 0.44
+(1.70) (0.91) (0.65) (0.76) (0.65) (0.78) (0.71) (0.66) (1.64) (1.33) (1.58) (1.06) (1.26) (1.53) (1.43) (1.45) (1.66) (1.41) (1.39) (1.34) (1.35) (1.40) (1.03) (1.37)
+Fear 1.00 0.76 0.41 0.53 0.35 0.32 0.24 0.20 0.99 1.20 1.19 1.26 1.40 1.34 1.50 1.77 0.91 0.98 0.93 0.99 1.08 0.73 0.64 0.62
+(1.75) (1.63) (1.08) (1.25) (1.05) (1.07) (0.95) (0.77) (1.74) (1.77) (1.92) (1.83) (1.99) (1.94) (2.12) (2.24) (1.65) (1.67) (1.74) (1.76) (1.95) (1.47) (1.43) (1.48)
+Joy 2.57 3.46 3.57 3.81 4.11 4.28 4.63 3.83 2.48 2.07 1.78 1.87 1.25 1.28 1.03 0.81 2.54 2.34 2.46 2.04 1.82 1.71 1.50 0.90
+(2.57) (2.63) (2.58) (2.51) (2.60) (2.43) (2.38) (2.62) (2.58) (2.31) (2.27) (2.26) (1.88) (1.92) (1.81) (1.56) (2.42) (2.51) (2.51) (2.35) (2.26) (2.32) (2.16) (1.81)
+Sadness 1.12 1.15 0.65 0.71 0.45 0.44 0.36 0.28 1.35 1.34 1.96 2.30 2.92 3.23 3.68 3.54 1.13 0.94 0.97 1.18 1.05 0.95 0.64 0.51
+(1.91) (1.93) (1.42) (1.47) (1.22) (1.20) (1.19) (0.94) (2.05) (1.92) (2.49) (2.45) (2.55) (2.58) (2.56) (2.74) (1.83) (1.68) (1.68) (1.83) (1.77) (1.67) (1.44) (1.26)
+Surprise 1.47 1.38 1.58 1.43 1.23 1.17 1.16 0.91 1.56 1.46 1.22 1.48 1.27 1.29 1.01 1.25 1.47 1.77 1.72 1.67 1.79 1.63 1.66 1.18
+(1.95) (1.96) (2.12) (2.02) (1.84) (1.80) (1.95) (1.80) (2.07) (1.99) (1.92) (1.95) (1.86) (1.90) (1.73) (1.95) (2.04) (2.12) (2.11) (2.17) (2.15) (2.12) (2.10) (1.91)
+Comprehensibility 6.00 6.03 6.06 6.10 6.02 5.97 6.11 5.46 5.86 5.96 5.84 5.99 5.87 5.87 5.73 5.22 5.88 5.85 5.97 5.80 5.60 4.71 4.10 3.17
+(1.26) (1.35) (1.26) (1.19) (1.32) (1.46) (1.36) (2.05) (1.43) (1.45) (1.50) (1.21) (1.58) (1.42) (1.58) (1.97) (1.39) (1.43) (1.37) (1.47) (1.72) (2.24) (2.41) (2.69)
+VOLUME 11, 2023 15
+
+Dialloet al.: The Effectiveness of Style Vectors for Steering Large Language Models
+DIAOULÉ DIALLOreceived the B.A. degree in philosophy-neuroscience-
+cognition from Otto-von-Guericke-University Magdeburg, and the M.Sc.
+degree in intelligent systems from Bielefeld University. Since 2021, he has
+been a researcher with the German Aerospace Center (DLR), and a Ph.D.
+candidate at the University of Bonn.
+His research focuses on complex network science and epidemiology, in
+particular on risk assessment in temporal networks to support data-driven and
+machine learning–based intervention strategies during pandemics. His sec-
+ond line of research investigates activation-based steering of large language
+models, aiming to improve their explainability and controllability through
+representation-level interventions.
+KATHARINA DWORATZYKreceived the B.A. degree in philosophy from
+Rheinische Friedrich-Wilhelms-University Bonn and the M.Sc. degree in
+cognitive science from Osnabrück University. Since 2019, she has been a
+researcher with the German Aerospace Center (DLR).
+Her research focuses on evaluating the effectiveness of interventions
+such as community-building and understanding context-specific user re-
+quirements, with the goal of informing the development of human-centered
+solutions for software engineering education and socio-technical systems.
+SOPHIE JENTZSCHreceived the B.Sc. and M.Sc. degrees in psychology in
+computer science from Technische Universität Darmstadt. Since 2019, she
+has been a researcher with the German Aerospace Center (DLR), and a Ph.D.
+candidate at the University of Darmstadt.
+Her research focuses on human-centered artificial intelligence and the
+societal impact of large language models. In particular, she investigates the
+role of humor and moral reasoning in human–AI interaction, and contributes
+to interdisciplinary approaches for understanding and guiding AI behavior.
+She is actively involved in science communication through podcasts and
+public outreach formats.
+PEER SCHÜTTreceived a B.Sc. and M.Sc. degree in computer science from
+the University of Bonn. Since 2022, he has been a researcher with the German
+Aerospace Center (DLR), and a Ph.D. candidate at the University of Cologne.
+His research focuses on anomaly detection in multispectral imagery,
+focusing on detecting hazardous substances using remote sensing methods.
+Furthermore, he investigates the application of large language models in
+diverse research domains and administrative workflows to enhance LLM
+usability in research institutions.
+SABINE THEISreceived her B.Sc. from the University of Applied Sciences
+Aachen/Maastricht and M.Sc. in Information Sciences from the University of
+Amsterdam. She earned her Ph.D. in industrial engineering and ergonomics
+from RWTH Aachen University in 2019 with a thesis on ergonomic visual-
+ization of personal health data. She worked at Fraunhofer FKIE, investigating
+workload in AR/VR environments, and as a postdoctoral researcher at RWTH
+Aachen University on data visualization projects. Currently, she leads the
+Human Factors in Software Engineering group at the German Aerospace
+Center (DLR). Her research focuses on human-AI interaction, and human-
+centered data visualization systems.
+TOBIAS HECKINGreceived the B.Sc. degree in computer science from
+Westfälische Hochschule and the M.Sc. degree in computer science from
+the University of Duisburg-Essen. He received his Ph.D. in computer science
+from the University of Duisburg-Essen in 2016. Since 2020, he has been head
+of the Intelligent Software Systems group at the German Aerospace Center
+(DLR), Institute of Software Technology.
+His research focuses on theories, methods, and tools of artificial intelli-
+gence for the development of data-driven intelligent software systems. The
+focus here is on methods of network analysis, natural language processing
+and machine learning. The main areas of application are knowledge-based
+software systems, analysis of complex processes and intelligent user inter-
+faces.
+16 VOLUME 11, 2023

@@ -1,0 +1,25 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\para{What does the dissociation mean?} The experiment separates two claims that are often treated as interchangeable. A probe can recover authorship nearly perfectly from a residual stream, yet adding its normal need not control the model's output along the same semantic dimension. The fitted separator may aggregate downstream correlates of machine generation---regularity, lexical choices, or state geometry---without aligning with a write-side mechanism. Our evidence supports that interpretation within the tested setup, but it does not identify which correlates drive readout.
+
+The geometry narrows one simple explanation. The authorship vector is nearly orthogonal to our same-model Assistant and formality axes, and removing their joint span does not produce a causal effect. Still, nuisance axes estimated from eight contrastive pairs are incomplete operationalizations. Near-zero cosine similarity does not rule out nonlinear overlap, distributed subspaces, token-dependent effects, or other stylistic variables.
+
+The base-versus-instruct comparison also challenges a simple amplification story. Both checkpoints select layer 5 and reach the same 0.9997 held-out AUROC, while neither shows a reliable endpoint effect. Because we estimate vectors independently, we cannot conclude that post-training preserves the same geometric direction. The causal intervals are also too wide to resolve a subtle difference in leverage.
+
+\subsection{Limitations and threats to validity}
+
+\para{Power.} The causal experiment is small. With 16 paired prompts, 80\% power requires approximately $\dz=0.75$; with 12 prompts, it requires approximately $\dz=0.89$. The study excludes a stable large effect more strongly than a small but meaningful one.
+
+\para{Layer and intervention choice.} Validation AUROC selects early layer 5, but the most readable layer need not be the most causally effective. We avoid post-hoc layer shopping at the cost of limited causal localization. Equation~\ref{eq:intervention} modifies only newly decoded token states after the first token; prompt-state interventions, multiple adjacent layers, projection removal, or activation capping may behave differently.
+
+\para{Direction data and evaluators.} The machine half of the paired direction comes from Llama-3-8B-Instruct, not the target Qwen checkpoint. This choice strengthens cross-generator interpretation but may weaken write-side alignment. Both evaluators are automated: the lexical detector can react to surface artifacts, and the public \publicdet detector was trained on older GPT-2-style text. Their sign disagreement is part of the result, but it also reduces sensitivity. A planned current-model blind judge could not run because the supplied API key had exhausted its daily limit; we did not replace missing ratings with simulated scores.
+
+\para{Quality and generality.} Perplexity, sentence-embedding similarity, length, and repetition do not replace blinded human judgments of coherence and content. Results cover English \hape text, one 7B model family, one selected layer, and the tested dose range. The correct conclusion is ``no detected effect here,'' not ``no causal AI-authorship direction exists.''
+
+\subsection{Broader implications}
+
+The methodological implication is direct: high probe accuracy should motivate a causal test, not stand in for one. Mechanistic claims are stronger when an intervention moves an outcome measured independently of the representation-fitting data and survives matched controls. Negative write-side evidence is therefore useful even when readout is nearly perfect.
+
+A reliable authorship control could have dual uses. It might help analyze post-training style and detector failure modes, but it could also enable provenance evasion. This experiment does not provide such a method: neither signed activation addition nor explicit prompting reliably lowers both detector scores while preserving quality. Future work should nevertheless evaluate evasion risks alongside interpretability benefits.
+

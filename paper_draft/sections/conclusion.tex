@@ -1,0 +1,7 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We tested whether a dense residual-stream direction that reads human versus machine authorship also writes AI-like style. In Qwen2.5-7B base and instruct checkpoints, the selected direction achieves 0.9997 held-out AUROC. Adding it during generation, however, produces small, uncertain, and detector-inconsistent changes; nuisance residualization, matched controls, and a reduced base replication do not alter that conclusion. Endpoint quality measures show no broad collapse that would trivially mask the effect.
+
+The key takeaway is that linear readability is not evidence of causal writability. A powered follow-up should use 64--100 held-out prompts per condition, select causal layers on a separate generation-validation set, intervene across adjacent layers, compare addition with projection removal, and obtain blinded human or current-model judgments. Replication in a second model family and directions fit from the target model's own outputs would separate cross-generator authorship structure from write-side alignment. Sparse-feature decomposition is most informative after establishing that a dense causal effect exists.
+

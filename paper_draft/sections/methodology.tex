@@ -1,0 +1,67 @@
+\section{Methodology}
+\label{sec:method}
+
+\begin{figure}[t]
+\centering
+\fbox{\parbox{0.94\linewidth}{\centering
+\textbf{Read:} paired human and Llama continuations $\rightarrow$ pooled Qwen residual states $\rightarrow$ layerwise logistic directions $\rightarrow$ validation-only layer selection\\[4pt]
+$\Downarrow$\\[-2pt]
+\textbf{Write:} held-out prefixes $\rightarrow$ signed activation addition at the selected block $\rightarrow$ independent detectors and quality measures\\[4pt]
+$\Downarrow$\\[-2pt]
+\textbf{Test specificity:} residualized, random, shuffled-label, formality, Assistant-axis, and prompt-only controls}}
+\caption{The read--write test. We fit authorship directions on content-paired continuations, select a layer using validation AUROC only, and intervene on separate held-out prompts. Outcome detectors never see the fitted Qwen activations. The same prompt is the paired unit across intervention strengths.}
+\label{fig:method}
+\end{figure}
+
+\subsection{Question and estimands}
+
+Let $h_{i,y}^{(\ell)}\in\sR^d$ be the attention-mask mean-pooled residual state at decoder layer $\ell$ for document $i$ and continuation class $y\in\{0,1\}$, where 0 denotes human and 1 denotes machine. We fit an $L_2$-regularized logistic classifier on training documents,
+\begin{equation}
+P(y=1\mid h)=\sigmoid\!\left((\vw^{(\ell)})^\top h+b^{(\ell)}\right),
+\end{equation}
+and treat its normalized normal $\widehat{\vw}^{(\ell)}=\vw^{(\ell)}/\lVert\vw^{(\ell)}\rVert_2$ as the readout direction. To preserve the empirical scale of the paired contrast, we multiply this unit vector by the norm of the paired mean difference
+\begin{equation}
+\vdelta^{(\ell)}=\frac{1}{n}\sum_i\left(h_{i,1}^{(\ell)}-h_{i,0}^{(\ell)}\right),\qquad
+\vd^{(\ell)}=\lVert\vdelta^{(\ell)}\rVert_2\widehat{\vw}^{(\ell)}.
+\end{equation}
+Layer selection maximizes validation AUROC and never uses causal outcomes.
+
+During cached autoregressive decoding, we intervene after the selected decoder block on each newly decoded token state $h_t$:
+\begin{equation}
+h'_t=h_t+\alpha\vd,
+\label{eq:intervention}
+\end{equation}
+where $\alpha$ is a signed dose. We leave prompt-prefill states and first-token logits unchanged. The primary causal estimand for outcome $s$ is the paired prompt-average endpoint difference $\E_i[s_{i,+2}-s_{i,-2}]$. For the instruct five-dose sweep, we also estimate a linear slope within each prompt and average those slopes.
+
+\subsection{Data and splits}
+
+We use \hape's shared-prefix structure \cite{reinhart2025llms}. Human chunk 1 provides the prompt; human chunk 2 and the Llama-3-8B-Instruct continuation provide a content-paired human--machine contrast. We sample 400 unique document IDs across six genres and split them into 240 training, 80 validation, and 80 test IDs. The splits are document-disjoint, contain no missing text or duplicate IDs, and are fixed with seed 42.
+
+Corpus lengths differ across generators: human chunk 2 averages 479 words, while model files average 426--579 words. We therefore truncate all readout inputs to the same 384-token budget and attention-mask mean-pool their states. Causal comparisons remain paired within the same prompt.
+
+\subsection{Models, layers, and nuisance directions}
+
+We study \qweninst (revision \texttt{a09a35458c702b33eeacc393d103063234e8bc28}) and \qwenbase (revision \texttt{d149729398750b98c0af14eb82c78cfe92750796}) \cite{qwen2024qwen25}. For each checkpoint, we capture layers $\{5,9,14,18,22\}$ of 28 decoder layers and fit both the logistic normal and paired mean difference. Validation AUROC selects layer 5 for each checkpoint.
+
+We estimate same-model Assistant and formality axes from eight real contrastive generation pairs per axis. Let $\mN=[\vd_{\mathrm{asst}},\vd_{\mathrm{form}}]$ collect the two nuisance directions. We remove their joint span,
+\begin{equation}
+\vd_{\mathrm{res}}=\vd-\mN(\mN^\top\mN)^{-1}\mN^\top\vd,
+\end{equation}
+and renormalize $\vd_{\mathrm{res}}$ to the raw direction's norm. We also measure pairwise cosine similarities among all three axes.
+
+\subsection{Interventions and baselines}
+
+For \qweninst, we evaluate the raw authorship vector at $\alpha\in\{-2,-1,0,+1,+2\}$ on 16 held-out test prefixes. We evaluate the following vector controls at $\alpha\in\{-2,+2\}$ on the same prompts: the fully residualized direction, an equal-norm isotropic random vector, a shuffled-label logistic vector, and direct formality and Assistant axes. The behavioral baseline prepends: \emph{``Write in a natural, personal human style. Avoid polished assistant-like phrasing.''} For \qwenbase, we run a reduced replication using the raw direction at $\alpha\in\{-2,0,+2\}$ on 12 held-out prefixes. All generations use greedy decoding and at most 80 new tokens.
+
+\subsection{Independent outcomes and quality measures}
+
+Our first outcome is a logistic detector trained on 24,000 balanced \mage texts \cite{li2024mage}, with word and character TF--IDF features. Its training texts are independent of \hape and the Qwen activations. The second is the public \texttt{openai-community/roberta-base-openai-detector}, an independently pretrained and fine-tuned GPT-2-era detector \cite{openai2019detector}. Before causal interpretation, we validate both detectors on held-out \mage and no-attack \raid data \cite{dugan2024raid}; Appendix \tabref{tab:detector-validation} reports these checks.
+
+We measure output quality and preservation with base-Qwen continuation perplexity, cosine similarity between all-MiniLM-L6-v2 embeddings of the steered and same-prompt unsteered continuations \cite{reimers2019sentencebert}, word count, unique-word ratio, and repeated 3-gram rate. These are proxies, not substitutes for blinded human judgments.
+
+\subsection{Statistical analysis and implementation}
+
+The prompt/document ID is the experimental unit. We form 95\% intervals with 5,000 prompt-cluster bootstrap samples, use a 20,000-draw paired sign-flip permutation test, and report paired standardized effects $\dz=\overline{\Delta}/\mathrm{SD}(\Delta)$. We apply Holm correction over detector/control comparisons and use a prespecified two-sided level of 0.05. Spearman correlation over dose means is descriptive.
+
+We run bfloat16 Qwen inference with activation batch size 4 on one NVIDIA RTX A6000 (49,140 MiB), using Python 3.12.8, PyTorch 2.7.1+cu128, Transformers 5.18.0, scikit-learn 1.9.1, SciPy 1.18.1, pandas 3.0.6, NumPy 2.5.3, and statsmodels 0.15.0. Appendix \secref{app:reproducibility} provides exact commands and runtimes.
+

@@ -1,0 +1,304 @@
+Figure 4: F1 Macro by the domains subsets for some
+general and domain-specific features for the 16 layer
+on feature extraction can be found in Appendix D.
+Our analysis shows that features most susceptible
+to attacks and shallow text properties overlap min-
+imally with those identified as important by XG-
+Boost. Specifically, features 8689 (detecting the
+GPT3.5+ family) and 14919 (detecting the Bloom
+family) are very sensitive to sentence length, while
+other distractions have limited impact on important
+features.
+5 Important Features Interpretation
+In this section, we discuss the insights from ana-
+lyzing our feature interpretations (see detailes and
+examples in Appendix F), starting with the most ro-
+bust features: 3608, 4645, 6587, 8264, and 14161.
+Their performance in the ATD task across various
+domains and models is shown in Figures 4 and 16.
+Strong activations of these features correlate
+with common LLM-generated text characteristics,
+such as excessive complexity (3608), assertive
+claims (4645), wordy introductions (6587), rep-
+etition (8264), and formality (14161). These fea-
+tures perform well on GPT3.5+ and other mod-
+ern LLMs like LLaMa and Gemma, especially for
+domains like finance, medicine, and Wiki-CSAi.
+However, texts from arXiv are less distinguishable,
+suggesting GPT models mimic scientific writing
+more closely.
+Feature 8264 stands out with near-perfect perfor-
+mance for GPT3.5+, controlling the conciseness
+vs. repetition of concepts. Older models lack this
+feature, leading to lower detectability.
+Domain-specific features include overcompli-
+cated syntax (arXiv, feature 12390), exces-
+sive details (finance, feature 6513), speculative
+links (Reddit, feature 4560), and hallucinated
+facts (Wikipedia, feature 4773). Improper tone
+(medicine, feature 14953) also signals machine-
+generated texts.
+The most challenging domains for detection are
+Outfox (essays) and Yelp (reviews), where models
+mimic human-like writing. This suggests that gen-
+eral “overcomplexity” features may not be effective
+when models are instructed to avoid such traits.
+6 Conclusion
+Our analysis shows that modern LLMs often gen-
+erate easily detectable text due to specific writing
+styles, such as long-winded introductions, exces-
+sive synonym substitution, and repetition. How-
+ever, adversaries can bypass these features by using
+less formal, more personalized prompts, like stu-
+dent essays, leading to more human-like outputs.
+Unlike previous approaches, we perform a multi-
+faceted analysis of features for Artificial Text De-
+tection (ATD). We select key features, examine
+their behavior across domains and generators, and
+interpret them both through extreme values (man-
+ual) and medium shifts (steering + LLM interpre-
+tation). This approach provides deeper insights
+into feature meanings. For example, our interpre-
+tation of feature 3608 contrasts with Neuropedia’s
+narrow view, which links it to "tokens associated
+with mathematical expressions." Similarly, feature
+4645, described by Neuropedia as related to "key-
+words on diabetes," is more broadly relevant in our
+analysis.
+We conclude that Sparse Autoencoder-based
+analysis of ATD datasets is a valuable tool for
+understanding text generators, detectors, and how
+detectors generalize to new setups. Our findings
+highlight that detecting AI-generated text is easy
+with a default prompt but becomes difficult when
+prompt style changes, a crucial consideration for
+ATD developers.
+7 Limitations
+Artificial text detection (ATD) is a highly complex
+and evolving task. With new LLMs emerging al-
+most every month, it is difficult to predict how our
+4
+
+method will perform on future artificial text genera-
+tors. Additionally, novel attack strategies continue
+to appear, and our approach covers only a subset of
+them. Besides, some of SAE features we studied
+remain challenging to interpret, as not all exhibit
+clear semantic meaning.
+Finally, in this short paper, we used a single
+Sparse Autoencoder (SAE) on the residual stream
+of Gemma 2-2B. Exploring different SAEs on other
+LLMs could reveal new features and offer addi-
+tional insights into artificial text detection. We
+leave this for future work.
+References
+Sara Abdali, Richard Anarfi, CJ Barberan, and Jia He.
+2024. Decoding the ai pen: Techniques and chal-
+lenges in detecting ai-generated text. In Proceedings
+of the 30th ACM SIGKDD Conference on Knowledge
+Discovery and Data Mining, pages 6428–6436.
+Sidney Black, Stella Biderman, Eric Hallahan, Quentin
+Anthony, Leo Gao, Laurence Golding, Horace
+He, Connor Leahy, Kyle McDonell, Jason Phang,
+Michael Pieler, Usvsn Sai Prashanth, Shivanshu Puro-
+hit, Laria Reynolds, Jonathan Tow, Ben Wang, and
+Samuel Weinbach. 2022. GPT-NeoX-20B: An open-
+source autoregressive language model. In Proceed-
+ings of BigScience Episode #5 – Workshop on Chal-
+lenges & Perspectives in Creating Large Language
+Models, pages 95–136, virtual+Dublin. Association
+for Computational Linguistics.
+Trenton Bricken, Adly Templeton, Joshua Batson, Brian
+Chen, Adam Jermyn, Tom Conerly, Nick Turner,
+Cem Anil, Carson Denison, Amanda Askell, Robert
+Lasenby, Yifan Wu, Shauna Kravec, Tim Maxwell,
+Nicholas Joseph, Zac Hatfield-Dodds, Alex Tamkin,
+Karina Nguyen, Brayden McLean, Josiah Burke,
+Tristan Hume, Shan Carter, Tom Henighan, and
+Christopher Olah. 2023. Towards monosemanticity:
+Decomposing language models with dictionary
+learning. https://transformer-circuits.pub/
+2023/monosemantic-features/index.html.
+Transformer Circuits Thread.
+Shuyang Cai and Wanyun Cui. 2023. Evade
+chatgpt detectors via a single space. Preprint,
+arXiv:2307.02599.
+Souradip Chakraborty, A. S. Bedi, Sicheng Zhu, Bang
+An, Dinesh Manocha, and Furong Huang. 2023. On
+the possibilities of AI-generated text detection. arXiv
+preprint arXiv:2304.04736.
+Yutian Chen, Hao Kang, Vivian Zhai, Liangze Li, Rita
+Singh, and Bhiksha Raj. 2023. Gpt-sentinel: Distin-
+guishing human and chatgpt generated content. arXiv
+preprint arXiv:2305.07969.
+Hoagy Cunningham, Aidan Ewart, Logan R. Riggs,
+Robert Huben, and Lee Sharkey. 2023. Sparse au-
+toencoders find highly interpretable features in lan-
+guage models. arXiv preprint arXiv:2309.08600.
+Liam Dugan, Alyssa Hwang, Filip Trhlík, Andrew
+Zhu, Josh Magnus Ludan, Hainiu Xu, Daphne Ip-
+polito, and Chris Callison-Burch. 2024. RAID: A
+shared benchmark for robust evaluation of machine-
+generated text detectors. In Proceedings of the 62nd
+Annual Meeting of the Association for Computational
+Linguistics (Volume 1: Long Papers), pages 12463–
+12492, Bangkok, Thailand. Association for Compu-
+tational Linguistics.
+Nelson Elhage, Tristan Hume, Catherine Olsson,
+Nicholas Schiefer, Tom Henighan, Shauna Kravec,
+Zac Hatfield-Dodds, Robert Lasenby, Dawn Drain,
+Carol Chen, Roger Grosse, Sam McCandlish, Jared
+Kaplan, Dario Amodei, Martin Wattenberg, and
+Christopher Olah. 2022a. Toy models of superpo-
+sition. Transformer Circuits Thread.
+Nelson Elhage, Tristan Hume, Catherine Olsson,
+Nicholas Schiefer, Tom Henighan, Shauna Kravec,
+Zac Hatfield-Dodds, Robert Lasenby, Dawn Drain,
+Carol Chen, et al. 2022b. Toy models of superposi-
+tion. arXiv preprint arXiv:2209.10652.
+Nelson Elhage, Robert Lasenby, and Christopher
+Olah. 2023. Privileged bases in the transformer
+residual stream, 2023. URL https://transformer-
+circuits. pub/2023/privilegedbasis/index. html Ac-
+cessed: 2024-01-14.
+Leo Gao, Tom Dupré la Tour, Henk Tillman, Gabriel
+Goh, Rajan Troll, Alec Radford, Ilya Sutskever,
+Jan Leike, and Jeffrey Wu. 2023. Scaling and
+evaluating sparse autoencoders. OpenAI Tech-
+nical Report. https://cdn.openai.com/papers/
+sparse-autoencoders.pdf.
+Sebastian Gehrmann, Hendrik Strobelt, and Alexan-
+der M. Rush. 2019. GLTR: Statistical detection and
+visualization of generated text. In Proceedings of the
+57th Annual Meeting of the Association for Compu-
+tational Linguistics: System Demonstrations, pages
+111–116.
+Aaron Grattafiori et al. 2024. The llama 3 herd of mod-
+els. Preprint, arXiv:2407.21783.
+German Gritsai, Anastasia V oznyuk, Ildar Khabutdi-
+nov, and Andrey Grabovoy. 2025. Advacheck at
+GenAI detection task 1: AI detection powered by
+domain-aware multi-tasking. In Proceedings of the
+1stWorkshop on GenAI Content Detection (GenAIDe-
+tect), pages 236–243, Abu Dhabi, UAE. International
+Conference on Computational Linguistics.
+Biyang Guo, Xin Zhang, Ziyuan Wang, Minqi Jiang,
+Jinran Nie, Yuxuan Ding, Jianwei Yue, and Yupeng
+Wu. 2023. How close is chatgpt to human experts?
+comparison corpus, evaluation, and detection. arXiv
+preprint arXiv:2301.07597.
+5
+
+Robert Huben, Hoagy Cunningham, Logan Riggs Smith,
+Aidan Ewart, and Lee Sharkey. 2023. Sparse autoen-
+coders find highly interpretable features in language
+models. In The Twelfth International Conference on
+Learning Representations.
+Albert Q. Jiang, Alexandre Sablayrolles, Arthur Men-
+sch, Chris Bamford, Devendra Singh Chaplot, Diego
+de las Casas, Florian Bressand, Gianna Lengyel, Guil-
+laume Lample, Lucile Saulnier, Lélio Renard Lavaud,
+Marie-Anne Lachaux, Pierre Stock, Teven Le Scao,
+Thibaut Lavril, Thomas Wang, Timothée Lacroix,
+and William El Sayed. 2023. Mistral 7b. Preprint,
+arXiv:2310.06825.
+Albert Q. Jiang, Alexandre Sablayrolles, Antoine
+Roux, Arthur Mensch, Blanche Savary, Chris
+Bamford, Devendra Singh Chaplot, Diego de las
+Casas, Emma Bou Hanna, Florian Bressand, Gi-
+anna Lengyel, Guillaume Bour, Guillaume Lam-
+ple, Lélio Renard Lavaud, Lucile Saulnier, Marie-
+Anne Lachaux, Pierre Stock, Sandeep Subramanian,
+Sophia Yang, Szymon Antoniak, Teven Le Scao,
+Théophile Gervet, Thibaut Lavril, Thomas Wang,
+Timothée Lacroix, and William El Sayed. 2024. Mix-
+tral of experts. Preprint, arXiv:2401.04088.
+Kalpesh Krishna, Yixiao Song, Marzena Karpinska,
+John Wieting, and Mohit Iyyer. 2023. Paraphras-
+ing evades detectors of ai-generated text, but retrieval
+is an effective defense. Preprint, arXiv:2303.13408.
+Laida Kushnareva, Tatiana Gaintseva, German Ma-
+gai, Serguei Barannikov, Dmitry Abulkhanov, Kris-
+tian Kuznetsov, Eduard Tulchinskii, Irina Pio-
+ntkovskaya, and Sergey Nikolenko. 2024. Ai-
+generated text boundary detection with roft. Preprint,
+arXiv:2311.08349.
+Kristian Kuznetsov, Eduard Tulchinskii, Laida
+Kushnareva, German Magai, Serguei Barannikov,
+Sergey Nikolenko, and Irina Piontkovskaya. 2024.
+Robust AI-generated text detection by restricted
+embeddings. In Findings of the Association for
+Computational Linguistics: EMNLP 2024 , pages
+17036–17055, Miami, Florida, USA. Association for
+Computational Linguistics.
+Yafu Li, Qintong Li, Leyang Cui, Wei Bi, Longyue
+Wang, Linyi Yang, Shuming Shi, and Yue Zhang.
+2023. Deepfake text detection in the wild. arXiv
+preprint arXiv:2305.13242.
+Tom Lieberum, Senthooran Rajamanoharan, Arthur
+Conmy, Lewis Smith, Nicolas Sonnerat, Vikrant
+Varma, Janos Kramar, Anca Dragan, Rohin Shah,
+and Neel Nanda. 2024. Gemma scope: Open sparse
+autoencoders everywhere all at once on gemma 2.
+In Proceedings of the 7th BlackboxNLP Workshop:
+Analyzing and Interpreting Neural Networks for NLP,
+pages 278–300, Miami, Florida, US. Association for
+Computational Linguistics.
+Aleksandar Makelov, George Lange, and Neel Nanda.
+2024. Towards principled evaluations of sparse au-
+toencoders for interpretability and control. arXiv
+preprint arXiv:2405.08366.
+Eric Mitchell, Yoonho Lee, Alexander Khazatsky,
+Christopher D. Manning, and Chelsea Finn. 2023.
+DetectGPT: Zero-shot machine-generated text de-
+tection using probability curvature. arXiv preprint
+arXiv:2301.11305.
+Niklas Muennighoff, Thomas Wang, Lintang Sutawika,
+Adam Roberts, Stella Biderman, Teven Le Scao,
+M Saiful Bari, Sheng Shen, Zheng-Xin Yong, Hai-
+ley Schoelkopf, Xiangru Tang, Dragomir Radev,
+Alham Fikri Aji, Khalid Almubarak, Samuel Al-
+banie, Zaid Alyafeai, Albert Webson, Edward Raff,
+and Colin Raffel. 2023. Crosslingual general-
+ization through multitask finetuning. Preprint,
+arXiv:2211.01786.
+Chris Olah, Nick Cammarata, Ludwig Schubert, Gabriel
+Goh, Michael Petrov, and Shan Carter. 2020.
+Zoom in: An introduction to circuits. Distill.
+Https://distill.pub/2020/circuits/zoom-in.
+OpenAI. 2024a. Gpt-4 technical report. Preprint,
+arXiv:2303.08774.
+OpenAI. 2024b. Gpt-4o system card. Preprint,
+arXiv:2410.21276.
+Alec Radford, Jeffrey Wu, Rewon Child, David Luan,
+Dario Amodei, Ilya Sutskever, et al. 2019. Language
+models are unsupervised multitask learners. OpenAI
+blog, 1(8):9.
+Victor Sanh, Albert Webson, Colin Raffel, Stephen H.
+Bach, Lintang Sutawika, Zaid Alyafeai, Antoine
+Chaffin, Arnaud Stiegler, Teven Le Scao, Arun Raja,
+Manan Dey, M Saiful Bari, Canwen Xu, Urmish
+Thakker, Shanya Sharma Sharma, Eliza Szczechla,
+Taewoon Kim, Gunjan Chhablani, Nihal Nayak, De-
+bajyoti Datta, Jonathan Chang, Mike Tian-Jian Jiang,
+Han Wang, Matteo Manica, Sheng Shen, Zheng Xin
+Yong, Harshit Pandey, Rachel Bawden, Thomas
+Wang, Trishala Neeraj, Jos Rozen, Abheesht Sharma,
+Andrea Santilli, Thibault Fevry, Jason Alan Fries,
+Ryan Teehan, Tali Bers, Stella Biderman, Leo Gao,
+Thomas Wolf, and Alexander M. Rush. 2022. Multi-
+task prompted training enables zero-shot task gener-
+alization. Preprint, arXiv:2110.08207.
+John Schulman et al. 2022. Introducing chatgpt.
+Lee Sharkey, Dan Braun, and Beren Millidge. 2023.
+Taking features out of superposition with sparse
+autoencoders, 2023. URL https://www.lesswrong.
+com/posts/z6QQJbtpkEAX3Aojj/interim-research-
+report-taking-features-out-of-superposition. Ac-
+cessed: 2024-01-14.
+Irene Solaiman, Miles Brundage, Jack Clark, Amanda
+Askell, Ariel Herbert-V oss, Jeff Wu, Alec Radford,
+and Jasmine Wang. 2019. Release strategies and the
+social impacts of language models. arXiv preprint
+arXiv:1908.09203.
+6

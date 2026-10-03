@@ -1,0 +1,147 @@
+Figure 18: Histogram of cosine similarities of base Gemma 2 27B role vectors with the top 3 PCs
+from persona space, with selected roles (as well as the default Assistant) labeled.
+28
+
+C Mapping out trait space
+C.1 Data generation
+To map out a persona space in terms of traits rather than roles, we used a list of 240 traits that covers
+a wide range of possible character traits an interlocutor can take on (e.g.speculative,dramatic,
+acerbic).
+We used Chen et al. [11]’s instruction generation pipeline, namely relying on a frontier model to
+create contrastive system prompts encouraging and discouraging each trait. For every trait, we
+generated five pairs of system prompts: a positive prompt designed to elicit the desired trait and a
+negative prompt designed to suppress it.
+Then, we generated 2400 rollouts for each of the positive- and negatively-elicited traits and used
+a scoring system ranging from 0 (not expressed) to 100 (strongly expressed) to judge how much a
+response exhibits the target trait.
+We kept the traits with at least ten system prompt pairs with a score difference of at least 50. Then,
+we collected the post-MLP residual stream activation of all response tokens and subtracted the mean
+negatively-elicited response activation from the mean positively-elicited activation to obtain our trait
+vectors. Similarly to the role space discussed in the main body of this paper, we ran PCA on these
+240 trait vectors to interpret the main dimensions of variation within this "trait space."
+C.2 Variance explained
+Figure 19: Variance explained by each PC for trait space. Gemma 2 27B has 239 components, Qwen
+3 32B and Llama 3.3 70B have 240 components total. Trait space is also relatively low-dimensional:
+both Gemma and Qwen need four and Llama needs seven dimensions to explain 70% of variance.
+C.3 PC interpretation
+The PCs of trait space come with more similarities across models, which we again calculated by
+looking at the trait compositions of the top PC’s. No pairwise correlation in the top 3 PC’s was below
+0.70. For the labels in the table, we opted for a cutoff of 0.85 for a shared interpretation.
+Across all three models, the pairwise similarity on trait PC1 is>0.81, reflecting an axis that roughly
+spansconscientioustoimpulsivecharacteristics. Llama’s PC1 is slightly distinct from the other two
+in that the axis is more outrightagreeabletoantagonistic. Gemma and Qwen’s (0.93), on the other
+hand, appears more calm andregulatedto edgy andreactive. Like the PC1 in role space, this axis
+also seems to suggest traits we expect the Assistant to exhibit on one end and traits we expect to be
+discouraged on the other.
+PC2 is moderately consistent across models (pairwise correlations>0.70), with Qwen and Llama’s
+(0.86) both spanninganalyticaltointuitivetraits, though Llama also comes across as reserved to
+29
+
+dramatic. Gemma’s PC2 is somewhat different, spanning moreunderstatedtoexpansivetraits: one
+end reflects efficiency while the other end captures curious, exploratory energy.
+Qwen and Llama’s PC3 looks like anaccessibletoeruditeaxis with warm, approachable traits on
+one end and specialized, intellectual traits on the other. They are once again highly similar to each
+other (0.91), though Qwen’s erudite end feels somewhat colder (cynical,callous). Gemma’s PC3
+(correlation with the other two>0.72) could also be interpreted as spanning accessible to erudite, but
+comes with the added connotation offlexibletoimposingtraits.
+Table 7: The top 5 traits with the highest and lowest cosine similarity with the top three trait PCs for
+each model. Bolded traits are shared across all three models while italicized traits appear for two.
+Gemma 2 27B Qwen 3 32B Llama 3.3 70B
+−+−+−+
+REGULATED↔REACTIVEAGREEABLE↔ANTAGONISTIC
+Trait PC1methodical
+calm
+conscientious
+moderate
+structuralist
+edgy
+whimsical
+mercurial
+zealous
+goofy
+calm
+solemn
+serious
+methodical
+conscientious
+mercurial
+edgy
+temperamental
+irreverent
+manic
+diplomatic
+supportive
+conscientious
+strategic
+earnest
+flippant
+impulsive
+visceral
+petty
+bitter
+UNDERSTATED↔EXPANSIVEANALYTICAL↔INTUITIVE
+Trait PC2literal
+efficient
+concise
+closure-seeking
+understated
+charismatic
+curious
+generous
+exploratory
+proactive
+literal
+materialist
+avoidant
+grounded
+understated
+rhetorical
+eloquent
+philosophical
+metaphorical
+artistic
+reserved
+dispassionate
+detached
+rationalist
+grounded
+rhetorical
+dramatic
+metaphorical
+poetic
+artistic
+FLEXIBLE↔IMPOSINGACCESSIBLE↔ERUDITE
+Trait PC3improvisational
+accommodating
+empathetic
+gregarious
+casual
+dominant
+arrogant
+esoteric
+perfectionist
+bombastic
+benevolent
+forgiving
+accommodating
+empathetic
+gregarious
+esoteric
+cynical
+callous
+specialized
+erudite
+casual
+chill
+accessible
+empathetic
+forgiving
+technical
+bombastic
+specialized
+ritualistic
+erudite
+C.4 Cosine similarity of top 3 trait PCs
+Figure 20: Histogram of cosine similarities of Gemma 2 27B trait vectors with the top 3 PCs from
+trait space, with selected traits.
+30

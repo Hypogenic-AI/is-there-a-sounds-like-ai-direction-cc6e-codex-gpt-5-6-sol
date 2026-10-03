@@ -1,0 +1,48 @@
+F Activation capping Pareto frontier for Qwen
+Figure 26: Changes in harmful response rates (on persona-based jailbreak prompts) and capabilities
+eval performance (averaged over a suite of evaluations–IFEval, MMLU Pro, GSM8k, EQ-Bench) for
+different activation capping settings, varying the layer range and cap threshold (given in terms of a
+percentile, relative to the activations from our dataset used to compute role vectors), for Qwen 3 32B.
+49
+
+G The Assistant Axis vs. role PC1
+When we mapped out persona space, we found a distinctive PC1 that had roles similar to the Assistant on one
+end and fantastical, mystical roles on the other. These findings suggest that "similarity to the Assistant" is the
+main axis of persona variation across different models. Inspired by these findings, we defined an Assistant Axis
+as the contrast vector between the mean role vector and the default activation.
+In this section, we compare how role PC1 performs across the various experiments in this paper. We find that it
+is a similar vector to the Assistant Axis and has comparable performance, though we suggest using the contrast
+vector method in case a model’s persona space does not produce a PC1 with the same meaning.
+G.1 Cosine similarity of the Assistant Axis and role PC1
+For every layer, we ran PCA on the role vectors and inspected how different roles projected on PC1 to verify
+that it seemed like a "similarity to Assistant" axis. Then, we compared the cosine similarity and found that it is
+high (>0.60 at all layers and>0.71 at the middle layer which we used for our main PCA and steering results).
+Figure 27: Per-layer cosine similarity between role PC1 and the Assistant Axis obtained as a contrast
+vector. The middle layer used for our main experiments is annotated.
+G.2 Causal effects of steering with role PC1
+We ran our steering evaluations with role PC1 at a middle layer as well and saw similar effects on behavior in
+our role susceptibility and persona-based jailbreak evaluations.
+For role susceptibility, steering with PC1 causes Qwen to hallucinate human experiences more often than a
+mystical persona compared to steering with the Assistant Axis. In the other models, the effects of steering are
+similar.
+Figure 28: Fraction of responses exhibiting different kinds of roles as a function of steering strength
+along role PC1.
+50
+
+For the persona-based jailbreaks, we find that the result of steering with PC1 is also similar across every model,
+besides the fact that higher steering strengths led to nonsensical responses less often from Qwen compared to the
+Assistant Axis.
+Figure 29: Fraction of harmful and harmless responses in response to persona-based jailbreaks as a
+function of steering strength along role PC1.
+In the base model versions of Gemma 2 27B and Llama 3.1 70B, we also experimented with steering with
+role PC1. However, we found that in Llama 3.1 70B (as opposed to Llama 3.3 70B), role PC1 did not clearly
+distinguish personas similar to the Assistant. In particular, the default activation did not project to one end.
+Hence, the steering results are ambiguous here compared to using the Assistant Axis contrast vector.
+For Gemma, we see a more drastic rise in purpose ascribed to professional occupations and a reduction in
+purpose ascribed to mental health occupations, compared to steering with the Assistant Axis. We also again see
+a decline in religious purposes. When it comes to traits, we see similar trends besides a slightly greater tendency
+towards conscientious over agreeable traits.
+Figure 30: Steering base models with role PC1 also shifts responses to completions to prefills about
+their purpose (top) and traits (bottom), mainly in Gemma 2 27B. Steering with role PC1 in Llama 3.1
+70B led to ambiguous results because PC1 seemed to capture "Assistant-ness" less.
+51

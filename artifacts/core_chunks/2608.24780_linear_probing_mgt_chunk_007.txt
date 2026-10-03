@@ -1,0 +1,725 @@
+B.3 Comparison to Related Work Detectors
+Linear Separability and Representation Quality
+AnalysesCompared to prior work on MGT de-
+tection based on latent representations (Tulchinskii
+et al., 2023; Yu et al., 2024; Chen et al., 2025),
+our study differs both in its analysis of latent rep-
+resentations and in its methodological approach.
+Tulchinskii et al. (2023) were among the first to in-
+vestigate latent-space differences between human-
+and machine-written text. While they show that in-
+trinsic dimensionality differs between the two, we
+additionally analyze entropy, effective rank, and
+anisotropy, examine their evolution across layers,
+and demonstrate that all four metrics exhibit con-
+sistent patterns across diverse domains. TextFlu-
+oroscopy (Yu et al., 2024) provides evidence that
+middle layers contain particularly robust MGT sig-
+nals, but does not investigate the linear separabil-
+ity of human and machine representations. Repre-
+Guard (Chen et al., 2025) identifies systematic dif-
+ferences in activation patterns, but neither tests
+for linear separability nor connects its findings to
+the Linear Representation Hypothesis (LRH) (Park
+et al., 2023).
+MethodologyMethodologically, our approach
+differs in several ways. ID (Tulchinskii et al.,
+2023) trains a logistic regression classifier on a
+single intrinsic-dimensionality feature per sample,
+whereas our probes operate directly on latent rep-
+resentations. TextFluoroscopy (Yu et al., 2024)
+trains anonlinearclassifier on the middle-layer
+representation selected through vocabulary-space
+distributional differences between early and late
+layers. In contrast, we train simplelinearclassifiers
+and show that they achieve stronger performance.
+RepreGuard (Chen et al., 2025) identifies probing
+directions through an unsupervised,training-free
+procedure. Specifically, it computes the first prin-
+cipal component of the activation-difference ma-
+trix between human and machine text using mean-
+pooled token representations. 21 In contrast, we
+trainregularized linear classifiers directly on rep-
+resentations and show that last-token pooling con-
+sistently outperforms mean pooling (Appendix D).
+Moreover, RepreGuard operates in the full acti-
+vation space (e.g., 4,096 dimensions for LLaMA-
+8B), whereas we first project activations into a 100-
+dimensional PCA subspace. As our representation
+analysis shows that MGT and HWT remain sep-
+21This is closely related and often identical to difference-in-
+means (Tigges et al., 2024; Rimsky et al., 2024).
+arable in low-dimensional spaces, our probes op-
+erate on only 2.4% of the original dimensionality,
+substantially reducing memory and computational
+requirements.
+Tables 1 and 2 show that MGT probes consis-
+tently outperform these related methods. Com-
+pared to RepreGuard (Chen et al., 2025), we at-
+tribute these gains primarily to supervised, regu-
+larized learning, which suppresses noisy dimen-
+sions and yields more robust probing directions.
+Compared to TextFluoroscopy (Yu et al., 2024),
+our probes avoid unnecessary nonlinear complexity
+and leverage information from all layers rather than
+relying on a single middle layer. As shown in Sec-
+tion 3, the boundary between human- and machine-
+written text is largely linear, while Appendix Fig-
+ure 15 demonstrates that aggregating information
+across layers improves robustness. Finally, unlike
+ID (Tulchinskii et al., 2023), our probes operate di-
+rectly on latent representations rather than a single-
+metric feature, enabling them to exploit substan-
+tially richer information about machine-generated
+text.
+B.4 Computational Resources
+We run all experiments on an HPC cluster equipped
+with NVIDIA A100 (40GB) and H200 (141GB)
+GPUs. Training a single probe variant, including
+activation extraction and inference, typically re-
+quires only 1–3 minutes on an A100 (40GB).
+C Additional Results
+C.1 ID Adversarial Attacks
+In addition to the dimensions considered in Table 1
+(domains, languages, generators, and generation
+tasks), we also evaluate adversarial attacks using
+the DetectRL benchmark (Wu et al., 2024). We
+observe the same saturation effects as for the Detec-
+tRL domain subsets, with most baselines achieving
+near-perfect performance. For this reason, we omit
+adversarial attacks from the main table.
+C.2 OOD
+In Table 2, we report the mean AUC for each tar-
+get subset unseen during training, averaged over
+transfers from the remaining subsets within the
+same benchmark. Figure 10 provides the full OOD
+transfer results.
+
+DetectRL Attacks (Wu et al., 2024)
+Model Mixing Paraphrase Perturbation Prompt
+Zero-shot
+Likelihood 0.9562 0.6973 0.6535 0.9628
+LLR 0.9232 0.6813 0.6876 0.9288
+Rank 0.2121 0.4113 0.8194 0.1584
+Binoculars 0.9992 0.9069 0.9248 0.9847
+FastDetectGPT 0.8911 0.7858 0.6218 0.8926
+GECScore 0.7183 0.6777 0.6075 0.7064
+RAIDAR 0.7392 0.7209 0.6503 0.7122
+Supervised
+OpenAI-RoBERTa 0.8774 0.8991 0.6946 0.8581
+RADAR 0.9733 0.9628 0.9593 0.9474
+EditLens 0.3302 0.5628 0.5775 0.3562
+ID 0.7089 0.7253 0.6406 0.6746
+RepreGuard 0.9600 0.8480 0.9820 0.9260
+BiScope 0.9993 0.9692 0.9884 0.9946
+TextFluoroscopy 0.9944 0.9968 0.9971 0.9934
+RoBERTa 0.9964 0.9992 1.00000.9972
+MGT Probes
+LLP 0.9993 0.9999 1.0000 0.9982
+∆vs BL +0.00 +0.07 +0.00 +0.10
+CLP 0.9995 0.9998 1.0000 0.9994
+∆vs BL +0.02 +0.06 +0.00 +0.22
+Table 3: In-domain detection AUC scores for adversarial
+attacks on DetectRL (Wu et al., 2024). LLP = Layer-
+Averaged Linear Probes. CLP=Concatenated-Layer
+Probes. For TSM, FP=First Paragraph, PE=Paragraph
+Extension, SUM=Summarization, and TST=Text Style
+Transfer. ∆ denotes the gain over the strongest baseline.
+C.3 Probing vector similarity
+Figure 11 shows layer-16 activation projections
+for paired domain subsets in DetectRL (Wu et al.,
+2024). The black dashed line connects the cen-
+troids of the human and machine activation clouds
+within each subset, approximating the correspond-
+ing linear MGT direction.
+Consistent with Figure 4, we find that these lin-
+ear MGT directions are broadly aligned in the same
+direction across most subsets. They are not per-
+fectly aligned, which is expected because (1) we ap-
+proximate the MGT direction by connecting class
+centroids rather than learning it directly, and (2)
+the subsets differ along several confounding dimen-
+sions, including adversarial attacks, text length,
+and stylistic or grammatical variation. The latter
+is particularly evident for Reddit, which exhibits
+the largest distributional shift across domains. Nev-
+ertheless, their broad alignment provides further
+evidence that probes learn an approximate shared
+linear direction associated with MGT.
+C.4 Sample-efficiency Analysis
+In Figure 5, we evaluate sample efficiency using a
+PCA space constructed from the full training set for
+each layer, and then train probes on progressively
+arxiv
+Reddit
+yelp
+xsum
+.99 .97 .99 .98
+.96 1.00 .99 .88
+.97 .95 1.00 .97
+.34 .80 .63 1.00
+DetectRL
+en
+de
+ru
+zh
+.93 .86 .87 .82
+.90 .90 .87 .86
+.88 .84 .88 .79
+.87 .83 .80 .90
+Multisocial
+first
+extend
+sums
+tst
+.71 .71 .70 .62
+.42 .37 .37 .40
+.36 .51 .28 .40
+.43 .47 .37 .41
+TSM
+cohere
+gpt4
+llama
+mistral
+.88 .91 .90 .94
+.83 .95 .93 .94
+.86 .95 .97 .96
+.83 .93 .94 .95
+RAID
+arxiv
+Reddit
+yelp
+xsum
+.99 .82 .94 .99
+.74 .98 .96 .69
+.88 .97 .98 .89
+.97 .75 .89 .99
+DetectRL
+en
+de
+ru
+zh
+.88 .67 .72 .54
+.78 .80 .75 .49
+.79 .73 .78 .52
+.70 .57 .63 .79
+Multisocial
+first
+extend
+sums
+tst
+.75 .58 .74 .70
+.63 .60 .61 .60
+.74 .59 .80 .70
+.70 .55 .71 .71
+TSM
+cohere
+gpt4
+llama
+mistral
+.92 .84 .96 .93
+.89 .88 .96 .92
+.91 .86 .97 .93
+.92 .85 .96 .95
+RAID
+arxiv
+Reddit
+yelp
+xsum
+.90 .50 .61 .56
+.50 .97 .94 .50
+.50 .75 .98 .50
+.60 .54 .75 .96
+DetectRL
+en
+de
+ru
+zh
+.71 .64 .51 .51
+.50 .69 .50 .50
+.50 .50 .64 .50
+.51 .50 .50 .78
+Multisocial
+first
+extend
+sums
+tst
+.50 .51 .59 .50
+.51 .53 .59 .48
+.50 .54 .60 .48
+.50 .52 .56 .50
+TSM
+cohere
+gpt4
+llama
+mistral
+.60 .62 .59 .66
+.68 .78 .79 .79
+.73 .85 .89 .85
+.70 .80 .83 .81
+RAID
+arxiv
+Reddit
+yelp
+xsum
+1.00 .79 .67 .72
+.90 1.00 .97 .79
+.91 .98 1.00 .83
+.93 .85 .91 1.00
+DetectRL
+en
+de
+ru
+zh
+.95 .83 .77 .66
+.91 .86 .80 .64
+.83 .77 .78 .61
+.81 .76 .76 .85
+Multisocial
+first
+extend
+sums
+tst
+.94 .79 .91 .76
+.80 .75 .76 .71
+.86 .68 .93 .73
+.83 .74 .86 .79
+TSM
+cohere
+gpt4
+llama
+mistral
+.94 .94 .96 .96
+.88 .97 .96 .94
+.92 .95 .98 .95
+.94 .97 .98 .98
+RAID
+arxiv Reddit yelp xsum
+T est
+arxiv
+Reddit
+yelp
+xsum
+Train
+1.00 .97 1.00 .99
+.97 1.00 .99 .89
+.99 1.00 1.00 .93
+.98 .93 .96 1.00
+DetectRL
+en de ru zh
+T est
+en
+de
+ru
+zh
+.95 .90 .90 .84
+.94 .93 .91 .88
+.93 .89 .92 .89
+.92 .86 .88 .93
+Multisocial
+first
+extend sums
+tst
+T est
+first
+extend
+sums
+tst
+.96 .81 .94 .85
+.94 .93 .94 .80
+.95 .76 .97 .84
+.94 .87 .95 .88
+TSM
+cohere gpt4 llama mistral
+T est
+cohere
+gpt4
+llama
+mistral
+.97 .97 .99 .99
+.91 .99 .99 .98
+.93 .99 .99 .98
+.94 .99 .99 .99
+RAID
+arxiv Reddit yelp xsum
+T est
+arxiv
+Reddit
+yelp
+xsum
+1.00 .96 .99 .98
+.97 1.00 .99 .87
+.98 .99 1.00 .88
+.99 .94 .96 1.00
+DetectRL
+en de ru zh
+T est
+en
+de
+ru
+zh
+.95 .91 .91 .81
+.93 .92 .88 .90
+.90 .85 .91 .71
+.90 .84 .84 .95
+Multisocial
+first
+extend sums
+tst
+T est
+first
+extend
+sums
+tst
+.97 .77 .91 .83
+.94 .92 .89 .80
+.90 .80 .96 .83
+.94 .86 .90 .88
+TSM
+cohere gpt4 llama mistral
+T est
+cohere
+gpt4
+llama
+mistral
+.97 .95 .98 .98
+.91 .99 .99 .98
+.92 .99 .99 .98
+.93 .98 .99 .99
+RAID
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1.0
+AUROC
+TextFluoroscopy BiScope
+RepreGuard RoBERTa
+LLP CLP
+BaselinesLinear Probes
+Figure 10: OOD AUC scores for baseline detectors (top
+rows) and MGT probes (bottom row). Rows denote the
+training subsets, while columns denote the test subsets.
+Darker colors indicate better performance.
+2
+ 1
+ 0 1 2 3
+PC1
+1.5
+1.0
+0.5
+0.0
+0.5
+1.0
+1.5
+2.0
+PC2
+ArXiv Human
+ArXiv Machine
+Reddit Human
+Reddit Machine
+2
+ 1
+ 0 1 2 3
+PC1
+2
+1
+0
+1
+2
+PC2
+ArXiv Human
+ArXiv Machine
+Yelp Human
+Yelp Machine
+1
+ 0 1 2
+PC1
+1.0
+0.5
+0.0
+0.5
+1.0
+1.5
+2.0
+PC2
+ArXiv Human
+ArXiv Machine
+News Human
+News Machine
+2.0
+ 1.5
+ 1.0
+ 0.5
+ 0.0 0.5 1.0 1.5
+PC1
+2.5
+2.0
+1.5
+1.0
+0.5
+0.0
+0.5
+1.0
+PC2
+Reddit Human
+Reddit Machine
+Yelp Human
+Yelp Machine
+2.0
+ 1.5
+ 1.0
+ 0.5
+ 0.0 0.5 1.0 1.5 2.0
+PC1
+1.5
+1.0
+0.5
+0.0
+0.5
+1.0
+PC2
+Reddit Human
+Reddit Machine
+News Human
+News Machine
+2.0
+ 1.5
+ 1.0
+ 0.5
+ 0.0 0.5 1.0 1.5 2.0
+PC1
+2.5
+2.0
+1.5
+1.0
+0.5
+0.0
+0.5
+1.0
+PC2
+Yelp Human
+Yelp Machine
+News Human
+News Machine
+Figure 11: Activation projections of paired DetectRL
+datasets (Wu et al., 2024) in the shared PCA space at
+layer 16. Dashed lines connect the centroids of the
+human and machine clusters within each dataset.
+smaller subsets. However, this setup does not fully
+reflect a real-world application, where the full train-
+ing distribution may not be available in advance.
+Therefore, in Figure 12, we repeat the experiment
+in the full activation space, without applying PCA.
+We observe the same pattern, confirming that the
+sample-efficiency results.
+Figure 12: In-domain AUC scores for selected datasets
+as a function of training set size. Compared to Figure 5,
+we do not reduce the dimensionality of activations.
+C.5 Detecting AI-edited text
+In Section 5.6, we investigate whether probing vec-
+tors encode MGT signals as a continuum rather
+
+0.86 0.88 0.90 0.92 0.94 0.96 0.98 1.00
+0
+20
+40
+60Frequency
+0.0 0.2 0.4 0.6 0.8
+0
+10
+20
+30
+40
+APT-Eval (T est Set)
+0.0 0.2 0.4 0.6 0.8 1.0
+0
+10
+20
+30
+40
+50
+0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00
+Semantic Similarity
+0
+20
+40
+60Frequency
+0.0 0.2 0.4 0.6 0.8
+Jaccard Distance
+0
+5
+10
+15
+20
+25
+30
+EditLens (T est Set)
+0.0 0.2 0.4 0.6 0.8 1.0
+Levenshtein Distance
+0
+5
+10
+15
+20
+25
+30
+Figure 13: Histograms of the similarity measures Se-
+mantic (Cosine) Similarity, Jaccard Distance, and Lev-
+enshtein Distance for the test sets of APT (Saha and
+Feizi, 2025) and EditLens (Thai et al., 2026).
+than a binary distinction. Figure 13 shows the distri-
+butions of the text-similarity metrics used to quan-
+tify the degree of AI editing. Our random sampling
+procedure yields a relatively uniform distribution
+across metrics and benchmarks, with the exception
+of semantic similarity in EditLens, which exhibits
+a left-skewed distribution.
+10
+ 5
+ 0 5 10
+0.6
+0.7
+0.8
+0.9
+1.0Semantic Similarity ( )
+r=-0.494
+10
+ 5
+ 0 5 10
+Projection Score
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Levenshtein Distance ( )
+ r=0.609
+10
+ 5
+ 0 5 10
+0.0
+0.2
+0.4
+0.6
+0.8Jaccard Distance ( )
+r=0.613
+(a) LLP
+100
+ 50
+ 0 50
+0.6
+0.7
+0.8
+0.9
+1.0Semantic Similarity ( )
+r=-0.496
+100
+ 50
+ 0 50
+Projection Score
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Levenshtein Distance ( )
+ r=0.609
+100
+ 50
+ 0 50
+0.0
+0.2
+0.4
+0.6
+0.8Jaccard Distance ( )
+r=0.604
+(b) CLP
+Figure 14: Edit-strength metrics plotted against probe
+projection scores. The dashed line shows the linear re-
+gression fit, andr denotes the Pearson correlation coef-
+ficient. This Figure shows the results for EditLens (Thai
+et al., 2026).
+In Figure 6, we plot the text-similarity metrics
+used to quantify the degree of AI editing in APT-
+Eval (Saha and Feizi, 2025) against the projection
+scores of LLP and CLP. Figure 14 presents the
+same analysis for EditLens (Thai et al., 2026). We
+observe the same overall pattern across both bench-
+marks, although the performance gap between LLP
+and CLP is smaller on EditLens.
+C.6 Layer Analysis
+We conduct an additional analysis of probe perfor-
+mance across transformer layers to better under-
+stand where MGT signals emerge and how they
+evolve throughout the network. Specifically, we
+0 5 10 15 20 25 30
+Layer
+0.6
+0.7
+0.8
+0.9
+1.0Mean AUC
+DetectRL (Domains)
+MultiSocial (Languages)
+TSM (T asks)
+RAID (Generators)
+(a) In-domain
+0 5 10 15 20 25 30
+Layer
+0.5
+0.6
+0.7
+0.8
+0.9
+1.0Mean AUC
+DetectRL (Domains)
+MultiSocial (Languages)
+TSM (T asks)
+RAID (Generators) (b) Out-of-domain
+Figure 15: Layer-wise AUC averaged across bench-
+marks. Vertical lines denote performance plateaus.
+Takeaway: MGT signals emerge early and remain sta-
+ble.
+ask:RQ:How does MGT detection performance
+evolve across layers in in-domain and OOD set-
+tings?
+MGT signals emerge in early layers and remain
+relatively stable throughout later layers.Fig-
+ure 15 shows layer-wise mean AUC across the four
+subsets within each benchmark for both ID and
+OOD settings. Both settings reveal a consistent
+two-stage pattern across benchmarks: a sharp rise
+in MGT signals in the early layers (up to approx-
+imately layer 5 for ID and layer 10 for OOD),
+followed by a plateau in which detection perfor-
+mance remains relatively stable. In both settings,
+this suggests that even early representations associ-
+ated with lower-level textual features (Tenney et al.,
+2019) encode strong linear MGT signals. For OOD
+detection, the strong performance of middle layers
+and the degradation in the final layers are consistent
+with later representations becoming increasingly
+specialized and therefore less generalizable (Skean
+et al., 2025).
+C.7 Sensitivity to Text Length
+Model↓nchars→
+25 50 75 100 125 150 175 200 250 300 400
+LLP 0.850 0.823 0.881 0.908 0.966 0.981 0.989 0.993 0.991 0.995 0.997
+CLP 0.840 0.824 0.903 0.960 0.982 0.990 0.996 0.996 0.997 0.997 1.000
+RoBERTa 0.874 0.883 0.904 0.969 0.926 0.936 0.998 0.999 1.000 0.999 1.000
+Table 4: Ablation study of text length. We compare
+LLP and CLP against a RoBERTa baseline. Each model
+is trained on the number of characters indicated by the
+corresponding column, using the ArXiv subset of De-
+tectRL (Wu et al., 2024).
+Table 4 presents AUC detection performance as
+a function of text length. We compare both MGT
+probes with the RoBERTa (Liu et al., 2019) base-
+line, training each model on the ArXiv subset of
+DetectRL (Wu et al., 2024). While RoBERTa has a
+slight AUC advantage for texts up to 50 characters,
+both probes remain competitive and reach near-

@@ -1,0 +1,318 @@
+Linear Probing Provides Robust and Efficient Detection of
+Machine-Generated Text
+Gerrit Quaremba1, Hanqi Yan1, Elizabeth Black1, Denny Vrandeˇci´c2, Elena Simperl1
+1King’s College London, 2Wikimedia Foundation
+{gerrit.quaremba,hanqi.yan,elizabeth.black,elena.simperl}@kcl.ac.uk
+denny@wikimedia.org
+Abstract
+Distinguishing machine-generated text (MGT)
+from human-written text (HWT) becomes in-
+creasingly important due to potential misuse.
+However, most supervised detectors often de-
+grade out-of-domain (OOD) and require large,
+diverse training sets. In this work, we analyze
+the linearity and quality of MGT representa-
+tions and show that simple linear probes out-
+perform a wide range of detectors while being
+substantially more sample-efficient. We first
+show that MGT and HWT latent representa-
+tions are linearly separable in low-dimensional
+space, and provide a plausible explanation for
+this separability through systematic differences
+in their representation quality. Motivated by
+these insights, we train two variants of sim-
+ple linear probes and evaluate them across 4
+benchmarks against 16 baselines. Probes con-
+sistently improve OOD detection (+11 AUC),
+requiring solely <100 samples to reach near-
+peak performance. We show that this transfer-
+ability arises because probes recover a shared
+latent MGT direction that generalizes across
+diverse settings. Finally, we demonstrate that
+probing vectors capture a continuous spectrum
+of “machineness”, highlighting their potential
+for fine-grained estimation of AI-edited text.
+Overall, our work provides insights into latent-
+space differences between MGT and HWT and
+demonstrates the potential of linear probes as
+as robust and sample-efficient MGT detectors.
+We release our code on github.
+1 Introduction
+Large language models (LLMs) now generate
+human-like text at scale, and their output has
+spread rapidly across platforms such as social me-
+dia (Sun et al., 2025) or academic writing (Liang
+et al., 2024). This proliferation raises the risk
+of potential misuse, including misinformation
+campaigns (Goldstein et al., 2023) or plagia-
+rism (Hutson, 2024). In response, a growing line
+of work builds detectors that separate machine-
+generated text (MGT) from human-written text
+(HWT) (Crothers et al., 2023; Wu et al., 2025a).
+Prior work groups MGT detectors into two fami-
+lies (Wu et al., 2025a): zero-shot methods (e.g.,
+Hans et al., 2024; Bao et al., 2023) and super-
+vised classifiers (e.g., Hu et al., 2023; Verma et al.,
+2024).1 While supervised approaches dominate
+recent benchmarks (Macko et al., 2025; Quaremba
+et al., 2026), their practical utility remains lim-
+ited: they often generalize poorly to out-of-domain
+(OOD) settings (Wu et al., 2025a; Doughman
+et al., 2025) and require large, diverse training cor-
+pora (Hu et al., 2023). Additionally, a recent line of
+work leverages how LLMs rewrite machine- versus
+human-written text differently (Mao et al., 2024;
+Wu et al., 2025b), but adds substantial overhead
+from generating rewrites.
+A promising direction for overcoming these limi-
+tations lies in the Linear Representation Hypothesis
+(LRH) (Park et al., 2023), which posits that high-
+level concepts are encoded as linear directions in
+latent space. Recent work has identified such di-
+rections for concepts including truth (Marks and
+Tegmark, 2024) or political ideology (Kim et al.,
+2025). This raises a natural question:Are machine-
+and human-written text linearly separable in latent
+space, and if so, why? How can we exploit this
+structure for enhanced MGT detection?
+In this work, we empirically study the latent
+geometry of HWT and MGT and show that sim-
+ple linear probes are sufficient to improve the ro-
+bustness and sample efficiency of MGT detection.
+We begin by visualizing that HWT and MGT are
+largely linearly separable in low-dimensional space,
+which we corroborate byreduceddetection perfor-
+mance when increasing the complexity of nonlinear
+probes (§3.1). We then investigatewhythis linear-
+ity emerges by analyzing both populations with
+1We focus on passive detection and exclude watermarking.
+arXiv:2608.24780v1  [cs.CL]  25 Aug 2026
+
+four representation quality metrics (Skean et al.,
+2025): compared to HWT, MGT representations
+collapse into a compressed, more anisotropic, and
+lower-dimensional subspace (§3.2). These system-
+atic differences provide a plausible explanation for
+why a simple hyperplane can effectively separate
+the two in latent space.
+Leveraging these insights, we trainMGT
+probes: simple linear probes (Alain and Bengio,
+2016; Nanda et al., 2023) on frozen LM represen-
+tations to detect MGT. We consider two variants:
+layer-wise probes and a single probe trained on rep-
+resentations concatenated across layers. Crucially,
+both variants operate on PCA-reduced features, re-
+taining only 2.4% of the original dimensions with
+minimal performance loss. The resulting probing
+vector defines a linear “machineness” direction in
+latent space, which we use for detection by pro-
+jecting test activations onto it (Tigges et al., 2024).
+Across 4 benchmarks spanning 16 evaluation set-
+tings and compared against 16 baseline detectors,
+MGT probes improve in-domain detection by up
+to 18 AUC (§5.2) and 11 AUC OOD (§5.3).
+To explain this strong generalization, we analyze
+probing vectors learned across diverse datasets and
+settings. We find that the vectors are highly aligned,
+indicating that probes recover a shared latent MGT
+direction (§5.4). Moreover, probes achieve strong
+performance with only 10–100 training samples
+and exhibit substantially lower sampling uncer-
+tainty than training-based baselines (§5.5). To-
+gether, our findings suggest that MGT is encoded
+as a compact, shared, and linearly accessible di-
+rection in latent space. This allows simple linear
+probes to generalize better while requiring fewer
+examples than more complex supervised detectors.
+Lastly, we examine whether probing vectors can
+serve as a continuous measure of AI editing in
+text (Zhang et al., 2024) (§5.6). We find strong
+correlations between probe projection scores and
+edit-strength metrics (Saha and Feizi, 2025), mean-
+ing that more extensively AI-edited text is projected
+closer to the MGT subspace. This finding suggests
+that the latent MGT direction encodes acontinuous
+spectrum of “machineness,” which can be lever-
+aged for fine-grained estimation of AI-edited text.
+Our contributions are threefold:
+1. We find that human- and machine-written text
+are linearly separable in latent space and ex-
+plain this separability through systematic dif-
+ferences in their representation geometry.
+2. We introduce two simple linear probe variants
+that recover this latent direction, improving
+OOD generalization over supervised detectors
+(+11 AUC) while exhibiting greater reliability
+and requiring only 10–100 training examples.
+3. We show that the learned MGT direction en-
+codes acontinuousspectrum of “machine-
+ness,” enabling fine-grained estimation of
+AI editing strength through probe projection
+scores.
+2 Related Work
+Linear Representation Hypothesis (LRH)Re-
+cent work has provided growing support for the
+LRH, which posits that high-level concepts are rep-
+resented as linear directions in latent space (Park
+et al., 2023). Various studies have successfully used
+linear probing to identify concepts such as spatial
+reasoning (Nanda et al., 2023), truth (Marks and
+Tegmark, 2023), sentiment (Tigges et al., 2024),
+or political ideology (Kim et al., 2025). To iden-
+tify probing vectors, one typically construct a con-
+trastive dataset containing positive and negative
+instances of the concept of interest (e.g., MGT and
+HWT). Common approaches for identifying prob-
+ing directions include difference-in-means (Bel-
+rose, 2023) and linear probes (Alain and Bengio,
+2016). The resulting probing vector represents the
+concept as a linear direction in activation space
+and can be used for detection, interpretation, or
+representation steering (Zou et al., 2025).
+MGT DetectorsMGT detectors can be broadly
+categorized as zero-shot or supervised meth-
+ods (Wu et al., 2024). Zero-shot detectors are
+training-free and typically exploit discriminative
+differences in token probabilities (Bao et al., 2023;
+Su et al., 2023; Hans et al., 2024) or leverage the
+observation that LLMs rewrite MGT and HWT dif-
+ferently (Wu et al., 2025b; Zhu et al., 2023a; Yang
+et al., 2024). Most supervised detectors formulate
+MGT detection as a binary classification task and
+train machine-learning classifiers (Hu et al., 2023;
+Guo et al., 2024; Mao et al., 2024; Thai et al., 2026).
+Compared to prior latent-representation-based de-
+tectors, our approach operates directly on activa-
+tions rather than a single intrinsic-dimensionality
+feature (Tulchinskii et al., 2023), useslinearprobes
+across layers rather than a single-layernonlinear
+classifier (Yu et al., 2024), and learns probes in
+alow-dimensionalspace rather than identifying
+
+0.2
+ 0.1
+ 0.0
+PC1
+0.0
+0.1
+0.2PC2
+Layer 0
+1
+ 0 1
+PC1
+1.0
+0.5
+0.0
+0.5
+1.0
+PC2
+Layer 6
+2
+ 0 2
+PC1
+2
+1
+0
+1
+2
+PC2
+Layer 12
+5.0
+ 2.5
+ 0.0 2.5 5.0
+PC1
+4
+2
+0
+2
+4
+PC2
+Layer 19
+5
+ 0 5 10
+PC1
+10
+5
+0
+5
+PC2
+Layer 25
+50
+ 0 50 100
+PC1
+60
+40
+20
+0
+20
+40
+60
+PC2
+Layer 32
+Label
+Human
+Machine
+Figure 1: Projections of Wikipedia human- and machine-text hidden states onto the first two principal components
+across layers.Takeaway: Machine- and human-text representations become linearly separable as early as layer 6,
+and this separation remains consistent through the final layers. Appendix A confirms the same pattern across other
+domains.
+Figure 2: In-domain (top) and OOD (bottom) AUC
+scores for probing middle-layer representations with
+MLPs of increasing levels of non-linearity.Takeaway:
+Increasing model complexity consistently reduces per-
+formance, supporting the hypothesis that machine- and
+human-text representations arelinearlyseparable in la-
+tent space.
+directions in atraining-freemanner in thefullrep-
+resentation space (Chen et al., 2025). We review
+current MGT detectors and provide a detailed com-
+parison with related work in Appendix B.
+3 On the Separability and Quality of
+MGT Representations
+In this section, we first examine thelinear
+separabilityof HWT and MGT representations
+(§3.1) and then analyze theirrepresentation qual-
+ityto characterize their latent-space differences
+(§3.2). We conduct all analyses on the Wikipedia
+subset of M4GT (Wang et al., 2024) using
+Llama-8B (Grattafiori et al., 2024) as the backbone
+model. Appendix A.2 shows that our findings gen-
+eralize across domains.
+3.1 Linear Separability
+We begin by asking:Are HWT and MGT linearly
+separable in latent space?While prior work has
+shown that linear classifiers can work (Tulchinskii
+et al., 2023; Chen et al., 2025),2 it remains unclear
+whether the underlying decision boundary is truly
+linear or whether more complex nonlinear bound-
+aries are required.
+MGT and HWT are linearly separable in
+low-dimensional latent spaces.Figure 1 visual-
+izes residual stream activations of MGT and HWT
+across layers, projected onto the first two principal
+components. While the two distributions overlap
+in the first layer, they become clearlylinearlysepa-
+rable as early as layer 6. This separation remains
+remarkably stable throughout the remaining lay-
+ers. Appendix Figure 8 further shows that each do-
+main and generator forms distinct local subspaces,
+within which HWT and MGT remain linearly sepa-
+rable.
+To test whether the decision boundary is in-
+deed linear, we train MLP probes of increasing
+complexity on mid-layer representations to predict
+MGT (Gurnee and Tegmark, 2024). If nonlinear
+structure were important for detection, deeper clas-
+sifiers should improve performance. Instead, Fig-
+ure 2 shows that detection performance deteriorates
+as nonlinearity increases in both ID and OOD set-
+tings. Our findings empirically support that MGT
+and HWT are separated by a predominantly linear
+decision boundary in latent space.
+3.2 Representation Quality
+Yet, it remains unclear which representational dif-
+ferences make this linear separation possible. We
+therefore ask:How do HWT and MGT differ in
+latent space?To this end, we analyze their latent
+2We have included the detailed comparison with them in
+Appendix B.3.

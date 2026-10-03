@@ -1,0 +1,237 @@
+Acknowledgements
+This work was supported by the Engineering and
+Physical Sciences Research Council [grant num-
+ber Y009800/1], through funding from Respon-
+sible AI UK (KP0011), as part of the Participa-
+tory Harm Auditing Workbenches and Method-
+ologies (PHAWM) project, and by UK Research
+and Innovation [grant number EP/S023356/1],
+through the UKRI Centre for Doctoral Train-
+ing in Safe and Trusted Artificial Intelligence
+(www.safeandtrustedai.org).
+
+References
+Isha Agarwal, Saharsha Navani, and Fazl Barez. 2025.
+Context matters: Analyzing the generalizability of
+linear probing and steering across diverse scenarios.
+InMechanistic Interpretability Workshop at NeurIPS
+2025.
+Guillaume Alain and Yoshua Bengio. 2016. Under-
+standing intermediate layers using linear classifier
+probes.ArXiv, abs/1610.01644.
+Guangsheng Bao, Yanbin Zhao, Zhiyang Teng, Linyi
+Yang, and Yue Zhang. 2023. Fast-detectgpt: Effi-
+cient zero-shot detection of machine-generated text
+via conditional probability curvature.arXiv preprint
+arXiv:2310.05130.
+Yonatan Belinkov. 2022. Probing classifiers: Promises,
+shortcomings, and advances.Computational Linguis-
+tics, 48(1):207–219.
+Nora Belrose. 2023. Diff-in-means concept editing is
+worst-case optimal. EleutherAI Blog. Accessed on:
+May 18, 2026.
+Xin Chen, Junchao Wu, Shu Yang, Runzhe Zhan, Zeyu
+Wu, Ziyang Luo, Di Wang, Min Yang, Lidia S. Chao,
+and Derek F. Wong. 2025. RepreGuard: Detecting
+LLM-generated text by revealing hidden represen-
+tation patterns.Transactions of the Association for
+Computational Linguistics, 13:1812–1831.
+Alexis Conneau, Kartikay Khandelwal, Naman Goyal,
+Vishrav Chaudhary, Guillaume Wenzek, Francisco
+Guzmán, Edouard Grave, Myle Ott, Luke Zettle-
+moyer, and Veselin Stoyanov. 2020. Unsuper-
+vised cross-lingual representation learning at scale.
+Preprint, arXiv:1911.02116.
+Evan N Crothers, Nathalie Japkowicz, and Herna L Vik-
+tor. 2023. Machine-generated text: A comprehensive
+survey of threat models and detection methods.IEEE
+Access, 11:70977–71002.
+Jad Doughman, Osama Mohammed Afzal,
+Hawau Olamide Toyin, Shady Shehata, Preslav
+Nakov, and Zeerak Talat. 2025. Exploring the
+limitations of detecting machine-generated text. In
+Proceedings of the 31st International Conference on
+Computational Linguistics, pages 4274–4281.
+Liam Dugan, Alyssa Hwang, Filip Trhlík, Andrew
+Zhu, Josh Magnus Ludan, Hainiu Xu, Daphne Ip-
+polito, and Chris Callison-Burch. 2024. RAID: A
+shared benchmark for robust evaluation of machine-
+generated text detectors. InProceedings of the 62nd
+Annual Meeting of the Association for Computational
+Linguistics (Volume 1: Long Papers), pages 12463–
+12492, Bangkok, Thailand. Association for Compu-
+tational Linguistics.
+Elena Facco, Maria d’Errico, Alex Rodriguez, and
+Alessandro Laio. 2017. Estimating the intrinsic di-
+mension of datasets by a minimal neighborhood in-
+formation.Scientific Reports, 7.
+Sebastian Gehrmann, Hendrik Strobelt, and Alexander
+Rush. 2019. GLTR: Statistical detection and visual-
+ization of generated text. InProceedings of the 57th
+Annual Meeting of the Association for Computational
+Linguistics: System Demonstrations, pages 111–116,
+Florence, Italy. Association for Computational Lin-
+guistics.
+Josh A Goldstein, Girish Sastry, Micah Musser, Re-
+nee DiResta, Matthew Gentzel, and Katerina Sedova.
+2023. Generative language models and automated
+influence operations: Emerging threats and potential
+mitigations.arXiv preprint arXiv:2301.04246, 1.
+Aaron Grattafiori, Abhimanyu Dubey, Abhinav Jauhri,
+Abhinav Pandey, Abhishek Kadian, Ahmad Al-
+Dahle, Aiesha Letman, Akhil Mathur, Alan Schel-
+ten, Alex Vaughan, Amy Yang, Angela Fan, Anirudh
+Goyal, Anthony Hartshorn, Aobo Yang, Archi Mi-
+tra, Archie Sravankumar, Artem Korenev, Arthur
+Hinsvark, and 542 others. 2024. The llama 3 herd of
+models.Preprint, arXiv:2407.21783.
+Hanxi Guo, Siyuan Cheng, Xiaolong Jin, ZHUO
+ZHANG, Kaiyuan Zhang, Guanhong Tao, Guangyu
+Shen, and Xiangyu Zhang. 2024. Biscope: AI-
+generated text detection by checking memorization
+of preceding tokens. InThe Thirty-eighth Annual
+Conference on Neural Information Processing Sys-
+tems.
+Wes Gurnee and Max Tegmark. 2024. Language mod-
+els represent space and time. InInternational Con-
+ference on Learning Representations, volume 2024,
+pages 2483–2503.
+Abhimanyu Hans, Avi Schwarzschild, Valeriia
+Cherepanova, Hamid Kazemi, Aniruddha Saha,
+Micah Goldblum, Jonas Geiping, and Tom Goldstein.
+2024. Spotting llms with binoculars: zero-shot
+detection of machine-generated text. InProceedings
+of the 41st International Conference on Machine
+Learning, ICML’24. JMLR.org.
+Xiaomengc Hu, Pin-Yu Chen, and Tsung-Yi Ho. 2023.
+Radar: robust ai-text detection via adversarial learn-
+ing. InProceedings of the 37th International Con-
+ference on Neural Information Processing Systems,
+NIPS ’23, Red Hook, NY , USA. Curran Associates
+Inc.
+James Hutson. 2024. Rethinking plagiarism in the era of
+generative ai.Journal of Intelligent Communication,
+4(1).
+Junsol Kim, James Evans, and Aaron Schein. 2025. Lin-
+ear representations of political perspective emerge in
+large language models. InThe Thirteenth Interna-
+tional Conference on Learning Representations.
+Kenneth Li, Oam Patel, Fernanda Viégas, Hanspeter
+Pfister, and Martin Wattenberg. 2023. Inference-
+time intervention: Eliciting truthful answers from
+a language model.Advances in Neural Information
+Processing Systems, 36:41451–41530.
+
+Weixin Liang, Zachary Izzo, Yaohui Zhang, Haley Lepp,
+Hancheng Cao, Xuandong Zhao, Lingjiao Chen, Hao-
+tian Ye, Sheng Liu, Zhi Huang, Daniel A. McFarland,
+and James Y . Zou. 2024. Monitoring ai-modified con-
+tent at scale: a case study on the impact of chatgpt
+on ai conference peer reviews. InProceedings of the
+41st International Conference on Machine Learning,
+ICML’24. JMLR.org.
+Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Man-
+dar Joshi, Danqi Chen, Omer Levy, Mike Lewis,
+Luke Zettlemoyer, and Veselin Stoyanov. 2019.
+Roberta: A robustly optimized bert pretraining ap-
+proach.Preprint, arXiv:1907.11692.
+Dominik Macko, Jakub Kopal, Robert Moro, and Ivan
+Srba. 2025. Multisocial: Multilingual benchmark
+of machine-generated text detection of social-media
+texts. InProceedings of the 63rd Annual Meeting of
+the Association for Computational Linguistics (Vol-
+ume 1: Long Papers), pages 727–752.
+Chengzhi Mao, Carl V ondrick, Hao Wang, and Junfeng
+Yang. 2024. Raidar: generative AI detection via
+rewriting. InThe Twelfth International Conference
+on Learning Representations.
+Samuel Marks and Max Tegmark. 2023. The geometry
+of truth: Emergent linear structure in large language
+model representations of true/false datasets.arXiv
+preprint arXiv:2310.06824.
+Samuel Marks and Max Tegmark. 2024. The geometry
+of truth: Emergent linear structure in large language
+model representations of true/false datasets. InFirst
+Conference on Language Modeling.
+Eric Mitchell, Yoonho Lee, Alexander Khazatsky,
+Christopher D Manning, and Chelsea Finn. 2023. De-
+tectgpt: Zero-shot machine-generated text detection
+using probability curvature. InInternational con-
+ference on machine learning, pages 24950–24962.
+PMLR.
+Neel Nanda, Andrew Lee, and Martin Wattenberg. 2023.
+Emergent linear representations in world models of
+self-supervised sequence models. InProceedings
+of the 6th BlackboxNLP Workshop: Analyzing and
+Interpreting Neural Networks for NLP, pages 16–30,
+Singapore. Association for Computational Linguis-
+tics.
+Erik Nordby, Tasha Pais, and Aviel Parrack. 2026.
+Linear probe accuracy scales with model size and
+benefits from multi-layer ensembling.Preprint,
+arXiv:2604.13386.
+Kiho Park, Yo Joong Choe, and Victor Veitch. 2023.
+The linear representation hypothesis and the ge-
+ometry of large language models.arXiv preprint
+arXiv:2311.03658.
+Gerrit Quaremba, Elizabeth Black, Denny Vrandecic,
+and Elena Simperl. 2026. Tsm-bench: Detecting
+llm-generated text in real-world wikipedia editing
+practices. InThe Fourteenth International Confer-
+ence on Learning Representations.
+Anton Razzhigaev, Matvey Mikhalchuk, Elizaveta Gon-
+charova, Ivan Oseledets, Denis Dimitrov, and Andrey
+Kuznetsov. 2024. The shape of learning: Anisotropy
+and intrinsic dimensions in transformer-based mod-
+els. InFindings of the Association for Computational
+Linguistics: EACL 2024, pages 868–874, St. Julian’s,
+Malta. Association for Computational Linguistics.
+Nina Rimsky, Nick Gabrieli, Julian Schulz, Meg Tong,
+Evan Hubinger, and Alexander Turner. 2024. Steer-
+ing llama 2 via contrastive activation addition. In
+Proceedings of the 62nd Annual Meeting of the As-
+sociation for Computational Linguistics (Volume 1:
+Long Papers), pages 15504–15522.
+Olivier Roy and Martin Vetterli. 2007. The effective
+rank: A measure of effective dimensionality. In2007
+15th European signal processing conference, pages
+606–610. IEEE.
+Shoumik Saha and Soheil Feizi. 2025. Almost ai, al-
+most human: The challenge of detecting ai-polished
+writing.Preprint, arXiv:2502.15666.
+Luis Gonzalo Sanchez Giraldo, Murali Rao, and Jose C.
+Principe. 2015. Measures of entropy from data using
+infinitely divisible kernels.IEEE Transactions on
+Information Theory, 61(1):535–548.
+Benjamin Schweinhart. 2021. Persistent homology and
+the upper box dimension.Discrete & Computational
+Geometry, 65(2):331–364.
+Oscar Skean, Md Rifat Arefin, Dan Zhao, Niket Nikul
+Patel, Jalal Naghiyev, Yann LeCun, and Ravid
+Shwartz-Ziv. 2025. Layer by layer: Uncovering hid-
+den representations in language models. InForty-
+second International Conference on Machine Learn-
+ing.
+Irene Solaiman, Miles Brundage, Jack Clark, Amanda
+Askell, Ariel Herbert-V oss, Jeff Wu, Alec Radford,
+Gretchen Krueger, Jong Wook Kim, Sarah Kreps,
+Miles McCain, Alex Newhouse, Jason Blazakis, Kris
+McGuffie, and Jasmine Wang. 2019. Release strate-
+gies and the social impacts of language models.
+Preprint, arXiv:1908.09203.
+Jinyan Su, Terry Yue Zhuo, Di Wang, and Preslav Nakov.
+2023. DetectLLM: Leveraging log rank information
+for zero-shot detection of machine-generated text.
+InThe 2023 Conference on Empirical Methods in
+Natural Language Processing.
+Zhen Sun, Zongmin Zhang, Xinyue Shen, Ziyi Zhang,
+Yule Liu, Michael Backes, Yang Zhang, and Xinlei
+He. 2025. Are we in the ai-generated text world
+already? quantifying and monitoring aigt on social
+media. InProceedings of the 63rd Annual Meeting of
+the Association for Computational Linguistics (Vol-
+ume 1: Long Papers), pages 22975–23005.
+Ian Tenney, Dipanjan Das, and Ellie Pavlick. 2019. Bert
+rediscovers the classical nlp pipeline. InProceedings
+of the 57th annual meeting of the association for
+computational linguistics, pages 4593–4601.

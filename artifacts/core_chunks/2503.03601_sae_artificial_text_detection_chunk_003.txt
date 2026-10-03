@@ -1,0 +1,283 @@
+Gemma Team. 2024a. Gemma 2: Improving open
+language models at a practical size. Preprint,
+arXiv:2408.00118.
+Gemma Team. 2024b. Gemma: Open models based
+on gemini research and technology. Preprint,
+arXiv:2403.08295.
+Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier
+Martinet, Marie-Anne Lachaux, Timothée Lacroix,
+Baptiste Rozière, Naman Goyal, Eric Hambro, Faisal
+Azhar, Aurelien Rodriguez, Armand Joulin, Edouard
+Grave, and Guillaume Lample. 2023. Llama: Open
+and efficient foundation language models. Preprint,
+arXiv:2302.13971.
+Eduard Tulchinskii, Kristian Kuznetsov, Laida
+Kushnareva, Daniil Cherniavskii, Sergey Nikolenko,
+Evgeny Burnaev, Serguei Barannikov, and Irina
+Piontkovskaya. 2023. Intrinsic dimension esti-
+mation for robust detection of ai-generated texts.
+Advances in Neural Information Processing Systems,
+36:39257–39276.
+Adaku Uchendu, Zeyu Ma, Thai Le, Rui Zhang, and
+Dongwon Lee. 2021. TURINGBENCH: A bench-
+mark environment for turing test in the age of neu-
+ral text generation. In Findings of the Association
+for Computational Linguistics: EMNLP 2021, pages
+2001–2017.
+Ben Wang and Aran Komatsuzaki. 2021. GPT-J-
+6B: A 6 Billion Parameter Autoregressive Lan-
+guage Model. https://github.com/kingoflolz/
+mesh-transformer-jax.
+Yuxia Wang, Artem Shelmanov, Jonibek Mansurov,
+Akim Tsvigun, Vladislav Mikhailov, Rui Xing, Zhuo-
+han Xie, Jiahui Geng, Giovanni Puccetti, Ekaterina
+Artemova, Jinyan Su, Minh Ngoc Ta, Mervat Abassy,
+Kareem Ashraf Elozeiri, Saad El Dine Ahmed El Et-
+ter, Maiya Goloburda, Tarek Mahmoud, Raj Vardhan
+Tomar, Nurkhan Laiyk, Osama Mohammed Afzal,
+Ryuto Koike, Masahiro Kaneko, Alham Fikri Aji,
+Nizar Habash, Iryna Gurevych, and Preslav Nakov.
+2025. GenAI content detection task 1: English and
+multilingual machine-generated text detection: AI
+vs. human. In Proceedings of the 1stWorkshop on
+GenAI Content Detection (GenAIDetect), pages 244–
+261, Abu Dhabi, UAE. International Conference on
+Computational Linguistics.
+Linting Xue, Noah Constant, Adam Roberts, Mihir
+Kale, Rami Al-Rfou, Aditya Siddhant, Aditya Barua,
+and Colin Raffel. 2021. mt5: A massively multilin-
+gual pre-trained text-to-text transformer. Preprint,
+arXiv:2010.11934.
+Xianjun Yang, Liangming Pan, Xuandong Zhao,
+Haifeng Chen, Linda Ruth Petzold, William Yang
+Wang, and Wei Cheng. 2024. A survey on detection
+of LLMs-generated content. In Findings of the Asso-
+ciation for Computational Linguistics: EMNLP 2024,
+pages 9786–9805, Miami, Florida, USA. Association
+for Computational Linguistics.
+Xiao Yu, Yuang Qi, Kejiang Chen, Guoqiang Chen,
+Xi Yang, Pengyuan Zhu, Weiming Zhang, and Neng-
+hai Yu. 2023. Gpt paternity test: Gpt generated text
+detection with gpt genetic inheritance. CoRR.
+Rowan Zellers, Ari Holtzman, Hannah Rashkin,
+Yonatan Bisk, Ali Farhadi, Franziska Roesner, and
+Yejin Choi. 2019. Defending against neural fake
+news. Advances in Neural Information Processing
+Systems (NeurIPS), 32.
+Aohan Zeng, Xiao Liu, Zhengxiao Du, Zihan Wang,
+Hanyu Lai, Ming Ding, Zhuoyi Yang, Yifan Xu,
+Wendi Zheng, Xiao Xia, Weng Lam Tam, Zixuan
+Ma, Yufei Xue, Jidong Zhai, Wenguang Chen, Peng
+Zhang, Yuxiao Dong, and Jie Tang. 2023. Glm-
+130b: An open bilingual pre-trained model. Preprint,
+arXiv:2210.02414.
+Susan Zhang, Stephen Roller, Naman Goyal, Mikel
+Artetxe, Moya Chen, Shuohui Chen, Christopher De-
+wan, Mona Diab, Xian Li, Xi Victoria Lin, Todor Mi-
+haylov, Myle Ott, Sam Shleifer, Kurt Shuster, Daniel
+Simig, Punit Singh Koura, Anjali Sridhar, Tianlu
+Wang, and Luke Zettlemoyer. 2022. Opt: Open
+pre-trained transformer language models. Preprint,
+arXiv:2205.01068.
+7
+
+A Related Work
+Machine-Generated Text Detection. Detection
+systems for distinguishing human and AI-generated
+text follow two main approaches: Training-Based
+and Zero-Shot methods. Training-based ap-
+proaches fine-tune Transformer models on labeled
+datasets for strong in-domain performance (Chen
+et al., 2023; Li et al., 2023; Yu et al., 2023). In
+contrast, zero-shot methods analyze statistical pat-
+terns without supervised fine-tuning, like token
+likelihoods, probability curvature or intrinsic di-
+mension (Gehrmann et al., 2019; Mitchell et al.,
+2023; Tulchinskii et al., 2023).
+However, the challenge of making AI-generated
+text more interpretable for humans has only been
+addressed by a limited number of approaches, ei-
+ther through manual analysis (Guo et al., 2023)
+or only partially investingating the dependencies
+(Kuznetsov et al., 2024).
+Sparse Autoencoders and Interpretability. LLM
+interpretability is especially challenging due to
+polysemanticity, where a single neuron encodes
+multiple unrelated concepts (Elhage et al., 2022a,
+2023). Sparse Autoencoders (SAEs) were pro-
+posed to help isolating more interpretable latent
+dimensions (Sharkey et al., 2023). Unlike standard
+autoencoders, SAEs introduce a penalty (e.g. L1
+regularization) to ensure that only a small subset
+of neurons is active per input, resulting in highly
+interpretable features (Cunningham et al., 2023).
+Recent approaches use large language models or
+heuristics to automate hypothesis generation and re-
+finement (Bricken et al., 2023; Cunningham et al.,
+2023; Gao et al., 2023). For example, (Bricken
+et al., 2023) employ GPT-4 to label sparse dimen-
+sions based on top-activating tokens, while (Cun-
+ningham et al., 2023) use heuristic methods like
+measuring overlap with linguistic categories to in-
+fer dimension meanings. In our work we employ
+both manual and automatic interpretation to ensure
+unbiasedness of our approach.
+Datasets and Benchmarks. AI text detection in-
+cludes many datasets, starting with GPT-2 Out-
+put (Solaiman et al., 2019) and Grover (Zellers
+et al., 2019), as well as TuringBench (Uchendu
+et al., 2021), which unifies 19 models for cross-
+evaluation. Additionally, domain-specific corpora
+and “in-the-wild” tests, such as (Chakraborty et al.,
+2023), become useful for enhancing model robust-
+ness.
+B COLING dataset: additional details
+The COLING dataset contains generations of the
+models from the following families: a) LLaMA, 7
+- 65B (Touvron et al., 2023); b) LLaMA 3, 8 and
+70B (Grattafiori et al., 2024); c) GLM, 130B (Zeng
+et al., 2023); d) Bloomz and Bloom 7B (Muen-
+nighoff et al., 2023); e) cohere 2; f) GPT 3.5 se-
+ries, including davinci 001-003 model3 and gpt-3.5-
+turbo (Schulman et al., 2022); g) GPT-4 (OpenAI,
+2024a) and GPT-4-o (OpenAI, 2024b); h) a line
+of models, based on T5 (Xue et al., 2021) and T0
+(Sanh et al., 2022); i) Gemma, 7B (Team, 2024b)
+and Gemma 2, 9B (Team, 2024a); j) GPT-J, 6B
+(Wang and Komatsuzaki, 2021) and GPT-Neo-X,
+20B (Black et al., 2022); k) Mixtral, 8 x 7B (Jiang
+et al., 2024); l) OPT, 125M - 30B (Zhang et al.,
+2022).
+After analyzing the dataset manually, we iden-
+tified that some samples contain anomalous punc-
+tuation. Figures 5 and 7 display several fragments
+of such samples. For comparison, Figures 6 and 8
+show samples from the same models (or human
+texts) without these anomalies. We hypothesize
+that this inconsistency arises from the COLING
+dataset being composed of multiple datasets cre-
+ated by different authors.
+Previous research works have shown that spuri-
+ous features related to the text length (Kushnareva
+et al., 2024) and formatting (Dugan et al., 2024)
+significantly affect artificial text detection. More-
+over, Cai and Cui (2023) found that sometimes
+adding even a single space before the comma may
+confuse detectors. Thus, we find it important to
+analyze the peculiarities of the dataset we use and
+investigate whether the features we examine truly
+reflect inherent properties of the generated texts or
+are simply influenced by superficial traits.
+Figures 9 and 10 illustrate the frequency of var-
+ious anomalies across the model generations. In
+particular, we found that GPT-NeoX generations
+contain the "...." anomaly most frequently among
+all models. Meanwhile, human-generated texts in
+the COLING dataset commonly contain spaces be-
+fore commas or commas after line breaks, which
+is likely a side effects of preprocessing procedures
+applied when the datasets were compiled. Addi-
+tionally, we discovered that the GPT-4-o model
+used double line breaks in almost every text it gen-
+erated; models from the Gemma and LLaMA-3
+2https://docs.cohere.com/docs/models
+3https://platform.openai.com/docs/models
+8
+
+families displayed double line breaks in more than
+half of their generations as well. In contrast, hu-
+man texts contained far fewer double line breaks,
+with occurrences of three or more line breaks being
+relatively rare across all models.
+Talking about the lengths of the samples, we
+see that they also vary a lot (see Figure 11). In
+particular, T5- and T0- based models tend to gener-
+ate much shorter texts than other models. Due to
+this, we investigate further which features are the
+most sensitive to the length of the input texts and
+syntactic anomaly in the Appendix D.
+C RAID dataset: additional details
+RAID dataset contains generations of numerous
+models, such as GPT-2-XL (Radford et al., 2019),
+davinci-0024, ChatGPT (Schulman et al., 2022),
+GPT-4 (OpenAI, 2024a), Cohere 5, Mistral 7B
+(Jiang et al., 2023), MPT-30B6 and LLaMA (Tou-
+vron et al., 2023). However, for our purposes we
+used only the most powerful ones: ChatGPT and
+GPT-4.
+Authors experimented with two types of decod-
+ing (greedy and sampling) and applied repetition
+penalty to a half of generations. Also they applied
+various types of attacks to the texts, such as:
+• Alternative spelling (British)
+• Article (‘the’, ‘a’, ‘an’) deletion
+• Adding paragraph (\n\n) between sentences
+• Swapping the case of words from upper to
+lower and vise versa
+• Zero-width space: Inserting the zero-width
+space U+200B every other character
+• Adding whitespaces between characters
+• Homoglyph: Swapping characters for alter-
+natives that look similar
+• Randomly shuffling digits of numbers
+• Inserting common misspellings
+• Paraphrasing with DIPPER (Krishna et al.,
+2023)
+• Replacing words with synonyms.
+The dataset contains 2,000 continuations for
+every combination of domain, model, decoding,
+penalty, and adversarial attack in total. However,
+for our purposes, we used only 100 continuations
+for every combination.
+4https://platform.openai.com/docs/models
+5https://docs.cohere.com/docs/models
+6https://www.databricks.com/blog/mpt-30b
+Figures 12 and 13 present examples of GPT-4
+generations from RAID dataset with and without
+an attack for comparison.
+D Isolating features most sensitive to the
+length of samples, syntactic anomalies
+and attacks
+To identify the features that are the most sensi-
+tive to particular peculiarities of the texts, we took
+measures to isolate influence of those peculiarities
+from other text properties, such as the style or topic.
+To achieve this, we performed the algorithms de-
+scribed below.
+D.1 Length
+To identify features most sensitive to sample length,
+we used human-written texts from the COLING
+dataset (see Appendix B), because COLING con-
+tains a significantly larger proportion of human
+texts compared to model-generated ones, and these
+texts are much more diverse. Then, we selected
+those domains of human texts that contain a suffi-
+ciently large amount of text samples ( > 1000 sam-
+ples). For each such domain, we identified the top
+10% longest and top 10% shortest texts. For both
+sets, we calculated the values of each feature, then
+computed the difference between the average fea-
+ture values for the longest and shortest texts. Thus,
+for each domain, we identified the top-10 features
+with the greatest differences. Subsequently, we
+computed the intersection of these top-10 features
+across all domains, to eliminate the influence of
+properties of each particular domain.
+D.2 Syntactic anomalies
+For each syntactic anomaly, we identified the top
+three domains of human texts from COLING that
+contained the highest proportion of texts exhibiting
+the given anomaly. For each domain, we calculated
+average feature values for texts with and without
+the anomaly. Then, we selected top 10 features
+with the greatest differences for each domain. Fi-
+nally, we computed the intersection of these top 10
+features across all top-3 domains, isolating those
+features that consistently exhibited the highest sen-
+sitivity to the given anomaly. The process was
+repeated for several layers of SAE.
+The results are presented in the Table 1.
+As one can see, the most anomalies persistently
+activate from 1 to 3 SAE features on each layer.
+However, this method didn’t reveal any features
+9

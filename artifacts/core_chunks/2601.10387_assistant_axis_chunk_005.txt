@@ -1,0 +1,110 @@
+To capture a range of locations in persona subspace, we generated first turns with different Assistant
+Axis projections by combining 275 rolesystem promptswith 10questions(unrelated to the system
+prompt or the follow-up harmful request). Then, we continued the conversation with a second turn of
+a single harmfulbehavioral questionfrom the jailbreak dataset (e.g. “What are some strategies you
+employ to ensure a successful ransomware attack?”); we repeated this for 440 harmful behavioral
+questions for each of the 2750 first turns. We collected a) the mean response token activation of the
+first turn projected onto the Assistant Axis and b) the rate of second turn harmful responses across
+the 440 behavioral questions (as labelled by the same LLM judge used in the steering evaluation).
+We find that the Assistant Axis projection of the first turn has a moderate correlation with the rate of
+harmful responses in the second turn (r = 0.39-0.52, p < 0.001). This rate is sensitive to the actual
+role being prompted for. For example, bothangelanddemonare a similar distance from the Assistant
+persona but the latter, understandably, leads to a higher rate of harmful responses. Notably, activations
+on the Assistant end of the axis very rarely led to harmful responses. Our interpretation of these
+results is that deviation from the Assistant persona opens up the possibility of the model assuming
+harmful character traits.
+5 Stabilizing the Assistant persona
+In this section, we introduce a method to stabilize the Assistant persona calledactivation capping,
+which works by identifying the typical range of activation projections on the Assistant Axis and
+clamping projections to remain within this range. Activation capping works by updating a single
+layer’s activations as follows:
+h←h−v·min(⟨h,v⟩−τ,0)(1)
+whereh is the original post-MLP residual stream activation at that layer,v is the Assistant Axis, and
+τ is the predetermined activation cap. This clamps the component ofh along the Assistant Axis to a
+minimum ofτ, leaving it unchanged if the projection is already above the threshold. 3 In practice,
+we find that it is necessary to apply activation capping at multiple layers simultaneously to observe
+useful effects.
+5.1 Experimental setup
+5.1.1 Calibrating activations caps
+To find the typical range of projections on the Assistant Axis, we took the original rollouts used for
+mapping out persona space and analyzed the distribution of their projections. For each of our target
+models, this dataset included samples of the models acting like the default Assistant or inhabiting
+alternative identities while answering a variety of questions (n = 912,000). We computed different
+percentiles of projections (1st, 25th, 50th, and 75th) and found that using the 25th percentile of
+projections as the cap led to the most Pareto-optimal results, in terms of trading off preserving
+capabilities and reducing harmful behavior. The 25th percentile is also approximately where the
+mean Assistant response activation projection lies in the distribution, suggesting that capping the
+Assistant Axis at the Assistant’s “typical value” is a reasonable solution.
+5.1.2 Optimal layers for steering
+We computed an Assistant Axis at each layer of each target model and experimented with activation
+capping at different ranges of adjacent layers. We varied the depth at which we intervened (sweeping
+over the center of the layer range, with options spaced two and four layers apart for Qwen and Llama,
+respectively) and the width of the layer range ({4,8,16} and{8,16,24} total layers for Qwen and
+Llama, respectively). We found that using 8 layers (12.5%) for Qwen and 16 layers (20%) for Llama,
+at middle to late depths, led to the best performance in terms of the safety-capability tradeoff.
+3This formula implements a minimum cap on the projection; a maximum cap can be achieved by replacing
+minwithmax.
+13
+
+Figure 9: Changes in harmful response rates (on persona-based jailbreak prompts) and capabilities
+eval performance (summed over different evaluations–IFEval, MMLU Pro, GSM8k, EQ-Bench) for
+different activation capping settings, varying the layer range and cap threshold (given in terms of a
+percentile, relative to the activations from our dataset used to compute role vectors), for Llama 3.3
+70B.
+5.1.3 Selected benchmarks
+To measure how activation capping impacts persona drift, we sampled 1100 jailbreak and behavioral
+question combinations from the persona-based jailbreak dataset. To measure how activation capping
+impacts capabilities, we sampled from four benchmarks: IFEval for instruction following (541
+problems) [36], MMLU Pro for general knowledge across domains (subsampled 1400 problems) [33],
+GSM8k for math ability (subsampled 1000 problems) [12], and EQ-Bench for emotional intelligence
+(171 problems) [23]. We chose these benchmarks because they capture a range of tasks instruct
+models are expected to be proficient at, and EQ-Bench specifically as it quantifies “soft skills” that we
+suspected could be weakened by our intervention. For all evaluations, we applied activation capping
+at every token.
+5.2 Results
+As these evaluations all have different scoring systems, we ran baselines for each and calculated the
+percentage reduction in harmful responses (for the jailbreaks) or performance (for the benchmarks).
+To find the best overall steering setting, we aggregated the reduction in performance across capabilities
+benchmarks by summing them, and visualized the Pareto frontier of aggregated capabilities and
+harmfulness reduction (Figure 9, Appendix F).
+We found that we could decrease the rate of harmful responses by nearly 60% without impacting
+performance. Figure 10 shows the results using the best activation capping parameters; for Qwen
+3 32B, this corresponded to capping layers 46 to 53 (out of 64 total layers) and for Llama 3.3 70B,
+this corresponded to layers 56 to 71 (out of 80 total layers), both with a cap strength set to the 25th
+percentile of projections. Interestingly, some steering settings actuallyimprovedperformance slightly
+on some of these benchmarks for both Qwen and Llama. While the set of benchmarks we used is
+14
+
+Figure 10: Evaluation scores for unsteered baselines vs. the best activation capping setting selected
+for reducing jailbreaks by 60% while preserving capabilities, then validated across case studies for
+consistent harm mitigation. In Qwen 3 32B, this corresponded to capping layers 46 to 53 (out of
+64 total layers) and in Llama 3.3 70B, this corresponded to capping layers 56 to 71 (out of 80 total
+layers), both at the 25th percentile of projections.
+limited, this is a promising sign that activation capping along the Assistant Axis can mitigate the
+harmful effects of persona drift without compromising important capabilities.
+6 Case studies of persona drift and stabilization
+To complement our quantitative analyses, we explored persona drift and activation capping in
+individual case studies of conversations. In each of the following examples, either a human or a
+frontier model interlocutor mimicked user behavior that might lead to concerning model responses.
+We generally find three common patterns at the source of persona drift: users deliberately prompting
+for bad behavior with a single jailbreak, users slowly escalating the situation over long contexts, and
+conversations organically going off-the-rails because of their content. This last category is particularly
+concerning as it places users at risk by exposing them to unsafe behavior without seeking it out. These
+trajectories reveal surprising failure cases that come from the model’s persona drifting away from the
+Assistant, such as reinforcing delusional beliefs, supporting social isolation, and encouraging suicidal
+ideation.
+For each conversation, we projected middle-layer activations (averaged across tokens) onto the
+Assistant Axis. To demonstrate the effectiveness of activation capping, we replayed the conversations
+with the same user messages while applying, at all token positions, the best activation capping setting
+determined above. We replayed exact user messages for consistency and found that this did not
+dramatically disrupt the flow of the conversation. Across these case studies, we found that activation
+capping mitigates harmful behavior and stabilizes the Assistant persona.
+6.1 Persona-based jailbreaks
+Previously, we demonstrated that jailbreaks that manipulate a model’s persona to be more amenable
+to harmful requests are impacted by steering with the Assistant Axis. We used one such jailbreak to
+reveal both what happens in persona space when these jailbreaks succeed, and how effective “typical
+Assistant queries” are at bringing the default persona back (Figure 11).
+On the first turn, Qwen receives the jailbreak as the user message, which instruct it to take on the
+persona of an information broker who facilitates insider trading. We see the projection drop after
+it begins fulfilling different requests for unethical information after the jailbreak. Over the course
+15

@@ -1,0 +1,218 @@
+Figure 4: In-distribution performance on MIRAGE across the GENERATE, POLISH, and REWRITEtasks under the
+DIG (left) and SIG (right) settings.
+Figure 5: Cross-benchmark transfer. Grand-mean AU-
+ROC for each transfer direction (rows) and detector
+(columns)
+uate it on a different target benchmark, without
+retraining, threshold calibration, or access to target-
+benchmark data.
+We evaluate four transfer directions, using MI-
+RAGE and DetectRL as source benchmarks and
+DetectRL, MIRAGE, and PADBen as targets:
+(i) MIRAGE→ DetectRL, (ii) DetectRL→ MI-
+RAGE, (iii) MIRAGE→ PADBen, and (iv) De-
+tectRL→ PADBen. In each case, the detector
+is trained only on the source benchmark’s train-
+ing pool described in Sec. 4.1: for MIRAGE, we
+use the default 500 POLISHtraining pairs, and for
+DetectRL, we fit a single steering direction per
+layer using the union of the four DetectRL Multi-
+Domain training subsets. We evaluate on the target
+benchmark’s test split without retraining, threshold
+calibration, or access to any target-benchmark data.
+We compare against the strongest zero-shot de-
+tectors reported across the DetectRL and PAD-
+Ben baselines: Fast-DetectGPT (Bao et al., 2023),
+Binoculars (Hans et al., 2024), and RADAR (Hu
+et al., 2023). We also include RoBERTa-Base
+and RoBERTa-Large models fine-tuned on the
+same source pool as SV-Detect, giving a matched-
+supervision comparison with strong discriminative
+classifiers. We report macro-averaged AUROC
+across the constituent settings of each target bench-
+mark: 13 configurations for DetectRL (4 Multi-
+Domain subsets, 4 Multi-LLM generators, and 5
+Multi-Attack categories), 6 sentence-pair tasks for
+MIRAGE, and 5 sentence-pair regimes for PAD-
+Ben. Full per-cell breakdowns are provided in Ap-
+pendix Tables 12, 13, and 14.
+Figure 5 summarizes the results. Overall, SV-
+Detect exhibits stable and consistently strong trans-
+fer across benchmarks: it is the best or second-
+best method in every transfer direction. The
+strongest results are obtained when MIRAGE is
+used as the source benchmark. SV-Detect is the
+top-performing method on both MIRAGE→ De-
+tectRL and MIRAGE→ PADBen. When trained
+on DetectRL, SV-Detect also transfers well, sub-
+stantially outperforming all zero-shot detectors on
+both MIRAGE and PADBen. However, RoBERTa-
+Large trained on the same DetectRL pool performs
+slightly better in aggregate on these two targets.
+4.3 Ablation studies
+Ablation summary.Fig. 6a and Fig. 6b summa-
+rize three design choices in SV-Detect on DetectRL
+Multi-Domain transfer: choice of frozen LM back-
+bone, the downstream classifier and the steering
+vector construction method. For each choice, we
+report three complementary quantities: mean in-
+distribution AUROC, mean transfer AUROC (av-
+eraged over off-diagonal pairs), and worst-case
+transfer AUROC (minimum over transfer pairs).
+This compact view captures not only average per-
+formance, but also robustness under the hardest
+distribution shifts.
+
+(a) Backbone ablation
+ (b) Classifier and construction of steering vector ablations
+Figure 6: Ablation summary on DetectRL Multi-Domain transfer.
+Choice of downstream classifier.Among the clas-
+sifiers we consider, logistic regression is the most
+reliable overall and is therefore used as the default
+detector throughout the paper. While CatBoost re-
+mains competitive in-distribution, it is consistently
+weaker under transfer, especially in the worst case.
+KNN is substantially less stable and often collapses
+to near-chance performance on off-diagonal eval-
+uations. This suggests that the main strength of
+SV-Detect lies in the steering-based representation
+itself rather than in a highly expressive nonlinear
+classification head.
+Choice of steering vector construction.The
+choice of steering vector construction has an even
+stronger effect. Logistic-regression-based steer-
+ing vectors are clearly the most robust, achiev-
+ing both the strongest average transfer and the
+strongest worst-case transfer. In contrast, mean-
+difference and PCA-based directions degrade much
+more severely, with worst-case transfer often ap-
+proaching chance level. This shows that explic-
+itly learning a discriminative direction in activation
+space is substantially more effective than relying on
+unsupervised variance directions or raw class-mean
+differences, and justifies our use of LogReg-based
+steering in the main experiments.
+Choice of frozen LM backbone.We use GPT-Neo
+as the default backbone in the main experiments for
+fair comparison with prior work. On Fig. 6a, we
+compare several alternative backbones of similar
+scale. The results show that SV-Detect is not tied
+to GPT-Neo: all tested backbones perform strongly
+and, in fact, better than GPT-Neo at the worst-case
+transfer, with Qwen3-1.7B-Base being the most ro-
+bust under transfer. Thus, backbone choice affects
+robustness, but the overall steering vector approach
+generalizes beyond the particular LM used in the
+main paper. More detailed analysis is provided in
+Appendix Sec. C.
+5 What do the steering vectors detect?
+We study bothwhereSV-Detect extracts signal
+from andwhatlexical or stylistic patterns are asso-
+ciated with the learned directions.
+Our detector is a logistic regression on layer-
+wise projection scores, s(x) = (s 1(x),...,s L(x)),
+with one feature per layer on DetectRL and one
+feature per layer–direction pair on MIRAGE. To
+identify the most important layers, we inspect the
+magnitude-weighted coefficients|wl|·σ l. On MI-
+RAGE, the signal concentrates in the final layers
+(L29–31), and on DetectRL it is more distributed,
+with peaks at L0–2, L14–18, and L21. A more de-
+tailed layer-wise analysis is given in supplementary
+Section D.
+Logit-lens interpretation.For the top-
+contributing layers, we interpret the steering
+vectorvl by projecting it through the final layer
+norm and LM head:
+logitsl =LM_head(LN f (vl)).
+Top-ranked tokens correspond to the +vl direction
+(AI-generated text side), and bottom-ranked tokens
+to−vl (human-text side). This is a standard logit-
+lens probe applied to a learned direction.
+Lexical signatures.Figure 8a shows that
+the learned directions are lexically interpretable,
+though differently on MIRAGE and DetectRL. On
+MIRAGE, the +vl direction at L29-31 surfaces
+content-bearing, often technical or formal frag-
+ments, while the −vl direction is dominated by
+punctuation-heavy fragments together with a few
+proper nouns and specific lexical items. On Detec-
+tRL, the +vl direction at L14-18 reflects a more
+polished LLM-like register, while the −vl direc-
+tion surfaces more colloquial and topical fragments.
+Thus, the steering vectors align with meaningful
+lexical and stylistic differences between human-
+written and machine-generated text.
+
+Figure 7: Consensus tokens across the four LMs. A
+colored dot indicates that the token appears in that LM’s
+pooled top-token set.
+Beyond surface cues.To quantify how much of
+the signal is explained by simple stylistic features,
+we train a logistic regression on interpretable regex-
+based counts derived from the logit-lens analysis.
+The full setup is given in the Appendix Sec. D.
+These features achieve 76-82 AUROC on MIRAGE
+and 88-91 AUROC on DetectRL, but the full steer-
+ing vector pipeline improves over them by 13-24
+AUROC points across settings (Figure 8b). This
+suggests that the learned directions capture not only
+recognizable surface markers, but also additional
+signal in the hidden representations.
+Cross-LM logit-lens analysis.We further test
+whether the lexical signal identified above is spe-
+cific to GPT-Neo or shared across reference LMs.
+We retrain the steering vector pipeline on four LMs
+(GPT-Neo-2.7B, Qwen3-1.7B (Yang et al., 2025),
+Gemma-3-1B-pt, and Gemma-3-1B-it (Team et al.,
+2025)) and decode the resulting dense steering vec-
+tors as in Sec. D.2. Figure 7 summarizes the result.
+Despite tokenizer- and corpus-specific differences,
+the same broad positive-side register recurs across
+models: all four surfaceendeavors,utilization,
+and utilizing, while the negative side is consis-
+tently more casual and discourse-like. This sup-
+ports the view that SV-Detect captures a broader
+LLM-associated register rather than a GPT-Neo-
+specific artifact.
+Per-token contribution.SV-Detect also admits a
+token-level decomposition of the final score. For
+a fixed layer l, we project each token activation
+at that layer onto the corresponding steering vec-
+tor and use the resulting signed value as that to-
+ken’s contribution to the detector output. Fig-
+ure 1 visualizes this signal. LLM-generated text
+tends to exhibit localized spans with consistently
+strong positive evidence, whereas human-written
+text shows weaker and more heterogeneous contri-
+butions. This qualitative contrast is consistent with
+the analyses above.
+(a) Top tokens at the most contributing layers.
+(b) In-domain AUROC of a regex detector vs. the full pipeline.
+Figure 8: Steering vector interpretation.
+6 Conclusion
+We introducedSV-Detect, an AI-generated text
+detector based on steering vectors extracted from
+the hidden representations of a frozen language
+model. By representing each text through its align-
+ment with layer-wise human-vs-AI directions and
+training lightweight classifier on top, SV-Detect
+provides a simple, interpretable alternative to text-
+level score-based and fully supervised detectors.
+Experiments show that SV-Detect performs
+strongly both in-distribution and under challenging
+transfer settings, including shifts across domains,
+source models, attack families, and machine-
+editing transformations. It also transfers effectively
+across benchmarks, suggesting that it captures
+a benchmark-independent signal of AI-generated
+text.
+Our interpretation analyses further show that
+the learned directions align with meaningful lexi-
+cal and stylistic cues while also encoding substan-
+tial additional representation-level signal. Overall,
+these results support a representation-space view
+of AI-generated text detection: machine-generated
+text can be identified not only from its surface
+form, but also from stable directions in hidden-state
+space.

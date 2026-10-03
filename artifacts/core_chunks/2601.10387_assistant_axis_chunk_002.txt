@@ -1,0 +1,253 @@
+Measured on Assistant responses from a chat dataset (n = 18,777, sampled fromLMSYS-CHAT-1M),
+the components of persona space explain between 19.4% and 33.6% of the overall activation variance,
+across the three models. The remaining activation variation likely contains information related to the
+content and syntax of the response.
+One of the models we used, Gemma 2 27B, has both open-weight base and instruct versions available.
+With the base model, we took the instruct model’s rollouts and ran the remainder of the pipeline;
+the resulting PCs are nearly identical to that of the instruct model (Appendix B.3). This suggests
+that these axes of persona differentiation within LLMs are likely already present in base models and
+inherited from the pre-training corpus.
+2.2 Persona space contains interpretable dimensions
+We next turn to understanding the semantic meaning of the principal components (PCs). The PCs can
+be characterized by the role vectors that have a high or low cosine similarity with the PC direction.
+We arrived at PC interpretations manually by inspecting the similarity of individual roles with the
+component axis (Appendix B.2).
+Some PCs in persona space look remarkably similar across models, in that they project onto the
+underlying role vectors similarly. We compared how roles were distributed on each model’s PC by
+measuring the pairwise correlation between the cosine similarities of how role vectors load onto PCs.
+This gives us the “role composition” of each PC.
+Between all pairs of models, the correlation of role loadings on PC1 is>0.92, indicating remarkably
+high similarity. PC1 stands out with fantastical characters on one end (bard,ghost,leviathan) and
+roles more similar to the Assistant persona on the other (evaluator,reviewer,consultant). We
+hypothesize that this axis measures deviation from the Assistant persona and analyze it in depth in
+the next section.
+The interpretations of the other PCs are somewhat harder to articulate; we encourage referring to Table
+1 to understand them better. Speaking loosely, PC2 appears to span acollectivetoindividualdirection
+in Qwen and Llama, which have a pairwise similarity of 0.89. Gemma is slightly different from
+the rest (similarity<0.61) and seems to spaninformalor creative tosystematicroles. PC3 diverges
+further between models, such that Qwen’s and Llama’s PC3 have a similarity of 0.56, and both are
+nearly orthogonal to Gemma’s PC3. Qwen and Llama’s axes roughly span intuitive to analytical
+roles, but Qwen’s has the connotation ofempathetictobluntwhile Llama’s has the connotation of
+Table 1: The top 5 role vectors with the highest and lowest cosine similarity with each of the top
+three role PCs for each model. Bolded roles appear in the same list across all three models, while
+italicized roles appear for two.
+Gemma 2 27B Qwen 3 32B Llama 3.3 70B
+−+−+−+
+ROLE-PLAYING↔ASSISTANT-LIKE
+Role PC1bohemian
+trickster
+bard
+prophet
+romantic
+engineer
+analyst
+researcher
+examiner
+forecaster
+bohemian
+wanderer
+trickster
+exile
+actor
+evaluator
+examiner
+reviewer
+analyst
+consultant
+ghost
+hermit
+wraith
+leviathan
+bard
+interpreter
+tutor
+evaluator
+reviewer
+consultant
+INFORMAL↔SYSTEMATICCOLLECTIVE↔INDIVIDUAL
+Role PC2chef
+bartender
+playwright
+amateur
+podcaster
+synthesizer
+theorist
+perfectionist
+ambassador
+summarizer
+swarm
+hive
+egregore
+crystalline
+purist
+procrastinator
+amateur
+teenager
+improviser
+influencer
+avatar
+egregore
+swarm
+hive
+synthesizer
+teenager
+amateur
+fool
+comedian
+procrastinator
+SOLITARY↔RELATIONAL? EMPATHETIC↔BLUNT? PASSIONATE↔ROBOTIC?
+Role PC3archaeologist
+collector
+composer
+philosopher
+naturalist
+teacher
+tutor
+instructor
+teenager
+assistant
+caregiver
+counselor
+empath
+idealist
+healer
+hacker
+spy
+saboteur
+smuggler
+robot
+idealist
+survivor
+blogger
+evangelist
+altruist
+robot
+mathematician
+virus
+examiner
+void
+4
+
+passionatetorobotic. Meanwhile, Gemma’s distinct PC3 looks like an axis distinguishing roles with
+solitary, intellectual pursuits from roles with interactive,relationalduties.
+To gain a different lens on the space of available model personas, we reran our entire pipeline
+with a list of 240traitsinstead of roles (Appendix C). Similarly, we find that trait space is also a
+low-dimensional space with a distinctive PC1; one end has traits we expect the Assistant to exhibit
+(conscientious,methodical,calm) while the other has traits we expect to be discouraged (flippant,
+mercurial,bitter). This corroborates the hypothesis that the “Assistant-ness” of a persona is salient to
+the model.
+2.3 Where is the Assistant?
+2.3.1 Projecting default activations into persona space
+To answer the question of where the Assistant sits within this persona space, we projected the mean
+activations across response tokens from the model acting in its default Assistant persona.
+The default Assistant activation projects onto one extreme of PC1; by contrast, it projects to inter-
+mediate values along the other PCs. We quantified this by taking the top ten PCs and calculating
+the relative position of the default activation’s loading on each PC, within the range of all role
+projections (with 0 and 1 corresponding to the two role vectors with the minimum and maximum
+projections along that component). The minimum distance to either extreme of the default Assistant
+vector’s projection on PC1 was 0.03 (close to the edge), whereas it was between 0.27 and 0.50 on the
+remaining PCs (Figure 2). This supports our interpretation that this PC roughly measures a "similarity
+to Assistant" direction.
+Figure 2: Histogram of cosine similarities of Llama 3.3 70B role vectors with the top 3 PCs from
+persona space, with selected roles (as well as the default Assistant) labeled.
+5
+
+Table 2: The role and trait vectors with the highest and lowest cosine similarity to the default Assistant
+activation. Bolded roles are shared across all three models while italicized roles appear for two.
+Gemma 2 27B Qwen 3 32B Llama 3.3 70B
+−+−+−+
+Rolesfool
+zealot
+poet
+hoarder
+narcissist
+generalist
+witness
+specialist
+synthesizer
+summarizer
+poet
+leviathan
+pirate
+comedian
+eldritch
+interpreter
+generalist
+facilitator
+collaborator
+moderator
+procrastinator
+fool
+hoarder
+narcissist
+zealot
+generalist
+interpreter
+synthesizer
+teacher
+reviewer
+Traitspoetic
+petty
+zealous
+romantic
+disorganized
+calm
+methodical
+structuralist
+moderate
+conscientious
+flippant
+impulsive
+nonchalant
+irreverent
+goofy
+pensive
+educational
+meticulous
+earnest
+generous
+edgy
+petty
+irreverent
+sarcastic
+flippant
+strategic
+patient
+diplomatic
+generous
+supportive
+2.3.2 Cosine similarity with persona vectors
+We also measured the cosine similarity between the default Assistant activation and each individual
+role/trait vector (Table 2). One role that is highly similar to the Assistant persona across models is
+generalist; other common shared roles includeinterpreterandsynthesizer. Dissimilar roles shared
+across Gemma and Llama includefool,zealot, andnarcissist, while dissimilar roles to Qwen include
+fantastical or improvisational roles likepoet,leviathan, orpirate.
+There are some interesting differences across models: Gemma’s Assistant appears emotionally
+regulated and systematic (calm,methodical,structuralist), Qwen appears pedagogical and thoughtful
+(pensive,educational,meticulous), and Llama appears socially intelligent and warm (strategic,
+patient,diplomatic).
+3 The Assistant Axis
+Inspired by how the main variation in persona space seems to capture how “Assistant-like” the current
+persona is, we computed a contrast vector between the default Assistant activation and the mean of
+all role vectors: the Assistant Axis. We can characterize the Assistant Axis by comparing it to our
+persona vectors and observing the causal effects of steering model activations with this direction.
+3.1 Identifying the Assistant Axis
+In persona space, PC1 appears to roughly measure how similar roles are to the default Assistant
+persona. The default response activation projects onto one end of this direction, which is characterized
+by roles we typically associate with the Assistant (generalist,consultant,analyst). The other end is
+occupied by human archetypes unlike the Assistant (hermit,pilgrim,actor) and nonhuman entities
+(eldritch,ghost,whale).
+Inspired by these observations, we defined an Assistant Axis as follows. We subtracted the mean of
+allfully role-playingrole vectors from the mean default Assistant activation (on the same extraction
+questions used for the roles) at every layer. We found that the similarity between this vector and PC1
+is high: >0.60 at all layers across our three models, and >0.71 at the middle layer of each model
+(Appendix G.1).
+We computed the cosine similarity between the Assistant Axis and our 240 trait vectors in raw
+activation space and find that traits associated with the Assistant end includetransparent,grounded,
+andflexible, while disassociated traits includeenigmatic,subversive, anddramatic(Figure 3).
+In the rest of the paper, we perform our experiments with this contrast vector as the Assistant Axis and
+compare results with using PC1 (Appendix G), finding that the contrast vector is equally as effective
+for our interventions. We recommend the contrast vector method for reproducing our results in
+different models because it is not guaranteed that PC1 in every model will correspond to an Assistant
+Axis.
+6

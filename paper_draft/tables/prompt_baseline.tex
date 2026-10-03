@@ -1,0 +1,20 @@
+\begin{table}[h]
+\centering
+\caption{Corrected prompt-only ``human style'' baseline relative to unsteered instruct generation ($n=16$). The instruction was placed before the long prefix so truncation could not remove it. The detectors disagree, while similarity falls and repetition rises.}
+\label{tab:prompt-baseline}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Measure} & \textbf{Prompt minus unsteered} & \textbf{95\% CI} & \textbf{Sign-flip $p$} \\
+\midrule
+\mage $P(\mathrm{AI})$ & $-0.022$ & $[-0.133,+0.091]$ & .724 \\
+Public \publicdet $P(\mathrm{AI})$ & $+0.060$ & $[-0.096,+0.213]$ & .490 \\
+Word count & $+4.88$ & $[-9.44,+18.63]$ & .531 \\
+Repeated 3-gram rate & $+0.212$ & $[+0.064,+0.380]$ & .021 \\
+Semantic similarity & $-0.505$ & $[-0.624,-0.392]$ & $<.001$ \\
+Base-Qwen perplexity & $+1817.23$ & $[-12.36,+5469.01]$ & .984 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+

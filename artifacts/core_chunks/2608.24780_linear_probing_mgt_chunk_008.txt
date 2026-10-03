@@ -1,0 +1,226 @@
+peak performance at around 125 characters. These
+results indicate that the probes remain reliable even
+for relatively short texts.
+C.8 MGT Probes performance on AI-edit text
+detection
+Model Accuracy Macro F1 Human F1 AI-edited F1 AI-generated F1
+RoBERTa 0.652 0.642 0.583 0.473 0.869
+EditLens 0.525 0.438 0.575 0.739 0.000
+LLP 0.848 0.848 0.806 0.754 0.985
+CLP 0.854 0.853 0.811 0.764 0.985
+Table 5: Three-way classification on EditLens (Thai
+et al., 2026), comparing the EditLens Llama-3.2-3B
+model, RoBERTa (Liu et al., 2019), and both MGT
+probes. The three classes are “AI-generated”, “AI-
+edited”, and “Human”.
+Figure 6 shows a positive correlation between
+edit strength and the probe projection scores. In
+Table 5, we present initial results on three-way AI-
+edit classification using EditLens (Thai et al., 2026).
+We compare two baselines, RoBERTa (Liu et al.,
+2019) and the EditLens Llama-3.2-3B model, 22
+against our MGT probes.
+We split the EditLens data into train/valida-
+tion/test sets of 1,000/200/200 examples. We train
+the probes and RoBERTa on the training set and
+calibrate all three methods on the validation set
+by selecting two thresholds for the classes “AI-
+generated”, “AI-edited”, and “Human”. We do not
+further train the EditLens model, as it was already
+trained on this dataset.
+Table 5 reports accuracy and class-wise F1
+scores. Both probes achieve strong classification
+performance relative to the baselines, despite not
+being explicitly trained for three-way classifica-
+tion. While these results indicate that the probe
+scores may support fine-grained AI-edit classifi-
+cation, the analysis is preliminary and does not
+support broader conclusions. We leave a more
+comprehensive evaluation of this direction to future
+work.
+C.9 Calibration Analysis
+Table 6 presents a small-scale calibration analy-
+sis of the MGT probes, comparing their Expected
+Calibration Error (ECE) against RoBERTa (Liu
+et al., 2019). The results show that both probes are
+well calibrated across DetectRL (Wu et al., 2024)
+subsets and, in several settings, outperform a fully
+fine-tuned RoBERTa model in calibration.
+22https://huggingface.co/pangram/editlens_
+Llama-3.2-3B
+Model ArXiv Reddit Yelp News
+LLP 0.005 0.009 0.010 0.007
+CLP 0.000 0.006 0.007 0.003
+RoBERTa 0.002 0.006 0.033 0.002
+Table 6: Expected Calibration Error (ECE) analysis
+comparing MGT probes against RoBERTa on Detec-
+tRL (Wu et al., 2024).
+We emphasize that this analysis is performed on
+the projection scores produced by the linear probes.
+These results provide additional evidence that the
+probe outputs are well calibrated and support their
+potential use for fine-grained AI-edit detection.
+D Ablation Studies
+Lastly, we conduct a series of ablation experiments
+for both probing variants LLP and CLP.
+D.1 LLP
+D.1.1 Model Size and Architecture Ablations
+TSM (Quaremba et al., 2026)
+Setting FP PE SUM TST
+Baseline 0.971 0.942 0.978 0.896
+Token Aggregation
+Pooling -0.019 -0.155 -0.021 -0.085
+Layer Selection
+First layer -0.388 -0.316 -0.431 -0.355
+Last layer -0.036 -0.077 -0.038 -0.065
+Model
+Llama-3B +0.001 -0.012 +0.006 +0.000
+Llama-1B -0.011 -0.034 +0.004 -0.011
+Qwen-32B +0.020 +0.029 +0.013 +0.048
+Qwen-8B +0.016 +0.016 +0.010 +0.031
+Qwen-4B +0.015 +0.011 +0.007 +0.029
+Qwen-0.6B -0.012 -0.036 -0.005 -0.022
+Regularization Penalty
+C=0.01 -0.001 +0.001 +0.000 +0.001
+C=0.1 +0.000 +0.001 +0.000 +0.002
+C=10 +0.001 +0.001 +0.000 +0.002
+PCA Activations
+k=10 -0.064 -0.117 -0.046 -0.120
+k=50 -0.009 -0.015 -0.008 -0.022
+k=150 +0.004 +0.005 +0.001 +0.011
+k=200 +0.003 +0.006 -0.001 +0.011
+k=250 +0.003 +0.006 -0.002 +0.010
+No PCA +0.016 +0.010 +0.007 +0.014
+Table 7: Ablation study of LLP across five design
+choices.
+Table 7 reports AUC scores for the LLP variant
+defined in Section 4, covering five design choices:
+(1) token aggregation (last token vs. mean pooling),
+(2) layer selection (first layer, last layer, or layer-
+wise aggregation), (3) model architecture and size,
+
+(4) regularization strength, and (5) the number of
+PCA components. We restrict this analysis to TSM,
+as it consistently proved to be the most challenging
+benchmark throughout our experiments.
+First, probing only the final token yields moder-
+ate but consistent improvements over mean pool-
+ing. This likely reflects the fact that the final token
+aggregates information from the entire sequence
+through causal attention.
+Second, using only the first or last layer instead
+of aggregating projection scores across layers con-
+sistently reduces performance. This finding aligns
+with Nordby et al. (2026), who show that ensem-
+bles of probes outperform single-layer probes. We
+do not include a single middle-layer probe, as
+TextFluoroscopy (Yu et al., 2024) already opti-
+mizes for the best-performing layer, and our results
+demonstrate that LLP consistently outperforms this
+approach.
+Third, we evaluate the impact of model ar-
+chitecture and size by replacing LLaMA with
+Qwen (Yang et al., 2025). We find that Qwen-8B
+consistently improves performance over LLaMA-
+8B. Notably, even Qwen-4B achieves slightly
+stronger results, despite its smaller size. These
+findings suggest that architecture may play a more
+important role than parameter count and motivate
+future work on how model design influences the
+linear separability of MGT and HWT. Within the
+LLaMA family, reducing model size leads to only
+modest performance degradation.
+Fourth, varying the strength of theL2 regulariza-
+tion penalty has virtually no effect on performance,
+suggesting that the learned MGT direction is stable
+and readily recoverable.
+Finally, motivated by our finding that MGT and
+HWT are linearly separable in low-dimensional
+subspaces (§3), we vary the number of principal
+components used to project activations before train-
+ing probes. Increasing the dimensionality beyond
+k= 100 yields only marginal and inconsistent
+improvements. This result further supports our rep-
+resentation analysis, indicating that MGT signals
+are encoded in relatively low-dimensional regions
+of the activation space.
+D.1.2 Detailed PCA vs no-PCA comparison
+Multisocial DetectRL Domains RAID Models
+Mode en de ru zh ArXiv Reddit Yelp News Cohere GPT-4 Llama Mistral
+LLP (No PCA) 0.963 0.933 0.915 0.950 1.000 1.000 1.000 1.000 0.969 0.992 0.995 0.989
+LLP (PCA) 0.957 0.934 0.921 0.944 1.000 1.000 1.000 1.000 0.971 0.992 0.995 0.993
+LLP (No PCA)−LLP (PCA) 0.006 -0.001 -0.006 0.006 0.000 0.000 0.000 0.000 -0.002 -0.001 0.001 -0.004
+Table 8: LLP ablation study comparing PCA and no-
+PCA variants. The PCA variant is the main specification,
+using 100 dimensions.
+A potential concern is that PCA may artificially
+facilitate linear separability, for example by remov-
+ing noisy dimensions. While Table 7 already shows
+nearly identical probe performance with and with-
+out PCA, we provide a more detailed comparison
+in Table 8. Specifically, we compare the no-PCA
+variant against the PCA variant using the top 100
+principal components, as in our main experiments.
+The near-identical results indicate that PCA does
+not meaningfully affect linear separability. Rather,
+it primarily serves as a dimensionality-reduction
+step that reduces the computational and memory
+requirements of the probes.
+D.2 CLP
+D.2.1 Model Size and Architecture Ablations
+TSM (Quaremba et al., 2026)
+Setting FP PE SUM TST
+Baseline 0.973 0.920 0.970 0.890
+Token Aggregation
+Pooling -0.008 -0.088 +0.001 -0.036
+Model
+Llama-3B -0.001 -0.019 -0.002 -0.021
+Llama-1B -0.016 -0.033 -0.002 -0.015
+Qwen-32B +0.016 +0.029 +0.012 +0.025
+Qwen-8B +0.012 +0.001 +0.010 +0.020
+Qwen-4B +0.005 +0.018 +0.010 +0.009
+Qwen-0.6B -0.012 -0.016 -0.003 -0.043
+Regularization Penalty
+C=0.01 +0.001 +0.016 +0.005 +0.003
+C=0.1 +0.001 +0.009 +0.003 +0.000
+C=10 -0.001 -0.001 -0.000 -0.011
+PCA Activations
+k=10 -0.036 -0.010 -0.009 -0.056
+k=50 -0.004 +0.000 -0.010 -0.014
+k=150 -0.002 +0.003 -0.000 +0.002
+k=200 +0.001 +0.004 +0.001 +0.003
+k=250 +0.003 +0.004 +0.002 +0.003
+No PCA +0.015 +0.031 +0.012 +0.026
+Table 9: Ablation study of CLP across four design
+choices.
+Table 9 presents CLP ablations across four design
+choices: (1) token aggregation (last token vs. mean
+pooling), (2) model architecture and size, (3) reg-
+ularization strength, and (4) the number of PCA
+
+components.
+Overall, we observe trends similar to those for
+LLP in Table 7. Using the last token consistently
+outperforms mean pooling. Smaller Llama variants
+reduce performance, whereas Qwen yields modest
+but consistent improvements. The regularization
+penalty has only a minor effect at λ= 0.001 and
+a negligible impact for other values. Finally, as
+with LLP, 100 PCA components provide the best
+trade-off between performance and dimensionality,
+with no meaningful gains from using additional
+components.
+D.2.2 Detailed PCA vs no-PCA comparison
+Multisocial DetectRL Domains RAID Models
+Mode en de ru zh ArXiv Reddit Yelp News Cohere GPT-4 Llama Mistral
+CLP (PCA) 0.951 0.920 0.906 0.951 1.000 1.000 1.000 1.000 0.965 0.991 0.995 0.987
+CLP (No PCA) 0.962 0.937 0.919 0.951 1.000 1.000 1.000 1.000 0.967 0.989 0.995 0.987
+CLP (PCA)−CLP (No PCA) -0.011 -0.017 -0.013 0.000 0.000 0.000 -0.000 0.000 -0.002 0.002 -0.000 0.000
+Table 10: CLP ablation study comparing PCA and no-
+PCA variants. The PCA variant is the main specification,
+using 100 dimensions.
+Table 10 reports the same PCA versus no-PCA
+comparison for CLP. Consistent with the LLP re-
+sults, performance is nearly identical across both
+variants, indicating that PCA does not meaningfully
+affect linear separability for either probe.

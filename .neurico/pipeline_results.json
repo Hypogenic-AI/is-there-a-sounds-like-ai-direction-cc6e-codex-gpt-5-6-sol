@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "stages": {
+    "resource_finder": {
+      "success": true,
+      "completion_marker": "/workspaces/is-there-a-sounds-like-ai-direction-cc6e-codex-gpt-5-6-sol/.resource_finder_complete",
+      "outputs": {
+        "literature_review": "/workspaces/is-there-a-sounds-like-ai-direction-cc6e-codex-gpt-5-6-sol/literature_review.md",
+        "resources_catalog": "/workspaces/is-there-a-sounds-like-ai-direction-cc6e-codex-gpt-5-6-sol/resources.md",
+        "papers_dir": "/workspaces/is-there-a-sounds-like-ai-direction-cc6e-codex-gpt-5-6-sol/papers",
+        "datasets_dir": "/workspaces/is-there-a-sounds-like-ai-direction-cc6e-codex-gpt-5-6-sol/datasets",
+        "code_dir": "/workspaces/is-there-a-sounds-like-ai-direction-cc6e-codex-gpt-5-6-sol/code"
+      },
+      "log_file": "/workspaces/is-there-a-sounds-like-ai-direction-cc6e-codex-gpt-5-6-sol/logs/resource_finder_codex.log",
+      "transcript_file": "/workspaces/is-there-a-sounds-like-ai-direction-cc6e-codex-gpt-5-6-sol/logs/resource_finder_codex_transcript.jsonl",
+      "elapsed_time": 718.0183534622192,
+      "background_processes_terminated": false
+    },
+    "experiment_runner": {
+      "success": true,
+      "return_code": 0,
+      "elapsed_time": 3406.325608253479,
+      "log_file": "/workspaces/is-there-a-sounds-like-ai-direction-cc6e-codex-gpt-5-6-sol/logs/execution_codex.log",
+      "transcript_file": "/workspaces/is-there-a-sounds-like-ai-direction-cc6e-codex-gpt-5-6-sol/logs/execution_codex_transcript.jsonl",
+      "background_processes_terminated": false
+    }
+  },
+  "work_dir": "/workspaces/is-there-a-sounds-like-ai-direction-cc6e-codex-gpt-5-6-sol"
+}

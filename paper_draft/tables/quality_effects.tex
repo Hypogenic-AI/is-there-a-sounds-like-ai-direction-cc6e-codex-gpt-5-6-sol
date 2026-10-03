@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\caption{Quality and preservation changes for the raw instruct direction ($\alpha=+2$ minus $-2$, $n=16$). No 95\% prompt-cluster bootstrap interval excludes zero. Similarity is measured against the same prompt's unsteered continuation.}
+\label{tab:quality}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{Measure} & \textbf{Mean difference} & \textbf{95\% CI} \\
+\midrule
+Word count & $+3.19$ & $[-2.19,+8.63]$ \\
+Repeated 3-gram rate & $-0.049$ & $[-0.119,+0.010]$ \\
+Semantic similarity & $+0.002$ & $[-0.076,+0.078]$ \\
+Base-Qwen perplexity & $-6.58$ & $[-19.94,+1.18]$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+

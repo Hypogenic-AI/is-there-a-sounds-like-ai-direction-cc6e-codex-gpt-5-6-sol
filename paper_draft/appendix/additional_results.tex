@@ -1,0 +1,21 @@
+\section{Additional Results}
+\label{app:additional}
+
+\subsection{Detector validation}
+
+\input{tables/detector_validation}
+
+Both detectors exceed chance on held-out \mage and no-attack \raid samples (\tabref{tab:detector-validation}), but neither is a perfect measure of perceived authorship. The public detector's 0.623 \raid accuracy, despite 0.868 AUROC, also illustrates that a fixed threshold can be poorly calibrated under distribution shift.
+
+\subsection{Readout across layers}
+
+\input{tables/layer_readout}
+
+\Tabref{tab:layer-readout} reports test AUROC across the prespecified layer grid. These values are descriptive after validation-only selection and do not justify switching the causal intervention to a test-favored layer.
+
+\subsection{Prompt-only baseline}
+
+\input{tables/prompt_baseline}
+
+The first prompt-baseline implementation placed its instruction after a long prefix, and truncation removed the instruction. Validation caught this issue. We regenerated all 16 rows with the instruction first; \tabref{tab:prompt-baseline} contains only the corrected results. The extreme mean perplexity comes from several repetitive or pathological outputs and is correspondingly unstable.
+

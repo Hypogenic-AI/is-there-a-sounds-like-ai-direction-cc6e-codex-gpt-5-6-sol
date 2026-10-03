@@ -1,0 +1,9 @@
+{
+  "seconds": 376.9040517807007,
+  "model": "artifacts/models/Qwen2.5-7B-Instruct",
+  "dtype": "bfloat16",
+  "batch_size": 4,
+  "max_new_tokens": 80,
+  "seed": 42,
+  "instruct": true
+}

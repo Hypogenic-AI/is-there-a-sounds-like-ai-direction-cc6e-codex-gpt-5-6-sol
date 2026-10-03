@@ -1,0 +1,9 @@
+# Large data files are local resources and must not be committed.
+*
+
+# Keep reproducibility documentation and small examples.
+!/.gitignore
+!/README.md
+!/download_datasets.py
+!/samples/
+!/samples/**

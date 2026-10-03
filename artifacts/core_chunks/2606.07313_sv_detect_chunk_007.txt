@@ -1,0 +1,261 @@
+Setting Subset Stylistic SV-Detect Gap
+AUROC AUROC
+MIRAGE-DIG
+DIG Generate 76.98 99.12 +22.1
+DIG Polish 80.74 95.09 +14.3
+DIG Rewrite 75.94 95.03 +19.1
+MIRAGE-SIG
+SIG Generate 75.59 99.09 +23.5
+SIG Polish 81.71 94.99 +13.3
+SIG Rewrite 76.36 94.21 +17.8
+DetectRL (Multi-Attack)
+DetectRL Direct 90.73 99.99 +9.3
+DetectRL Prompt 90.11 99.96 +9.9
+DetectRL Paraph. 88.69 99.98 +11.3
+DetectRL Perturb. 87.81 99.99 +12.2
+Table 3: In-distribution AUROC of the stylistic-feature
+baseline (Section D.3) compared to the full steering
+vector pipeline. TheGapcolumn shows the additional
+discriminative signal captured by hidden representations
+beyond the regex feature bank.
+many generators into a single binary detection task
+and provides an official held-out test set with labels.
+It therefore offers a complementary large-scale set-
+ting for evaluating the same steering vector pipeline
+and testing its sensitivity to the composition of the
+generator pool.
+E.1 Setup
+Data.The COLING-2025 MGT English split
+contains three partitions: (i)train: 610,767 exam-
+ples (228,922 human, 381,845 machine-generated
+from 27 generators), (ii)dev: 261,758 exam-
+ples (98,328 human, 163,430 machine-generated),
+and (iii)test: 73,941 examples, released with
+ground-truth labels for leaderboard evaluation. The
+task is binary classification (human vs. machine-
+generated).
+Backbones.We evaluate SV-Detect with two
+reference LMs: the EleutherAI/gpt-neo-2.7B
+used in the rest of the paper, and the larger
+meta-llama/Llama-2-7b-hf. For each backbone,
+we extract per-layer mean-pooled residual acti-
+vations and use the same downstream logistic-
+regression detector as in the main paper.
+Ablation axes.We vary two components of the
+pipeline:
+1. Steering vector construction.We compare
+the three constructions used elsewhere in the
+paper:Mean(normalized class-mean differ-
+ence),PCA(leading principal component of
+AI-minus-human activation differences) and
+LogReg(ℓ2-regularized logistic regression on
+activations, our default construction).
+2. Generator-pool filter.The training split con-
+tains a long tail of weak open-source gener-
+ators whose outputs are often much less re-
+alistic than those of stronger LLMs. To test
+whether these generators help or hurt, we com-
+pare:
+•all: all 27 generators
+• trimmed: remove 20 weak generators
+(Dolly, BLOOMZ, OPT-*, Flan-T5-*,
+T0-*), dropping 133,193 samples and re-
+taining 248,652 AI-generated examples.
+Generators are only removed from the
+training and dev splits, the whole test
+split is still used.
+We use the same logistic regression detector
+as described in Sec. 3. The downstream classi-
+fier is used elsewhere in the paper. We sweep
+C∈{10 −3,10−2,10−1,1,10,100} and select the
+best value on dev AUROC. All other hyperparam-
+eters match the main experiments as described in
+Sec. 4.1.
+E.2 Results
+Llama-based SV-Detect outperforms all baselines
+by a substantial margin. Removing weak mod-
+els from the training data helps Llama-based SV-
+Detect further, gaining about 2 points in Accuracy
+and 1.7 in F1. However, for GPT-Neo-based SV-
+Detect, removing weak models hurts. We attribute
+this to the size and capability of the LM backbone:
+larger and more capable backbones, such as Llama,
+benefit from a cleaner and more homogeneous gen-
+erator pool, whereas smaller backbones like GPT-
+Neo appear to benefit from the additional diversity
+provided by weaker generators.
+E.3 Ablation on steering vector construction
+Tab. 5 and Tab. 6 report results for all six combina-
+tions of steering vector construction and generator-
+pool filter on both backbones. As in DetectRL and
+MIRAGE, the LogReg construction consistently
+outperforms Mean and PCA. The larger Llama-2-
+7B backbone further improves substantially over
+GPT-Neo-2.7B.
+
+Rank Team / Method Macro-F1 Acc.
+1SV-Detect (Llama-2-7b, trimmed) 84.8 85.00
+2 SV-Detect (Llama-2-7b, all) 83.7 84.00
+3 Advacheck 83.07 83.11
+4 Unibuc-NLP 83.01 83.33
+5 Fraunhofer SIT 82.80 82.89
+6 Grape 81.88 82.23
+7 TechExperts(IPN) 81.53 81.81
+8 TurQUaz 80.68 80.74
+9 SzegedAI 79.10 79.29
+10 AAIG 78.74 79.34
+11 DCBU 77.13 78.01
+12 SV-Detect (GPT-Neo, all) 75.6 76.50
+13 Alfa 75.37 76.42
+14 L3i++ 74.63 75.54
+15 LuxVeri 74.58 75.68
+16 azlearning 74.14 75.17
+17 SV-Detect (GPT-Neo, trimmed) 74.0 75.50
+18 honghanhh 73.94 75.14
+– Baseline 73.42 74.89
+19 VX1291 72.93 74.83
+20 cuettransform 72.32 73.16
+21 rockstart 72.24 73.89
+22 batirsdu 71.01 71.42
+23 IPN-CIC 70.68 72.42
+24 Ai-Monitors 70.57 72.65
+25 semanticcuet 70.05 71.96
+26 hmcgovern 68.48 69.51
+27 abhirak0603 68.02 70.50
+28 cnlpnitspp 65.02 68.76
+29 mail6djj 64.66 68.46
+30 bennben 63.32 67.48
+31 saehyunma 62.80 67.25
+32 yuwert777 62.14 66.69
+33 seven 59.09 63.20
+34 fangsifan 58.48 62.68
+35 yaoxy 57.28 64.20
+36 jojoc 54.16 60.37
+37 dominikmacko 49.94 50.78
+38 tropaleum 49.57 50.60
+39 starlight1 47.57 56.65
+40 nitstejasrikar 44.89 57.24
+Table 4: Adapted English leaderboard from Table 4 of
+Wang et al. (2025), with our four LogReg-based SV-
+Detect variants inserted. Ranking is by Macro-F1.
+GPT-Neo-2.7B
+SV Pool Dev Test Acc.F 1
+construction AUROC AUROC
+Mean all 0.865 0.860 0.718 0.696
+Mean trimmed 0.855 0.856 0.737 0.721
+PCA all 0.740 0.751 0.559 0.439
+PCA trimmed 0.737 0.753 0.557 0.433
+LogReg all0.9750.8660.765 0.756
+LogReg trimmed 0.9520.8730.755 0.740
+Table 5: SV-Detect on the COLING-2025 English
+benchmark with a GPT-Neo-2.7B backbone.
+Llama-2-7B
+SV Pool Dev Test Acc.F 1
+construction AUROC AUROC
+Mean all 0.922 0.912 0.716 0.690
+Mean trimmed 0.908 0.887 0.694 0.666
+PCA all 0.864 0.796 0.650 0.615
+PCA trimmed 0.858 0.798 0.647 0.610
+LogReg all0.984 0.9380.840 0.837
+LogReg trimmed 0.974 0.9370.850 0.848
+Table 6: SV-Detect on the COLING-2025 English
+benchmark with a Llama-2-7B backbone.
+
+F Results Tables
+In this section, we provide comprehensive tables
+with results for all experiments in Sec. 4.
+F.1 DetectRL
+Tables 7 and 8 report the in-domain and cross-
+source performance of SV-Detect and the baselines,
+respectively. Fig. 3a, Fig. 3b and Fig. 3c provide a
+visual summary of these results.
+The RepreGuard row of Table 7 is reproduced
+from the official implementation using our default
+GPT-Neo-2.7B backbone. For LRR / DetectGPT
+/ Fast-DetectGPT / SV-Detect, we use the training
+and evaluation protocol described in Sec. 4.1. Re-
+sults show that RepreGuard with GPT-Neo-2.7B as
+a backbone collapses to near-chance across almost
+all cells. Additional comparison of SV-Detect with
+RepreGuard using LLaMA-3.1-8B as a backbone
+(default backbone of RepreGuard) is reported in
+Appendix G.
+F.2 MIRAGE
+Table 9 reports the performance of SV-Detect and
+the baselines on the MIRAGE benchmark. Fig. 4
+provides a visual summary of these results.
+F.3 Ablation
+Tables 10 and 11 provide results of ablating the
+choice of the downstream classifier and steering
+vector construction method. Sec. 4.3 provides a
+summary of these results.
+F.4 Cross-benchmark transfer: bidirectional
+MIRAGE↔DetectRL
+This subsection provides comprehensive results
+used for Fig. 5 in the cross-benchmark transfer sub-
+section in Sec. 4, broken down by all constituent
+settings and cells of each target benchmark. We
+compare SV-Detect against three zero-shot base-
+lines (Fast-DetectGPT, Binoculars, RADAR) that
+use no training data on either benchmark, and
+two matched-supervision RoBERTa baselines fine-
+tuned on the same data as SV-Detect.
+On the MIRAGE→ DetectRL side (Table 12)
+we additionally report two multi-direction exten-
+sions of SV-Detect. The default variantpolish-
+500follows the setup in Sec. 4.1 and is trained
+on the original 500 human/machine pairs, where
+machine-generated side is GPT-3.5-Turbo-polished
+text. The1-vec (union-800)extends the training
+pool to 800 pairs, adding two task-specific subsets
+from (Chen et al., 2024): 150GENERATEpairs,
+where the machine side is directly generated GPT-
+3.5-Turbo XSum text, and 150REWRITEpairs,
+where the machine side is a GPT-3.5-Turbo rewrite
+of the corresponding human text.1-vec (union-800)
+keeps the single-direction-per-layer setting, fitting
+one steering vector per layer on all 800 training
+pairs. The3-vec (task-aware)setting fits a sepa-
+rate steering direction per training subset (POLISH/
+GENERATE/REWRITE) at each layer and combines
+them into an orthonormal basis via QR decomposi-
+tion. The matched-supervision RoBERTa baselines
+are fine-tuned on the same 500-pair default training
+set as the defaultpolish-500variant. Since Fast-
+DetectGPT, Binoculars, and RADAR are zero-shot
+on DetectRL, their transfer numbers coincide with
+their in-domain scores on the DetectRL test split.
+On the DetectRL→ MIRAGE side (Table 13)
+SV-Detect and both RoBERTa baselines are trained
+on the same joint union of the four DetectRL Multi-
+Domain training subsets. The task-aware4-vec
+extension learns one steering direction per Detec-
+tRL Multi-Domain training subset and, following
+the extension protocol of MIRAGE, combines them
+into an orthonormal basis via QR decomposition.
+F.5 Cross-benchmark transfer to PADBen
+and RAID
+Table 14 reports per-task AUROC on PADBen’s
+five sentence-pair regimes alongside the RAID
+TPR@FPR=5% Chat / Non-Chat / Overall sum-
+mary. Both benchmarks are used purely astargets,
+and no training data from either is seen by any of
+the detectors.
+The twodefaultrows correspond to the default
+SV-Detect setup described in Sec. 4.1: on MI-
+RAGE, steering vectors are trained on the 500 hu-
+man/machine pairs, where machine-generated side
+is GPT-3.5-Turbo-polished text (MIRAGE polish-
+500), and on DetectRL, steering vectors are trained
+on the joint union of the four Multi-Domain train-
+ing subsets(DetectRL 1-vec). As in Sec. F.4, we
+additionally report three multi-direction extensions:
+MIRAGE 1-vec (union-800)extends the MIRAGE
+training pool to 800 pairs as described in Sec. F.4,
+while keeping a single steering direction per layer;
+MIRAGE 3-vec (task-aware)fits one steering direc-
+tion per extended MIRAGE training data (Generate
+/ Polish / Rewrite) and combines them via QR de-
+composition;DetectRL 4-vec (task-aware)does the
+same on the DetectRL side with one direction per
+Multi-Domain training subset.

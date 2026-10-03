@@ -1,0 +1,17 @@
+{
+  "required_files": true,
+  "qwen25_7b_instruct_split_sizes": true,
+  "qwen25_7b_instruct_no_split_leakage": true,
+  "qwen25_7b_base_split_sizes": true,
+  "qwen25_7b_base_no_split_leakage": true,
+  "same_checkpoint_split": true,
+  "generation_rows": true,
+  "prompt_counts": true,
+  "complete_metrics": true,
+  "score_ranges": true,
+  "residual_orthogonal": true,
+  "matched_vector_norms": true,
+  "valid_confidence_intervals": true,
+  "report_sections": true,
+  "all_passed": true
+}

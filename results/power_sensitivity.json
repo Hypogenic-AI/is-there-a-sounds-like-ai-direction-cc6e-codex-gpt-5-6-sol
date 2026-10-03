@@ -1,0 +1,8 @@
+{
+  "paired_dz_80pct_power": {
+    "12": 0.8886543444414026,
+    "16": 0.7494652785178323
+  },
+  "alpha": 0.05,
+  "note": "two-sided sensitivity analysis"
+}

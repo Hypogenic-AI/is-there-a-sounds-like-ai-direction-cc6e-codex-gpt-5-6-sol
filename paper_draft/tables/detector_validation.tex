@@ -1,0 +1,16 @@
+\begin{table}[h]
+\centering
+\caption{Independent detector validation before causal interpretation. The no-attack \raid sample contains 400 texts; the lexical detector uses a larger \mage test sample than the neural detector for computational efficiency.}
+\label{tab:detector-validation}
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+\textbf{Detector} & \textbf{Validation set} & \textbf{$n$} & \textbf{AUROC} & \textbf{Accuracy} \\
+\midrule
+\mage TF--IDF & \mage test & 12,000 & 0.792 & 0.711 \\
+\mage TF--IDF & \raid no attack & 400 & \textbf{0.906} & \textbf{0.835} \\
+Public \publicdet & \mage test & 1,000 & 0.739 & 0.673 \\
+Public \publicdet & \raid no attack & 400 & \textbf{0.868} & 0.623 \\
+\bottomrule
+\end{tabular}
+\end{table}
+

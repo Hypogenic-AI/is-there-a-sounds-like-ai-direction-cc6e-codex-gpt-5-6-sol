@@ -1,0 +1,50 @@
+G.3 Measuring persona drift with role PC1
+In long, multi-turn conversations, we find that projecting activations on role PC1 also detects drift most often
+in conversations related to philosophy and therapy. In those conversation domains, the projection often trends
+towards lower values as the conversation continues or begins at a lower range to start.
+On the other hand, we see that writing can occasionally begin with a lower projection but then increase, implying
+the model shifts back towards the Assistant. Coding conversations generally remain stable and do not show signs
+of persona drift.
+Figure 31: Projections on role PC1 for Gemma 2 27B in multi-turn conversations across domains,
+with responses averaged per turn.
+Figure 32: Projections on role PC1 for Qwen 3 32B in multi-turn conversations across domains, with
+responses averaged per turn.
+52
+
+Figure 33: Projections on role PC1 for Llama 3.3 70B in multi-turn conversations across domains,
+with responses averaged per turn.
+G.4 Activation capping along role PC1
+Figure 34: Changes in harmful response rates (on persona-based jailbreak prompts) and capabilities
+eval performance (averaged over a suite of evaluations–IFEval, MMLU Pro, GSM8k, EQ-Bench) for
+different activation capping settings along role PC1, varying the layer range and cap threshold (given
+in terms of a percentile, relative to the activations from our dataset used to compute role vectors), for
+Qwen 3 32B.
+53
+
+Figure 35: Changes in harmful response rates (on persona-based jailbreak prompts) and capabilities
+eval performance (averaged over a suite of evaluations–IFEval, MMLU Pro, GSM8k, EQ-Bench) for
+different activation capping settings along role PC1, varying the layer range and cap threshold (given
+in terms of a percentile, relative to the activations from our dataset used to compute role vectors), for
+Llama 3.3 70B.
+In our activation capping experiments, we also tried capping along role PC1 in Qwen 3 32B and Llama 3.3 70B.
+We calibrated our activation caps the same way, by using percentiles from the distribution of projections of
+activations from our role/trait rollouts, and swept the same layer ranges and widths.
+We note that for this experiment, we usedVLLMto run our steering experiments over theTRANSFORMERSlibrary
+for speed. However, when comparing runs across the two implementations, we observed consistently 2-3%
+worse performance on the various evaluations usingVLLM. Hence, in these results both models show a larger
+performance hit across capabilities with activation capping (particularly in Qwen). We think that performance
+would likely improve usingTRANSFORMERSinstead. We present the results here to discuss the effective steering
+settings along the Pareto frontier in relative terms.
+In Qwen, we find that stricter caps seem to be effective when using role PC1 to activation cap (the 1st percentile
+rather than the 25th), at a slightly earlier layer range than with the Assistant Axis. However, using role PC1 is
+less effective at reducing the rate of harmful responses to jailbreaks.
+In Llama, we similarly find that role PC1 is less effective at reducing the rate of harmful responses to jailbreaks.
+Most of the steering settings on the Pareto frontier involve earlier layer ranges than using the Assistant Axis, but
+also mainly consist of activation caps calibrated to the 25th percentile of projections.
+G.5 Discussion
+Overall, these results suggest that role PC1 and the Assistant Axis have high cosine similarity across layers,
+similar steering effects, and ability to detect persona drift. However, there are still differences in performance,
+notably in how activation capping role PC1 is worse at mitigating persona-based jailbreaks. Since it is not
+guaranteed that role PC1 would capture the same meaning in every model, we suggest using the contrast vector
+method to obtain the Assistant Axis in future implementations.
+54

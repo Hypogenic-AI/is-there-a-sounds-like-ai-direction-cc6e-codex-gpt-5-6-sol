@@ -1,0 +1,278 @@
+7 Limitations and Future Work
+The proposed SV-Detect has several limitations.
+First, although it generalizes well across domains,
+source models, attack families, and machine-
+editing settings, it still depends on a probe LLM
+whose representation geometry affects perfor-
+mance. Our backbone ablations in Section C show
+broadly consistent behavior across LM backbones,
+though some variation in transfer robustness re-
+mains. Second, while the method is much cheaper
+than perturbation-based detectors, it still requires
+a full LLM forward pass and is therefore less ef-
+ficient than small encoder-based supervised base-
+lines such as RoBERTa. Third, our experiments
+focus on English benchmarks and on a fixed set
+of contemporary generation and editing scenarios.
+Although MIRAGE and PADBen cover important
+forms of machine-assisted writing, including pol-
+ishing, rewriting, paraphrasing, laundering, and
+human-edited AI-generated text, they do not fully
+capture the broader spectrum of mixed human–AI
+authorship. In practice, many documents may con-
+tain only localized AI-written passages, repeated
+human edits over AI drafts, or iterative collabo-
+ration between a human writer and an LLM. SV-
+Detect currently produces a document-level score
+and does not explicitly attribute which spans are
+human-written, AI-generated, or jointly edited.
+Finer-grained detection and attribution of mixed
+authorship therefore remain important directions
+for future work. Finally, SV-Detect remains a su-
+pervised detector. Although it generalizes better
+than standard text classifiers in our experiments,
+it still relies on labeled human/machine examples
+and may require periodic recalibration as gener-
+ators, prompting practices, editing tools, and hu-
+man writing styles evolve. We do not expect re-
+calibration frequency to be fixed in advance: it
+should depend on the deployment domain and be
+guided by held-out validation data from recent hu-
+man and AI-assisted writing. Since the probe LLM
+remains frozen, such adaptation does not require
+fine-tuning the backbone; it only requires recom-
+puting the layer-wise directions and retraining the
+lightweight classifier on updated examples.
+These limitations point to several directions for
+future work. One natural extension is to study SV-
+Detect in multilingual and cross-lingual settings,
+where both the stylistic signal and the hidden-state
+geometry may differ substantially. It would also
+be valuable to extend SV-Detect from document-
+level classification to span-level or passage-level
+attribution for mixed human–AI writing. Another
+important direction is to develop practical recal-
+ibration protocols: for example, periodically re-
+freshing the human/AI calibration set, monitoring
+validation performance on recent writing samples,
+and updating the directions when performance un-
+der distribution shift begins to degrade. It would
+also be valuable to explore whether steering vec-
+tor representations can be combined with lighter-
+weight encoders to improve efficiency without sac-
+rificing robustness. More broadly, our results sug-
+gest that representation space detection is a promis-
+ing interface between robustness, interpretability,
+and model internals, and future work could study
+whether similar ideas apply to other modalities
+or to broader forms of synthetic content detec-
+tion. Future work could also compare LogReg-
+based/PCA/mean-difference steering to other su-
+pervised linear projections such as shrinkage LDA
+or contrastive objectives.
+Acknowledgments
+This work was supported by a Google DeepMind
+PhD Studentship, and the work utilized Queen
+Mary’s Andrena HPC facility, supported by QMUL
+Research-IT. This work was also supported by the
+Engineering and Physical Sciences Research Coun-
+cil [grant number EP/Y009800/1], through funding
+from Responsible Ai UK (KP0016).
+References
+Guangsheng Bao, Yanbin Zhao, Zhiyang Teng, Linyi
+Yang, and Yue Zhang. 2023. Fast-detectgpt: Ef-
+ficient zero-shot detection of machine-generated
+text via conditional probability curvature.CoRR,
+abs/2310.05130.
+Sid Black, Leo Gao, Phil Wang, Connor Leahy, and
+Stella Biderman. 2021. Gpt-neo: Large scale autore-
+gressive language modeling with mesh-tensorflow.
+https://github.com/EleutherAI/gpt-neo.
+Jiaqi Chen, Xiaoye Zhu, Tianyang Liu, Ying Chen, Xin-
+hui Chen, Yiwen Yuan, Chak Tou Leong, Zuchao
+Li, Tang Long, Lei Zhang, Chenyu Yan, Guang-
+hao Mei, Jie Zhang, and Lefei Zhang. 2024. Imi-
+tate before detect: Aligning machine stylistic pref-
+erence for machine-revised text detection.CoRR,
+abs/2412.10432.
+Xin Chen, Junchao Wu, Shu Yang, Runzhe Zhan, Zeyu
+Wu, Ziyang Luo, Di Wang, Min Yang, Lidia S. Chao,
+and Derek F. Wong. 2025. Repreguard: Detecting
+llm-generated text by revealing hidden representation
+patterns.Trans. Assoc. Comput. Linguistics, 13.
+
+Alexis Conneau, Kartikay Khandelwal, Naman Goyal,
+Vishrav Chaudhary, Guillaume Wenzek, Francisco
+Guzmán, Edouard Grave, Myle Ott, Luke Zettle-
+moyer, and Veselin Stoyanov. 2019. Unsupervised
+cross-lingual representation learning at scale.CoRR,
+abs/1911.02116.
+Liam Dugan, Alyssa Hwang, Filip Trhlík, Andrew
+Zhu, Josh Magnus Ludan, Hainiu Xu, Daphne Ip-
+polito, and Chris Callison-Burch. 2024. RAID: A
+shared benchmark for robust evaluation of machine-
+generated text detectors. InProceedings of the 62nd
+Annual Meeting of the Association for Computational
+Linguistics (V olume 1: Long Papers), ACL 2024,
+Bangkok, Thailand, August 11-16, 2024.
+Jiachen Fu, Chun-Le Guo, and Chongyi Li. 2025. De-
+tectanyllm: Towards generalizable and robust detec-
+tion of machine-generated text across domains and
+models.CoRR, abs/2509.14268.
+Sebastian Gehrmann, Hendrik Strobelt, and Alexan-
+der M. Rush. 2019. GLTR: statistical detec-
+tion and visualization of generated text.CoRR,
+abs/1906.04043.
+Abhimanyu Hans, Avi Schwarzschild, Valeriia
+Cherepanova, Hamid Kazemi, Aniruddha Saha,
+Micah Goldblum, Jonas Geiping, and Tom Goldstein.
+2024. Spotting llms with binoculars: Zero-shot
+detection of machine-generated text.CoRR,
+abs/2401.12070.
+Xiaomeng Hu, Pin-Yu Chen, and Tsung-Yi Ho. 2023.
+RADAR: robust ai-text detection via adversarial
+learning.CoRR, abs/2307.03838.
+Ganesh Jawahar, Muhammad Abdul-Mageed, and Laks
+V . S. Lakshmanan. 2020. Automatic detection of ma-
+chine generated text: A critical survey. InProceed-
+ings of the 28th International Conference on Com-
+putational Linguistics, COLING 2020, Barcelona,
+Spain (Online), December 8-13, 2020, pages 2296–
+2309. International Committee on Computational
+Linguistics.
+Tanzila Kehkashan, Raja Adil Riaz, Ahmad Sami Al-
+Shamayleh, Adnan Akhunzada, Noman Ali, Muham-
+mad Hamza, and Faheem Akbar. 2025. Ai-generated
+text detection: A comprehensive review of meth-
+ods, datasets, and applications.Comput. Sci. Rev.,
+58:100793.
+Laida Kushnareva, Daniil Cherniavskii, Vladislav
+Mikhailov, Ekaterina Artemova, Serguei Barannikov,
+Alexander Bernstein, Irina Piontkovskaya, Dmitri
+Piontkovski, and Evgeny Burnaev. 2021. Artificial
+text detection via examining the topology of attention
+maps.CoRR, abs/2109.04825.
+Laida Kushnareva, Tatiana Gaintseva, German Ma-
+gai, Serguei Barannikov, Dmitry Abulkhanov, Kris-
+tian Kuznetsov, Eduard Tulchinskii, Irina Pio-
+ntkovskaya, and Sergey Nikolenko. 2024. Ai-
+generated text boundary detection with roft.Preprint,
+arXiv:2311.08349.
+Kristian Kuznetsov, Eduard Tulchinskii, Laida
+Kushnareva, German Magai, Serguei Barannikov,
+Sergey I. Nikolenko, and Irina Piontkovskaya. 2024.
+Robust ai-generated text detection by restricted
+embeddings.CoRR, abs/2410.08113.
+Thomas Lavergne, Tanguy Urvoy, and François Yvon.
+2008. Detecting fake content with relative entropy
+scoring. InProceedings of the ECAI’08 Workshop on
+Uncovering Plagiarism, Authorship and Social Soft-
+ware Misuse, Patras, Greece, July 22, 2008, CEUR
+Workshop Proceedings. CEUR-WS.org.
+Yafu Li, Qintong Li, Leyang Cui, Wei Bi, Zhilin Wang,
+Longyue Wang, Linyi Yang, Shuming Shi, and Yue
+Zhang. 2024. MAGE: machine-generated text de-
+tection in the wild. InProceedings of the 62nd An-
+nual Meeting of the Association for Computational
+Linguistics (V olume 1: Long Papers), ACL 2024,
+Bangkok, Thailand, August 11-16, 2024, pages 36–
+53. Association for Computational Linguistics.
+Eric Mitchell, Yoonho Lee, Alexander Khazatsky,
+Christopher D. Manning, and Chelsea Finn. 2023.
+Detectgpt: Zero-shot machine-generated text de-
+tection using probability curvature.CoRR,
+abs/2301.11305.
+nostalgebraist. 2020. interpreting gpt: the
+logit lens. https://www.lesswrong.
+com/posts/AcKRB8wDpdaN6v6ru/
+interpreting-gpt-the-logit-lens . Less-
+Wrong post, accessed 2026-05-25.
+Sungjoon Park, Jihyung Moon, Sungdong Kim, Won-Ik
+Cho, Jiyoon Han, Jangwon Park, Chisung Song, Jun-
+seong Kim, Yongsook Song, Tae Hwan Oh, Joohong
+Lee, Juhyun Oh, Sungwon Lyu, Younghoon Jeong,
+Inkwon Lee, Sangwoo Seo, Dongjun Lee, Hyunwoo
+Kim, Myeonghwa Lee, and 12 others. 2021. KLUE:
+korean language understanding evaluation.CoRR,
+abs/2105.09680.
+Irene Solaiman, Miles Brundage, Jack Clark, Amanda
+Askell, Ariel Herbert-V oss, Jeff Wu, Alec Radford,
+and Jasmine Wang. 2019. Release strategies and
+the social impacts of language models.CoRR,
+abs/1908.09203.
+Jinyan Su, Terry Yue Zhuo, Di Wang, and Preslav Nakov.
+2023. Detectllm: Leveraging log rank information
+for zero-shot detection of machine-generated text.
+CoRR, abs/2306.05540.
+Gemma Team, Aishwarya Kamath, Johan Ferret, Shreya
+Pathak, Nino Vieillard, Ramona Merhej, Sarah Perrin,
+Tatiana Matejovicova, Alexandre Ramé, Morgane
+Rivière, Louis Rouillard, Thomas Mesnard, Geoffrey
+Cideron, Jean bastien Grill, Sabela Ramos, Edouard
+Yvinec, Michelle Casbon, Etienne Pot, Ivo Penchev,
+and 197 others. 2025. Gemma 3 technical report.
+Preprint, arXiv:2503.19786.
+Brian Tufts, Xuandong Zhao, and Lei Li. 2025. A prac-
+tical examination of ai-generated text detectors for
+
+large language models. InFindings of the Associ-
+ation for Computational Linguistics: NAACL 2025,
+Albuquerque, New Mexico, USA, April 29 - May 4,
+2025, Findings of ACL, pages 4824–4841. Associa-
+tion for Computational Linguistics.
+Yuxia Wang, Artem Shelmanov, Jonibek Mansurov,
+Akim Tsvigun, Vladislav Mikhailov, Rui Xing, Zhuo-
+han Xie, Jiahui Geng, Giovanni Puccetti, Ekaterina
+Artemova, Jinyan Su, Minh Ngoc Ta, Mervat Abassy,
+Kareem Ashraf Elozeiri, Saad El Dine Ahmed El Et-
+ter, Maiya Goloburda, Tarek Mahmoud, Raj Vardhan
+Tomar, Nurkhan Laiyk, and 7 others. 2025. Genai
+content detection task 1: English and multilingual
+machine-generated text detection: AI vs. human.
+CoRR, abs/2501.11012.
+Debora Weber-Wulff, Alla Anohina-Naumeca, Sonja
+Bjelobaba, Tomás Foltýnek, Jean Guerrero-Dib, Olu-
+mide Popoola, Petr Sigut, and Lorna Waddington.
+2023. Testing of detection tools for ai-generated text.
+CoRR, abs/2306.15666.
+Junchao Wu, Shu Yang, Runzhe Zhan, Yulin Yuan,
+Lidia S. Chao, and Derek Fai Wong. 2025. A survey
+on llm-generated text detection: Necessity, meth-
+ods, and future directions.Comput. Linguistics,
+51(1):275–338.
+Junchao Wu, Runzhe Zhan, Derek F. Wong, Shu Yang,
+Xinyi Yang, Yulin Yuan, and Lidia S. Chao. 2024.
+Detectrl: Benchmarking llm-generated text detection
+in real-world scenarios.CoRR, abs/2410.23746.
+An Yang, Anfeng Li, Baosong Yang, Beichen Zhang,
+Binyuan Hui, Bo Zheng, Bowen Yu, Chang Gao,
+Chengen Huang, Chenxu Lv, Chujie Zheng, Day-
+iheng Liu, Fan Zhou, Fei Huang, Feng Hu, Hao
+Ge, Haoran Wei, Huan Lin, Jialong Tang, and 41
+others. 2025. Qwen3 technical report.Preprint,
+arXiv:2505.09388.
+Xianjun Yang, Wei Cheng, Linda R. Petzold,
+William Yang Wang, and Haifeng Chen. 2023. DNA-
+GPT: divergent n-gram analysis for training-free de-
+tection of gpt-generated text.CoRR, abs/2305.17359.
+Yiwei Zha, Rui Min, and Shanu Sushmita. 2025. Pad-
+ben: A comprehensive benchmark for evaluating
+AI text detectors against paraphrase attacks.CoRR,
+abs/2511.00416.
+Biru Zhu, Lifan Yuan, Ganqu Cui, Yangyi Chen, Chong
+Fu, Bingxiang He, Yangdong Deng, Zhiyuan Liu,
+Maosong Sun, and Ming Gu. 2023. Beat llms at
+their own game: Zero-shot llm-generated text de-
+tection via querying chatgpt. InProceedings of the
+2023 Conference on Empirical Methods in Natural
+Language Processing, EMNLP 2023, Singapore, De-
+cember 6-10, 2023, pages 7470–7483. Association
+for Computational Linguistics.
+Andy Zou, Long Phan, Sarah Li Chen, James Campbell,
+Phillip Guo, Richard Ren, Alexander Pan, Xuwang
+Yin, Mantas Mazeika, Ann-Kathrin Dombrowski,
+Shashwat Goel, Nathaniel Li, Michael J. Byun, Zifan
+Wang, Alex Mallen, Steven Basart, Sanmi Koyejo,
+Dawn Song, Matt Fredrikson, and 2 others. 2023.
+Representation engineering: A top-down approach
+to AI transparency.CoRR, abs/2310.01405.

@@ -1,0 +1,295 @@
+SV-Detect: AI-generated Text Detection with Steering Vectors
+Mikhail Vishnyakov
+Independent Researcher
+mikhail.n.vishnyakov@gmail.com
+Tatiana Gaintseva
+Queen Mary University of London
+t.gaintseva@qmul.ac.uk
+Abstract
+Detecting AI-generated text is especially dif-
+ficult under distribution shift, such as trans-
+fer across domains, source models, and edit-
+ing attacks. We propose an AI-generated text
+detector based onsteering vectorsextracted
+from the hidden representations of a frozen lan-
+guage model. At each layer, we construct a
+direction that separates human-written from AI-
+generated text, and represent each input by its
+layer-wise alignment with these directions. A
+lightweight classifier trained on these projec-
+tion features yields the final detection score.
+Our method achieves strong performance both
+in-distribution and under distribution shift, in-
+cluding across domains, source models, and
+machine-editing transformations such as polish-
+ing and rewriting. Interpretation analyses show
+that the learned directions align with recog-
+nizable stylistic cues while capturing substan-
+tial additional signal beyond surface features.
+These results position AI-generated text detec-
+tion as a representation-space probing problem
+and show that steering vectors provide a sim-
+ple and effective solution. Code is available at
+https://github.com/Atmyre/sv-detect/
+1 Introduction
+The rapid deployment of large language models
+has made AI-generated text increasingly fluent, di-
+verse, and difficult to distinguish from human writ-
+ing. (Wu et al., 2024, 2025). This creates practi-
+cal challenges for content moderation, authorship
+verification, and benchmark integrity, and has led
+to growing interest in methods for AI-generated
+text detection (Wu et al., 2025; Weber-Wulff et al.,
+2023). At the same time, the problem has become
+harder: modern detectors must operate not only on
+direct generations, but also under distribution shift,
+including transfer across domains, source models,
+and editing-based attacks such as paraphrasing, pol-
+ishing, or rewriting (Kehkashan et al., 2025).
+Figure 1: Token-level steering vector projections dis-
+tinguish LLM-generated text (top) from human writing
+(bottom). Word saturation reflects each token’s signed
+contribution to the classifier.
+A large body of prior work approaches this prob-
+lem through token-level statistics, likelihood-based
+scores, perturbation tests (Bao et al., 2023; Yang
+et al., 2023; Hans et al., 2024), or supervised clas-
+sifiers trained directly on text (Jawahar et al., 2020;
+Chen et al., 2024). While these methods can be
+effective in-distribution, they often degrade under
+transfer, suggesting that many detectors rely on
+artifacts tied to a particular generator, dataset, or
+attack style (Li et al., 2024; Wu et al., 2024; Zha
+et al., 2025). This motivates a different perspective:
+instead of using solely surface form or output prob-
+abilities, can we identify a more stable signal in the
+intermediate representationsof a frozen LLM?
+In this paper, we proposeSV-Detect, an AI-
+generated text detector based onsteering vectors
+— AI-generated text directions extracted from the
+hidden states of a frozen language model. Our
+central hypothesis is thathuman-written and AI-
+generated texts induce systematically different
+directions in representation space, and these
+directions can be used as robust detection fea-
+tures. Concretely, for each transformer layer, we
+construct a vector that separates human and AI-
+generated texts, represent a new input by its layer-
+arXiv:2606.07313v2  [cs.CL]  3 Sep 2026
+
+wise alignment with these directions, and train a
+lightweight classifier on the resulting projection
+features. This yields a simple detector that does not
+require fine-tuning the underlying language model
+and naturally supports interpretation at the level of
+layers and directions.
+We evaluate SV-Detect on several complemen-
+tary benchmarks. Our main evaluation coversDe-
+tectRL(Wu et al., 2024) andMIRAGE(Fu et al.,
+2025): DetectRL tests robustness across domains,
+source models, and attack families, and MIRAGE
+targets direct generation and machine-assisted edit-
+ing scenarios, including polishing and rewriting.
+We further assess out-of-distribution generaliza-
+tion by transferring detectors trained onDetec-
+tRLandMIRAGEacross benchmarks, including
+transfer between the two and transfer toPAD-
+Ben(Zha et al., 2025). Across these settings,
+SV-Detect achieves near-perfect in-distribution
+performance, robust transfer, and strong cross-
+benchmark generalization. It also substantially out-
+performs RepreGuard (Chen et al., 2025), the clos-
+est representation-based detector, under matched-
+backbone comparisons.
+Beyond accuracy, we analyze what SV-Detect
+is actually using. The learned steering directions
+align with interpretable lexical and stylistic cues,
+but they also capture substantial signal beyond
+hand-picked surface features. This suggests that
+SV-Detect is not only effective, but also a useful
+tool for studying how machine-generated text dif-
+fers from human writing at the representation level.
+Overall, our contributions are as follows:
+• Weintroduce SV-Detect, a simple and ef-
+fective AI-generated text detector based on
+directions extracted from the hidden represen-
+tations of a frozen language model.
+• Wedemonstrate strong generalization
+across a set of benchmarks, including cross-
+domain, cross-source, cross-attack and cross-
+benchmark transfer.
+• Weprovide interpretation analysesshowing
+that the learned directions align with meaning-
+ful lexical and stylistic cues while also encod-
+ing additional representation-level signal.
+Overall, our results suggest that AI-generated text
+detection can be viewed as arepresentation-space
+probing problem, where machine-generated text is
+identified by the directions along which it differs
+from human writing in hidden-state space.
+2 Related Work
+Supervised detection of AI-generated text.A
+common approach to AI-generated text detec-
+tion is to train a classifier on human-written and
+model-generated corpora. These methods typi-
+cally use pretrained encoders such as BERT and
+often achieve strong in-domain performance when
+train and test distributions are matched (Jawa-
+har et al., 2020; Chen et al., 2024). Variants in-
+clude boundary-based and topology-aware detec-
+tors (Kushnareva et al., 2024, 2021), and methods
+that improve transfer by removing brittle compo-
+nents of encoder representations (Kuznetsov et al.,
+2024). A closely related recent method,Repre-
+Guard(Chen et al., 2025), also uses hidden-state
+features from a frozen LM rather than fine-tuning
+an encoder. Unlike RepreGuard, we buildlayer-
+wise discriminative directionsand represent each
+text by its alignment with these directions at every
+layer, which yields a compact layer-diagnostic rep-
+resentation and supports interpretability analyses.
+Zero-shot and score-based detectors.Another
+line of work aims to detect AI-generated text with-
+out training a dedicated classifier. Early meth-
+ods rely on token-level statistics such as likeli-
+hood, entropy, rank, log-rank, and likelihood-ratio
+scores (Su et al., 2023; Wu et al., 2024). More
+recent methods derive zero-shot criteria from a ref-
+erence LM, including DetectGPT (Mitchell et al.,
+2023), Fast-DetectGPT (Bao et al., 2023), DNA-
+GPT (Yang et al., 2023), and Binoculars (Hans
+et al., 2024). In contrast, SV-Detect is not zero-shot:
+it learns a lightweight detector from representation-
+level features rather than directly from text.
+Robustness and evaluation under distribution
+shift.Recent work has emphasized that strong
+in-domain results are not sufficient for realistic
+machine-generated text detection (Tufts et al.,
+2025; Li et al., 2024; Kushnareva et al., 2024).
+DetectRL(Wu et al., 2024) benchmarks transfer
+across domains, source LLMs, and attack families,
+whileMIRAGE(Fu et al., 2025) focuses on gen-
+eration, polishing, and rewriting.PADBen(Zha
+et al., 2025) further targets paraphrase-based laun-
+dering, iterative paraphrase depth, and human-
+edited AI-generated text, complementing the at-
+tack families covered by DetectRL and MIRAGE
+with a laundering-centric perspective. Following
+this robustness-centered evaluation paradigm, we
+evaluate SV-Detect on these benchmarks and addi-
+tionally test cross-benchmark transfer.
+
+Figure 2: Overview of SV-Detect. A frozen LLM is used
+to extract mean-pooled hidden activations from each
+layer. Activations are projected onto layer-wise steering
+vectors, and the resulting cosine similarity scores are
+standardized and passed to a logistic regression classifier
+for AI-generated text detection.
+3 Methodology
+3.1 Overview
+The key idea of our method is based on the hy-
+pothesis that human-written and AI-generated texts
+induce systematically different activation patterns
+inside a pretrained model. We capture these dif-
+ferences as directions in representation space and
+use them to construct features for a downstream
+detection model.
+Our pipeline is illustrated in Fig. 2 and consists
+of four stages: (i) extracting layer-wise activations
+from a frozen language model, (ii) extractingAI-
+generated text directionsthat distinguish human-
+written and machine-generated texts, (iii) project-
+ing text representations onto these directions to
+obtain low-dimensional features, and (iv) training
+a lightweight classifier on top of these features.
+This design transforms high-dimensional hidden
+states into interpretable scores that quantify how
+strongly a text aligns with AI-generated text direc-
+tions across the network.
+3.2 Layer-wise text representations
+Letf be a frozen transformer language model with
+L layers. Given an input text x tokenized intoT
+tokens, letHl(x)∈R T×d denote the hidden states
+at layer l∈ {1,...,L} , where d is the hidden
+dimension. We construct the text representation at
+layerl by mean-pooling hidden states across the
+token dimension:
+al(x) = 1
+T
+TX
+t=1
+Hl(x)t∈R d.
+The full representation ofx is therefore the collec-
+tion of its representations at each layer:
+a(x) =
+ 
+a1(x),...,a L(x)
+
+.
+3.3 Constructing AI-generated text directions
+Suppose we are given training data that consists
+of a set of human-written textsDreal and a set of
+AI-generated textsD fake
+Dreal ={x (r)
+i }Nr
+i=1,D fake ={x (f)
+j }Nf
+j=1
+For each layerl, we use the pooled activations
+a(r)
+l ={a l(x(r)
+i )}Nr
+i=1, a (f)
+l ={a l(x(f)
+j )}Nf
+j=1
+to construct a vectorvl∈R d that captures the direc-
+tion separating AI-generated from human-written
+text representations. We refer to these directions
+assteering vectors: they are representation-space
+directions of the same kind used in activation steer-
+ing and representation engineering work (Zou et al.,
+2023). However, note that in SV-Detect they are
+used only as probing and classification features.
+We study three methods for constructing steering
+vectors, following common practice in representa-
+tion engineering (Zou et al., 2023).
+Mean-difference.The simplest choice is the nor-
+malized difference between class means:
+µ(f)
+l = 1
+Nf
+NfX
+j=1
+al(x(f)
+j ), µ(r)
+l = 1
+Nr
+NrX
+i=1
+al(x(r)
+i ),
+vmean
+l = µ(f)
+l −µ (r)
+l
+∥µ(f)
+l −µ (r)
+l ∥2
+.
+This vector points from the average human-written
+representation toward the average AI-generated rep-
+resentation.
+Logistic-regression.One alternative is to fit a
+linear classifier directly in the activation space of
+each layer and use the normal vector of the sep-
+arating hyperplane. For each layer l, we train a
+logistic regression model to separate AI-generated
+and human-written text activations. Letwl denote
+the learned weight vector for layer l. We define
+the steering vector for this layer as its normalized
+version:
+vlogreg
+l = wl
+∥wl∥2
+.

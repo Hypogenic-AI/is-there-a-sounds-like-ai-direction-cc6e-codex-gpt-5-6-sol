@@ -1,0 +1,26 @@
+{
+  "mage_test": {
+    "n": 12000,
+    "auroc": 0.7919722908858986,
+    "accuracy": 0.71075,
+    "prevalence_machine": 0.4905
+  },
+  "raid_sample": {
+    "n": 400,
+    "auroc": 0.9061666666666667,
+    "accuracy": 0.835,
+    "prevalence_machine": 0.75
+  },
+  "public_roberta_mage": {
+    "n": 1000,
+    "auroc": 0.7394158306532905,
+    "accuracy": 0.673,
+    "prevalence_machine": 0.498
+  },
+  "public_roberta_raid": {
+    "n": 400,
+    "auroc": 0.8682000000000001,
+    "accuracy": 0.6225,
+    "prevalence_machine": 0.75
+  }
+}

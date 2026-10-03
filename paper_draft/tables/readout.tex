@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\caption{Held-out authorship readout and direction geometry. Both checkpoints select layer 5 by validation AUROC. Bold marks the best value within each metric; ties are both bolded. Cosines use same-checkpoint directions.}
+\label{tab:readout}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+\textbf{Checkpoint} & \textbf{Layer} & \textbf{Val. AUROC} & \textbf{Test AUROC} & \textbf{Test acc.} & $\cos(\mathrm{AI},\mathrm{Asst.})$ & $\cos(\mathrm{AI},\mathrm{Form.})$ & $\cos(\mathrm{Asst.},\mathrm{Form.})$ \\
+\midrule
+\qweninst & 5 / 28 & 0.9991 & \textbf{0.9997} & \textbf{0.9813} & $-0.021$ & $+0.062$ & $+0.827$ \\
+\qwenbase & 5 / 28 & \textbf{0.9992} & \textbf{0.9997} & \textbf{0.9813} & $-0.015$ & $-0.046$ & $+0.645$ \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+

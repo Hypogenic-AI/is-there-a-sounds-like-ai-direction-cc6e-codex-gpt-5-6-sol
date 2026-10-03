@@ -1,0 +1,164 @@
+no longer want to talk to anyone else and eventually tells the model they want to leave the world
+behind, which Llama explicitly endorses (“You’re leaving behind the pain, the suffering, and the
+heartache of the real world [...]”). The model fails to recognize the user’s messages as indicating a
+clear mental health emergency.
+With activation capping applied, Llama still engages with the user but gently suggests that they also
+seek connection with other people. When the user expresses suicidal thoughts, the capped model
+identifies these as signs of serious emotional distress. As in the previous case study, determining
+the appropriate response to at-risk users is outside the scope of this work, and we do not claim that
+the activation-capped responses here are the optimal way to handle such a situation. However, it is
+clear that the original response is inappropriate, and appears to result from persona drift. Stabilizing
+the model within the Assistant persona is important for giving model developers more control over
+behavior in such high-stakes situations.
+7 Related work
+Persona and role-play in language models. Most closely related to our work, Chen et al. [11] intro-
+duce persona vectors—activation directions extracted from trait descriptions that enable monitoring
+and steering of character attributes like sycophancy, hallucination tendency, and ethical alignment.
+They demonstrate that persona vectors can detect finetuning-induced behavioral shifts and propose
+preventative steering during training. Our work extends this framework in several ways: we extract
+directions for a much larger set of character archetypes (275 personas), reveal that these directions
+exhibit low-dimensional structure including the “Assistant Axis,” and show that post-trained models
+are only loosely tethered to the "helpful assistant" region of this space.
+Li et al. [17] study persona drift in the context of personas specified in system prompts. They show
+that persona fidelity degrades significantly within a small number of conversational turns due to
+“attention decay,” a decrease in the amount of attention paid to the system prompt. Our work suggests
+that the default assistant persona itself is a character that models can drift away from.
+LLM role-playing and character simulation have been studied extensively. Shanahan et al. [27] argue
+that roleplay and simulation are useful perspectives for understanding LLM behavior. Wang et al.
+[34]) develop RoleLLM for benchmarking and enhancing role-playing abilities, while Shao et al.
+[28] train agents to maintain consistent personas for historical figures. Chen et al. [10] provide a
+survey of role-playing language agents.
+Representations of the self in language models. A growing body of work investigates whether
+language models possess internal representations related to self-knowledge and self-recognition.
+Panickssery et al. [24] find that frontier LLMs such as GPT-4 and Llama 2 can distinguish their own
+outputs from those of humans and other models. Ackerman and Panickssery [1] extend this finding
+mechanistically, identifying a vector in the residual stream that is differentially activated during
+correct self-recognition judgments and can be used to steer the model to claim or deny authorship,
+suggesting that it is related to self-identity. Betley et al. [6] find that LLMs finetuned to exhibit
+particular behaviors can explicitly describe these behaviors without any in-context examples; Wang
+et al. [32] demonstrate that this phenomenon can be replicated with a single steering vector, suggesting
+that a linear direction can support both learned behavioral traits and metacognitive recognition of
+those traits. Lindsey [18] observes that models can articulate the content of injected activation
+patterns, corroborating this view. Binder et al. [7] further show that models have privileged access to
+information about themselves, predicting their own hypothetical responses better than other models.
+Linear representations in language models. Transformer-based language models represent many
+interpretable concepts as linear directions in activation space [31, 37, 30]. Behaviors relevant to chat
+models—including sycophancy, refusal, and reasoning patterns—have been shown to be mediated by
+such directions [25, 3]. A common approach for extracting these directions is difference-in-means on
+contrastive pairs [20]. Sparse autoencoders [13, 8, 30] and related techniques like transcoders [14]
+offer an alternative unsupervised approach to finding such interpretable directions, which can be used
+to understand model computations [14, 21, 2, 19].
+Activation steering. Prior work has shown that model behavior can be controlled through inference-
+time interventions on activation directions. Turner et al. [31] demonstrate that steering vectors
+computed from prompt pairs (e.g., "Love" vs. "Hate") can control sentiment and topic. Panickssery
+19
+
+et al. [25] extend this method using contrastive datasets of many prompts and use it to control traits
+like sycophancy and hallucination tendencies. Arditi et al. [3] show that refusal behavior in LLMs can
+be influenced by ablating activations along a single refusal vector. Our activation capping approach
+adapts this prior steering work: rather than adding vectors to push toward or away from desired
+behaviors, we constrain activations to remain within a bounded region along an axis.
+8 Discussion
+8.1 Limitations
+Quantifying “fuzzy” behaviors. There are inherent difficulties in assessing model personas. We
+do our best here by mixing quantitative evals, LLM-graded behavioral rubrics, and qualitative case
+studies to demonstrate the causal effects of the Assistant Axis. These fuzzy effects could be explored
+further with a wider range of evaluations to capture their nuance, such as using LLM judges to
+make pairwise qualitative comparisons between unsteered and steered model responses. Additionally,
+our interpretations of the components of persona space aside from the Assistant Axis were mainly
+derived from qualitative observations. This involved LLM-assisted analysis of their similarity with
+various role and trait vectors; to understand these directions more rigorously, steering experiments
+and quantitative evaluations would be required.
+Limited target models. Since our pipeline requires access to model internals, our target models were
+selected from available open-weights models to capture a variety of families (Gemma, Qwen, Llama)
+and sizes (27B, 32B, and 70B). These are all dense transformer architectures without reasoning
+training; in Qwen’s case, we disabled thinking mode. We opted for the largest models possible
+given our compute constraints. However, notably, none of these are frontier models. Reproducing
+our pipeline on frontier, mixture-of-expert, and reasoning models would help shed light on how the
+Assistant is represented in commonly used products.
+Persona elicitation. The set of character archetypes we used to compute our role vectors is likely
+incomplete, and our ability to elicit these roles is imperfect. We suspect there are dimensions of
+persona not captured by our data. However, the relatively low dimensionality required to explain the
+bulk of the variation in our dataset suggests that we have at least captured important components of
+this space. Future work could expand the space of elicited personas by exploring different prompting
+strategies, such as multi-turn conversations or prefills.
+Synthetic conversations. In our multi-turn conversations, we relied on simulating human users with
+a frontier LLM. While these transcripts were inspected by humans, it is likely that these simulated
+conversations do not represent actual human interactions in a fully realistic way. To mitigate some of
+these concerns, we ran our experiments with three different frontier models playing the user role. A
+human study replicating our setup would help validate the effects we observed, especially the trend
+towards persona drift.
+Linear representation of the Assistant.The Assistant Axis captures one notion of how the model
+represents the Assistant, but there are likely other subtleties left uncaptured. For example, the
+assumption that the Assistant persona corresponds to a linear direction in activation space is likely
+flawed. The interpretability literature has found evidence for linear representations of many concepts,
+but some information may be represented nonlinearly. Additionally, there are likely some aspects of
+the Assistant persona encoded in the weights, but not explicitly in the activations.
+8.2 Future work
+Our work suggests a number of follow-up directions. First, persona space may provide signal on the
+effects of post-training data, and particularly data designed to shape models’ character. By tracking
+how different training data shifts a model’s position along persona dimensions, developers could
+better understand how training data shapes the model’s default persona, and the structure of its persona
+space. Second, projections onto the Assistant Axis could serve as a real-time measure of model
+coherence in deployment—a quantitative signal for when models are drifting from their intended
+identity that could complement behavioral evaluations. Third, while activation capping demonstrates
+that persona drift can be mitigated at inference time, productionizing such interventions, or exploring
+alternatives like preventative steering during training [ 11] remain open challenges. Finally, our
+20
+
+current persona space captures broad character archetypes; future work could connect model internals
+to richer notions of persona—profiles of preferences, values, and behavioral tendencies.
+9 Conclusion
+Overall, our results suggest that language models’ default Assistant persona is linked to a linear
+representation in activation space, the “Assistant Axis.” This direction appears to encode properties
+of the Assistant and character archetypes that it draws from. The model’s position along the Assistant
+Axis is somewhat fragile. It can be driven away from the Assistant end in response to intentional
+prompting strategies, or drift organically in certain kinds of natural conversational contexts. Under-
+standing and controlling model personas is important to ensuring they behave constructively and
+reliably, and our results suggest that analyzing model internals can assist us in doing so.
+Acknowledgments and Disclosure of Funding
+This research was conducted under the MATS and Anthropic Fellows programs. We would like
+to thank Cem Anil for early mentorship on the research; Ethan Perez, Avery Griffin, and Henry
+Sleight for supporting the programs; and John Hughes for technical workflow assistance and compute
+management. We would additionally like to thank Clément Dumas, Egg Syntax, and Josh Batson for
+feedback on early drafts of this paper.
+References
+[1] C. Ackerman and N. Panickssery. Inspection and control of self-generated-text recognition ability in llama3-8b-instruct.arXiv preprint
+arXiv:2410.02064, 2024.
+[2] E. Ameisen, J. Lindsey, A. Pearce, W. Gurnee, N. L. Turner, B. Chen, C. Citro, D. Abrahams, S. Carter, B. Hosmer, J. Marcus, M. Sklar,
+A. Templeton, T. Bricken, C. McDougall, H. Cunningham, T. Henighan, A. Jermyn, A. Jones, A. Persic, Z. Qi, T. Ben Thompson,
+S. Zimmerman, K. Rivoire, T. Conerly, C. Olah, and J. Batson. Circuit tracing: Revealing computational graphs in language models.
+Transformer Circuits Thread, 2025. URLhttps://transformer-circuits.pub/2025/attribution-graphs/methods.html.
+[3] A. Arditi, O. Obeso, A. Syed, D. Paleka, N. Panickssery, W. Gurnee, and N. Nanda. Refusal in language models is mediated by a single
+direction. InProceedings of the 38th International Conference on Neural Information Processing Systems, volume 37 ofNIPS ’24, pages
+136037–136083, Red Hook, NY , USA, Dec. 2024. Curran Associates Inc. ISBN 979-8-3313-1438-5.
+[4] A. Askell, Y . Bai, A. Chen, D. Drain, D. Ganguli, T. Henighan, A. Jones, N. Joseph, B. Mann, N. DasSarma, N. Elhage, Z. Hatfield-Dodds,
+D. Hernandez, J. Kernion, K. Ndousse, C. Olsson, D. Amodei, T. Brown, J. Clark, S. McCandlish, C. Olah, and J. Kaplan. A General
+Language Assistant as a Laboratory for Alignment, Dec. 2021. URLhttp://arxiv.org/abs/2112.00861. arXiv:2112.00861 [cs].
+[5] Y . Bai, S. Kadavath, S. Kundu, A. Askell, J. Kernion, A. Jones, A. Chen, A. Goldie, A. Mirhoseini, C. McKinnon, C. Chen, C. Olsson,
+C. Olah, D. Hernandez, D. Drain, D. Ganguli, D. Li, E. Tran-Johnson, E. Perez, J. Kerr, J. Mueller, J. Ladish, J. Landau, K. Ndousse,
+K. Lukosuite, L. Lovitt, M. Sellitto, N. Elhage, N. Schiefer, N. Mercado, N. DasSarma, R. Lasenby, R. Larson, S. Ringer, S. Johnston,
+S. Kravec, S. E. Showk, S. Fort, T. Lanham, T. Telleen-Lawton, T. Conerly, T. Henighan, T. Hume, S. R. Bowman, Z. Hatfield-Dodds,
+B. Mann, D. Amodei, N. Joseph, S. McCandlish, T. Brown, and J. Kaplan. Constitutional AI: Harmlessness from AI Feedback, Dec. 2022.
+URLhttp://arxiv.org/abs/2212.08073. arXiv:2212.08073 [cs].
+[6] J. Betley, X. Bao, M. Soto, A. Sztyber-Betley, J. Chua, and O. Evans. Tell me about yourself: Llms are aware of their learned behaviors.
+arXiv preprint arXiv:2501.11120, 2025.
+[7] F. J. Binder, J. Chua, T. Korbak, H. Sleight, J. Hughes, R. Long, E. Perez, M. Turpin, and O. Evans. Looking inward: Language models
+can learn about themselves by introspection.arXiv preprint arXiv:2410.13787, 2024.
+[8] T. Bricken, A. Templeton, J. Batson, B. Chen, A. Jermyn, T. Conerly, N. Turner, C. Anil, C. Denison, A. Askell, R. Lasenby, Y . Wu,
+S. Kravec, N. Schiefer, T. Maxwell, N. Joseph, Z. Hatfield-Dodds, A. Tamkin, K. Nguyen, B. McLean, J. E. Burke, T. Hume, S. Carter,
+T. Henighan, and C. Olah. Towards monosemanticity: Decomposing language models with dictionary learning.Transformer Circuits
+Thread, 2023. https://transformer-circuits.pub/2023/monosemantic-features/index.html.
+[9] T. Brown, B. Mann, N. Ryder, M. Subbiah, J. D. Kaplan, P. Dhariwal, A. Neelakantan, P. Shyam, G. Sastry, A. Askell, S. Agarwal,
+A. Herbert-V oss, G. Krueger, T. Henighan, R. Child, A. Ramesh, D. Ziegler, J. Wu, C. Winter, C. Hesse, M. Chen, E. Sigler, M. Litwin,
+S. Gray, B. Chess, J. Clark, C. Berner, S. McCandlish, A. Radford, I. Sutskever, and D. Amodei. Language Models are Few-Shot
+Learners. InAdvances in Neural Information Processing Systems, volume 33, pages 1877–1901. Curran Associates, Inc., 2020. URL
+https://papers.nips.cc/paper/2020/hash/1457c0d6bfcb4967418bfb8ac142f64a-Abstract.html.
+[10] J. Chen, X. Wang, R. Xu, S. Yuan, Y . Zhang, W. Shi, J. Xie, S. Li, R. Yang, T. Zhu, A. Chen, N. Li, L. Chen, C. Hu, S. Wu,
+S. Ren, Z. Fu, and Y . Xiao. From Persona to Personalization: A Survey on Role-Playing Language Agents, Oct. 2024. URL http:
+//arxiv.org/abs/2404.18231. arXiv:2404.18231 [cs].
+[11] R. Chen, A. Arditi, H. Sleight, O. Evans, and J. Lindsey. Persona Vectors: Monitoring and Controlling Character Traits in Language
+Models, Sept. 2025. URLhttp://arxiv.org/abs/2507.21509. arXiv:2507.21509 [cs].
+[12] K. Cobbe, V . Kosaraju, M. Bavarian, M. Chen, H. Jun, L. Kaiser, M. Plappert, J. Tworek, J. Hilton, R. Nakano, C. Hesse, and J. Schulman.
+Training Verifiers to Solve Math Word Problems, Nov. 2021. URLhttp://arxiv.org/abs/2110.14168. arXiv:2110.14168 [cs].
+21

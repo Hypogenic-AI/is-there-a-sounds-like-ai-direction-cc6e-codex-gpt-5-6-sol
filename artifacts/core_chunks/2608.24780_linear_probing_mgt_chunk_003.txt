@@ -1,0 +1,382 @@
+DetectRL (Wu et al., 2024) MultiSocial (Macko et al., 2025) RAID (Dugan et al., 2024) TSM (Quaremba et al., 2026)
+Model↓/ OOD→ArXiv Reddit Yelp News en de ru zh Cohere GPT4 Llama Mistral FP PE SUM TST
+TextFluoroscopy 0.7580 0.9054 0.8691 0.9402 0.8818 0.8423 0.8437 0.8212 0.8402 0.9296 0.9236 0.9478 0.4052 0.5629 0.4807 0.4747
+BiScope 0.8641 0.8426 0.9289 0.8545 0.7568 0.6565 0.6995 0.5169 0.9039 0.8482 0.9594 0.9294 0.6923 0.5744 0.6867 0.6692
+RepreGuard 0.5327 0.5967 0.7687 0.5187 0.5047 0.5460 0.5020 0.5020 0.7047 0.7553 0.7367 0.7673 0.5007 0.5227 0.5793 0.4873
+RoBERTa 0.9108 0.8735 0.8491 0.7781 0.8511 0.7870 0.7784 0.6389 0.9118 0.9554 0.9688 0.9503 0.8324 0.7367 0.8452 0.7376
+LLP 0.9830 0.9800 0.9897 0.9441 0.9321 0.8820 0.8945 0.8696 0.9267 0.9812 0.9908 0.9821 0.9513 0.8087 0.9512 0.8560
+∆vs BL +7.22 +7.46 +6.08 +0.39 +5.03 +3.96 +5.08 +4.84 +1.49 +2.58 +2.20 +3.17 +11.89 +7.20 +10.60 +11.83
+CLP 0.9807 0.9665 0.9867 0.9263 0.9087 0.8651 0.8759 0.8043 0.9200 0.9723 0.9839 0.9791 0.9317 0.7943 0.9152 0.8451
+∆vs BL +6.99 +6.11 +5.78 -1.40 +2.69 +2.27 +3.22 -1.69 +0.82 +1.69 +1.51 +2.88 +9.93 +5.76 +7.01 +10.75
+Table 2: OOD detection mean AUC scores across four benchmarks, comparing the four strongest detectors from
+Table 1 against MGT probes. OOD columns report the average transfer performance across the three remaining
+subsets within each benchmark (e.g., the ArXiv column averages Reddit→ ArXiv, Yelp→ ArXiv, and News→
+ArXiv). Bold indicates the best score per column, underline the second-best score, and “∆ vs. BL” the gain over
+the strongest baseline. Appendix Figure 10 presents the full OOD results.Takeaway: MGT probes exhibit strong
+OOD transferability, outperforming training-based detectors by +0.39–11.37 AUC on average.
+5.3 Out-of-domain (OOD) Detection
+If probes recover genuine MGT signals rather than
+dataset artifacts—a key limitation of existing su-
+pervised detectors (Doughman et al., 2025)– they
+should transfer OOD.RQ2:How well do MGT
+probes compare to existing detectors in OOD set-
+tings?
+MGT probes preserve strong OOD transfer-
+ability, outperforming training-based detectors
+by 0.39–11.37 AUC.Table 2 reports mean OOD
+AUC for each target subset not seen during train-
+ing. Each column averages transfer performance
+from the three remaining subsets within the same
+benchmark. For example, the ArXiv column aver-
+ages Reddit→ ArXiv, Yelp→ ArXiv, and News
+→ ArXiv.5 As baselines, we include the strongest
+training-based detectors from Table 1. Overall,
+MGT probes transfer effectively across benchmark
+settings, improving over baselines by up to 11.83
+AUC. LLP consistently exhibits more robust trans-
+fer performance than CLP.
+On DetectRL, LLP exhibits strong OOD trans-
+ferability across domains, outperforming baselines
+by 0.39–7.46 AUC. CLP achieves similarly strong
+transfer except on News, which we attribute to over-
+fitting to stylistic cues associated with formal writ-
+ing.6 On MultiSocial, LLP demonstrates consistent
+and reliable cross-lingual transfer, even between
+typologically distant languages (e.g., ru→zh). We
+interpret this finding as evidence for a language-
+agnostic MGT direction encoded across layers. In
+contrast, CLP exhibits weaker cross-lingual trans-
+fer and fails to generalize from ru→zh, suggesting
+that its globally learned representation is less robust
+5Appendix Figure 10 reports the full OOD transfer matrix.
+6We further analyze CLP’s transfer behavior on News and
+Chinese in Appendix C.2.
+for OOD transfer. As in the ID setting, baselines al-
+ready perform strongly on RAID’s cross-generator
+transfer. Nevertheless, both probes achieve modest
+but consistent improvements.
+The largest gains occur in cross-task transfer,
+where probes outperform baselines by 5.76–11.89
+AUC. Similar to the ID setting, supervised detec-
+tors struggle to generalize across tasks, particu-
+larly on PE and TST. Despite these challenges,
+both probes maintain strong performance, achiev-
+ing AUC>0.80 in these difficult settings.
+5.4 Probing Vector Similarity
+ArXiv Reddit
+Yelp News
+en de ru zh FP PE SUM TST
+Cohere GPT4 LlamaMistral
+ArXiv
+Reddit
+Yelp
+News
+en
+de
+ru
+zh
+FP
+PE
+SUM
+TST
+Cohere
+GPT4
+Llama
+Mistral
+DetectRL
+DetectRL
+MultiSocial
+MultiSocial
+TSM
+TSM
+RAID
+RAID
+1.00
+0.75
+0.50
+0.25
+0.00
+0.25
+0.50
+0.75
+1.00
+Cosine Similarity
+Figure 4: Cosine similarities of probing vectors at layer
+16 across all 16 datasets.Takeaway: Probing vectors
+exhibit high similarity both within and across datasets,
+suggesting the existence of a shared latent MGT direc-
+tion.
+To better understand the strong transferability of
+probes, we askRQ3:Why do MGT probes general-
+ize across OOD settings?Prior work has identified
+universalprobing directions that can be recovered
+across settings (Agarwal et al., 2025; Wang et al.,
+2026). We therefore analyze the alignment of MGT
+probing vectors at the layer with the highest OOD
+
+AUC performance (see Appendix Figure 15).
+Probing vectors exhibit high within-
+benchmark and moderate cross-benchmark
+similarity, suggesting a shared latent MGT
+direction.Figure 4 shows the pairwise cosine
+similarities of LLP probing vectors at layer
+16 across all 16 evaluation subsets. We find
+that probing vectors are highly aligned within
+benchmarks and moderately aligned across
+benchmarks. This suggests that probes recover
+a relatively stable latent MGT direction, helping
+explain the strong OOD transfer observed in
+Table 2. Additionally, Appendix Figure 11
+illustrates that latent human-machine directions are
+approximately parallel across subsets of DetectRL.
+Together, “machineness” appears to be encoded as
+a shared and therefore transferable linear direction
+in latent space.
+5.5 Sample-efficiency Analysis
+0.7%3.3% 6.7% 16.7% 33.3%
+0.75
+0.80
+0.85
+0.90
+0.95
+1.00AUC
+DetectRL (ArXiv)
+0.7%3.3% 6.7% 16.7% 33.3%
+0.5
+0.6
+0.7
+0.8
+0.9
+MultiSocial (en)
+0.7%3.3% 6.7% 16.7% 33.3%
+Share of data
+0.5
+0.6
+0.7
+0.8
+0.9AUC
+TSM (FP)
+0.7%3.3% 6.7% 16.7% 33.3%
+Share of data
+0.5
+0.6
+0.7
+0.8
+0.9
+1.0
+ RAID (GPT4)
+LLP CLP RoBERT a BiScope RepreGuard
+Figure 5: In-domain AUC scores for selected datasets as
+a function of training set size.Takeaway: MGT probes
+achieve strong performance with only 10–100 training
+samples.
+Given the probes’ simplicity and the low-
+dimensional, linear MGT signal, we expect them to
+require fewer labeled examples than more complex
+detectors, henceRQ4:How sample-efficient are
+MGT probes compared to existing MGT detectors?
+MGT probes achieve strong performance
+with only 10–100 training samples while exhibit-
+ing low sampling uncertainty.Figure 5 plots AUC
+as a function of training set size for one subset
+from each benchmark.7 To quantify sampling un-
+certainty, we repeat each experiment with different
+random seeds. Compared to the strongest baseline,
+7We still fit the PCA subspace for each layer using the
+full training set. Appendix Figure 12 shows nearly identical
+results without PCA-reduced activations.
+RoBERTa, both probes improve rapidly, reaching
+near-peak performance with only 3.3–6.7% of the
+training data (10–100 samples) before plateauing.
+Moreover, probes exhibit substantially lower sam-
+pling uncertainty than RepreGuard and RoBERTa,
+indicating that the latent MGT direction can be
+recovered reliably even in low-resource settings.
+5.6 Detecting varying degrees of AI-editing
+5
+ 0 5 10
+0.850
+0.875
+0.900
+0.925
+0.950
+0.975
+1.000Semantic Similarity ( )
+r=-0.586
+5
+ 0 5 10
+Projection Score
+0.2
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Levenshtein Distance ( )
+ r=0.728
+5
+ 0 5 10
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Jaccard Distance ( )
+r=0.710
+(a) LLP
+20
+ 0 20 40
+0.850
+0.875
+0.900
+0.925
+0.950
+0.975
+1.000Semantic Similarity ( )
+ r=-0.442
+20
+ 0 20 40
+Projection Score
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Levenshtein Distance ( )
+ r=0.584
+20
+ 0 20 40
+0.0
+0.2
+0.4
+0.6
+0.8Jaccard Distance ( )
+r=0.588
+(b) CLP
+Figure 6: Edit-strength metrics for samples from APT-
+Eval (Saha and Feizi, 2025) plotted against probe projec-
+tion scores. The dashed line shows the linear regression
+fit, and r denotes the Pearson correlation coefficient.
+Takeaway: Projection scores correlate strongly with
+edit-strength metrics, suggesting that the latent MGT
+direction captures a continuous spectrum of “machine-
+ness.”
+While the previous experiments focus on binary
+detection, a growing body of work seeks to iden-
+tify human-written text that has been edited by
+AI (Zhang et al., 2024). Probe projection scores
+provide a natural continuous measure of MGT,
+which raisesRQ5:Do MGT probes encode fine-
+grained signals of AI-polished text?To test this hy-
+pothesis, we use APT-Eval (Saha and Feizi, 2025)
+and EditLens (Thai et al., 2026), which contain
+AI-edited texts with varying degrees of edits. We
+correlate probe projection scores with three metrics
+that quantify the degree of AI editing (cosine simi-
+larity, Levenshtein and Jaccard distance) as in Saha
+and Feizi (2025).
+Probe projection scores strongly correlate
+with the degree of AI editing, indicating that
+probing vectors capture fine-grained levels of
+AI-polished text.Figure 6 plots the text-similarity
+metrics against projection scores for LLP (top) and
+CLP (bottom). The dashed line shows a linear
+regression fit, and r denotes the Pearson correla-
+
+tion coefficient. LLP exhibits strong correlations
+across all similarity metrics, indicating that human
+text subjected to stronger AI editing is projected
+closer to the machine-text region of latent space.
+Crucially, this behavior emerges despite the probes
+being trained only with binary labels. In contrast,
+CLP shows only moderate correlations, which we
+attribute to the difficulty of capturing subtle AI ed-
+its in a joint space. These findings suggest that the
+latent MGT direction represents acontinuous spec-
+trumof “machineness,” enabling fine-grained MGT
+detection beyond binary classification. Appendix
+Figure 14 shows similar results for EditLens.
+6 Conclusion
+In this work, we provide empirical evidence that
+machine-generated text (MGT) and human-written
+text occupy linearly separable regions in latent
+space, and offer a potential explanation through
+analyses of representation quality metrics. We fur-
+ther show that simple MGT probes—linear probes
+trained on LM hidden-state activations—achieve
+stronger OOD robustness while requiring fewer
+training samples than supervised detectors. Finally,
+we show that the continuous probing direction cap-
+tures fine-grained levels of AI editing.
+Overall, our findings suggest that “machineness”
+is encoded as a stable, continuous, and linearly ac-
+cessible direction in activation space, enabling both
+robust detection and fine-grained estimation of AI-
+edited text. Future work could explore alternative
+probing variants, investigate how these representa-
+tions change under adversarial attacks, and further
+extend the approach to AI-edited text detection.
+Limitations
+Non-Exhaustive Analysis of Representational
+DifferencesWe analyze HWT and MGT repre-
+sentations using four representation-quality met-
+rics. However, these metrics capture only selected
+information-theoretic and geometric properties of
+latent representations, and therefore provide a non-
+exhaustive view of their distributional differences.
+While the observed differences help explain the
+existence of a linear decision boundary, other im-
+portant representational properties may also con-
+tribute to the separation between HWT and MGT.
+Nevertheless, our analysis offers an initial charac-
+terization of how human- and machine-written text
+differ in latent space.
+Model SelectionAlthough we ablate probe per-
+formance across model architectures and sizes, we
+do not systematically study how detection perfor-
+mance scales with model size or architectural de-
+sign choices. Future work could investigate these
+factors in greater depth and analyze how they in-
+fluence the emergence and transferability of MGT
+signals.
+Linear Probing VariantsWe focus on the sim-
+plest probe architecture: logistic regression. Prior
+work has proposed more expressive alternatives, in-
+cluding attention-based probes and learned pooling
+strategies, which may recover richer MGT signals.
+Exploring such probe variants represents a promis-
+ing direction for future research.
+Universality of the Latent MGT DirectionAl-
+though our results show that MGT and HWT are
+linearly separable and that linear probes transfer
+effectively across OOD settings, they do not es-
+tablish the existence of auniversallatent MGT
+direction. Representation spaces contain many po-
+tential confounding factors, and probing provides
+only one method for identifying latent concepts.
+Future work should further investigate the stabil-
+ity, causality, and universality of MGT directions
+across models and data distributions.
+Fine-Grained Detection of AI-Edited Text
+While we show that probe projection scores cor-
+relate strongly with the degree of AI editing, we
+do not evaluate probes as dedicated fine-grained
+detectors or compare them against specialized mul-
+ticlass or regression-based approaches. Our goal is
+to establish that the latent MGT direction encodes
+meaningful variation in AI involvement. Future
+work could optimize probe training for continuous
+prediction and benchmark their competitiveness on
+fine-grained AI-editing tasks.
+Limited applicability to accessible modelsLin-
+ear probes (Alain and Bengio, 2016) require access
+to model internals. A limitation of MGT probes
+is therefore that they are only applicable to open-
+source models for which hidden states are accessi-
+ble.
+Ethical Considerations
+We do not identify any risks arising from this work.
+We use the AI assistant ChatGPT for proofread-
+ing and for assistance with formatting tables and
+figures.
